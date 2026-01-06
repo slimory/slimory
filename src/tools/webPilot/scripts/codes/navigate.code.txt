@@ -1,0 +1,2 @@
+(function() { window.location.href = '{{url}}'; return { success: true, message: 'Navigated to ' + '{{url}}' }; })()
+

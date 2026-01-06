@@ -1,0 +1,98 @@
+.message-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 16px;
+    border: 1px solid #ffffff02;
+    z-index: 9999;
+    /* justify-content: flex-end; */
+}
+
+.message-panel {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    width: auto;
+    max-width: 600px;
+    max-height: calc(100vh - 32px);
+    padding: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.06);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.message-panel::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    background: transparent;
+}
+
+.message-panel {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.message-panel.translation-mode {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px 0 rgba(59, 130, 246, 0.2);
+}
+
+.translation-header {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    border: 1px solid #bfdbfe;
+}
+
+
+/* Simple text styles */
+.streaming-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #374151;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.response-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #374151;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.user-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.error-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #fecaca;
+}
+
+.cursor {
+    animation: blink 1s infinite;
+    color: #6366f1;
+    font-weight: bold;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}

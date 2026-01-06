@@ -1,0 +1,151 @@
+{
+    "menu": {
+        "translate": "अनुवाद",
+        "ask": "पूछें",
+        "explain": "समझाएं",
+        "modify": "संशोधित करें"
+    },
+    "chat": {
+        "placeholder": "अपना प्रश्न दर्ज करें...",
+        "initialMessage": "मैं आपकी \"{{text}}\" के साथ कैसे मदद कर सकता हूं?",
+        "send": "भेजें"
+    },
+    "alt": {
+        "translate": "अनुवाद",
+        "ask": "पूछें",
+        "explain": "समझाएं",
+        "modify": "संशोधित करें",
+        "send": "भेजें"
+    },
+    "settings": {
+        "title": "सेटिंग्स",
+        "language": "भाषा",
+        "languageDescription": "इंटरफ़ेस भाषा चुनें",
+        "apiSettings": "API सेटिंग्स",
+        "apiSettingsDescription": "API प्रदाता और कुंजी कॉन्फ़िगर करें",
+        "provider": "प्रदाता:",
+        "apiKey": "API कुंजी:",
+        "apiKeyPlaceholder": "अपनी API कुंजी दर्ज करें",
+        "wordSelection": "शब्द चयन",
+        "wordSelectionDescription": "नियंत्रित करें कि शब्द चयन मेनू सक्षम करना है या नहीं",
+        "enableWordSelection": "शब्द चयन सक्षम करें",
+        "wordSelectionEnabled": "शब्द चयन सक्षम है",
+        "wordSelectionDisabled": "शब्द चयन अक्षम है",
+        "customMenuActions": "कस्टम शब्द चयन मेनू",
+        "noMenuActions": "कोई मेनू फ़ंक्शन चयनित नहीं है",
+        "availableMenuActionsTitle": "उपलब्ध फ़ंक्शन:",
+        "noAvailableMenuActions": "कोई उपलब्ध फ़ंक्शन नहीं",
+        "disabledAppsList": "अक्षम ऐप्स की सूची",
+        "availableAppsTitle": "ऐप्स जिन्होंने शब्द चयन ट्रिगर किया:",
+        "noAvailableApps": "किसी भी ऐप ने शब्द चयन ट्रिगर नहीं किया",
+        "noDisabledApps": "कोई अक्षम ऐप्स नहीं",
+        "verify": "सत्यापित करें",
+        "verifying": "सत्यापन हो रहा है...",
+        "verifiedSuccess": "सफलतापूर्वक सत्यापित!",
+        "errorNoApiKey": "कृपया एक API कुंजी दर्ज करें",
+        "successVerified": "API कुंजी सत्यापित और सफलतापूर्वक सहेजी गई",
+        "errorSaveFailed": "सेटिंग्स सहेजने में विफल",
+        "errorVerificationFailed": "सत्यापन विफल",
+        "errorVerify": "API कुंजी सत्यापित करने में त्रुटि",
+        "errorAtLeastOneAction": "कम से कम एक एक्शन रखना होगा",
+        "save": "सहेजें",
+        "saving": "सहेजा जा रहा है..."
+    },
+    "conversation": {
+        "noConversations": "अभी तक कोई बातचीत नहीं",
+        "startNewConversation": "Slimory के साथ चैट करने के लिए स्वतंत्र महसूस करें",
+        "newConversation": "नई बातचीत"
+    },
+    "tooltip": {
+        "newChat": "नई चैट",
+        "minimize": "छोटा करें",
+        "close": "बंद करें"
+    },
+    "onboarding": {
+        "welcome": "Slimory में आपका स्वागत है",
+        "next": "अगला",
+        "previous": "पिछला",
+        "close": "बंद करें",
+        "complete": "पूर्ण करें",
+        "verified": "सत्यापित",
+        "step1": {
+            "title": "भाषा चुनें",
+            "description": "कृपया अपनी पसंदीदा इंटरफ़ेस भाषा चुनें"
+        },
+        "step2": {
+            "title": "API कुंजी कॉन्फ़िगर करें",
+            "description": "कृपया एक API प्रदाता चुनें और अपनी API कुंजी दर्ज करें। सत्यापन के बाद, आप अगले चरण पर जा सकते हैं।"
+        },
+        "step3": {
+            "title": "टेक्स्ट चयन मेनू",
+            "description": "जब आप टेक्स्ट चुनते हैं, तो एक मेनू स्वचालित रूप से दिखाई देगा, जो आपको अनुवाद, प्रश्न-उत्तर, या स्पष्टीकरण सुविधाओं को चुनने की अनुमति देगा।",
+            "demoText": "यह एक नमूना टेक्स्ट है। मेनू देखने के लिए इसे चुनें।",
+            "instruction": "टेक्स्ट चयन सुविधा का उपयोग कैसे करें, यह जानने के लिए एनिमेशन देखें"
+        },
+        "step4": {
+            "title": "कीबोर्ड शॉर्टकट",
+            "description": "आप चैट इंटरफ़ेस को जल्दी खोलने के लिए कीबोर्ड शॉर्टकट का उपयोग कर सकते हैं।",
+            "hint": "चैट इंटरफ़ेस खोलने के लिए Ctrl + Space दबाएं"
+        }
+    },
+    "tray": {
+        "chat": "चैट           ",
+        "settings": "सेटिंग्स",
+        "quit": "बाहर निकलें"
+    },
+    "tools": {
+        "searchKeywords": "कीवर्ड खोजें: {{keywords}}",
+        "searchCompleted": "खोज पूरी हो गई",
+        "webSearch": {
+            "searching": "खोज रहे हैं: {{query}}",
+            "foundResults": "{{count}} खोज परिणाम मिले",
+            "browseUrls": "{{count}} URLs से सामग्री ब्राउज़ कर रहे हैं",
+            "fetching": "प्राप्त कर रहे हैं [{{current}}/{{total}}]: {{url}}",
+            "completed": "पूर्ण [{{current}}/{{total}}]: {{url}}",
+            "fetchCompleted": "पूर्ण: {{success}}/{{total}} सफल"
+        },
+        "webPilot": {
+            "navigate": "{{url}} पर जाएं",
+            "extractPageContent": "पृष्ठ सामग्री का विश्लेषण करें",
+            "search": "{{query}} खोजें",
+            "clickElement": "तत्व {{targetName}} पर क्लिक करें",
+            "fillInput": "इनपुट भरें: {{value}}",
+            "waitForElement": "तत्व {{targetName}} की प्रतीक्षा करें",
+            "selectOption": "विकल्प चुनें: {{value}}",
+            "scrollToBottom": "नीचे स्क्रॉल करें",
+            "scrollToTop": "ऊपर स्क्रॉल करें",
+            "scrollBy": "पृष्ठ स्क्रॉल करें: {{pixels}} px",
+            "executing": "निष्पादित कर रहे हैं: {{operationName}}",
+            "visitingUrl": "{{url}} पर जा रहे हैं ({{current}}/{{max}} पैटर्न निकाले गए)",
+            "completedGenerated": "पूर्ण: {{count}} ऑपरेशन उत्पन्न किए गए",
+            "generationFailed": "जनरेशन विफल: {{error}}",
+            "analyzingSearch": "{{domain}} के लिए खोज कार्यक्षमता का विश्लेषण कर रहे हैं...",
+            "generatingSearchCode": "खोज ऑपरेशन कोड उत्पन्न कर रहे हैं...",
+            "executingOperations": "{{domain}} पर ऑपरेशन निष्पादित कर रहे हैं",
+            "firstTimeExploring": "पहली बार {{domain}} पर जा रहे हैं, अन्वेषण कर रहे हैं...",
+            "generationFailedUsingCommon": "ऑपरेशन जनरेशन विफल, सामान्य ऑपरेशन का उपयोग कर रहे हैं: {{error}}",
+            "pageContentExtracted": "[पृष्ठ सामग्री निकाली गई]",
+            "operationsSuccessful": "ऑपरेशन सफल",
+            "executionFailed": "निष्पादन विफल: {{error}}",
+            "error": "त्रुटि: {{error}}",
+            "generateScriptAndExecute": "स्क्रिप्ट उत्पन्न करें और निष्पादित करें",
+            "deleteScript": "स्क्रिप्ट हटाएं",
+            "cancel": "रद्द करें",
+            "delete": "हटाएं",
+            "deleteFailed": "हटाना विफल: {{error}}",
+            "codeGeneration": "कोड जनरेशन",
+            "back": "पीछे",
+            "forward": "आगे",
+            "reload": "पुनः लोड करें",
+            "effect": "प्रभाव",
+            "clearEffect": "प्रभाव साफ करें",
+            "noSavedScripts": "कोई सहेजे गए स्क्रिप्ट नहीं",
+            "unnamedScript": "अनाम स्क्रिप्ट",
+            "saveCode": "वर्तमान कोड सहेजें",
+            "saving": "सहेजा जा रहा है...",
+            "saved": "सहेजा गया",
+            "save": "सहेजें"
+        }
+    }
+}
+

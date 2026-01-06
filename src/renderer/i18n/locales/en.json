@@ -1,0 +1,150 @@
+{
+    "menu": {
+        "translate": "Translate",
+        "ask": "Ask",
+        "explain": "Explain",
+        "modify": "Modify"
+    },
+    "chat": {
+        "placeholder": "Enter your question...",
+        "initialMessage": "How can I help you with \"{{text}}\"?",
+        "send": "Send"
+    },
+    "alt": {
+        "translate": "Translate",
+        "ask": "Ask",
+        "explain": "Explain",
+        "modify": "Modify",
+        "send": "Send"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "languageDescription": "Select interface language",
+        "apiSettings": "API Settings",
+        "apiSettingsDescription": "Configure API provider and key",
+        "provider": "Provider:",
+        "apiKey": "API Key:",
+        "apiKeyPlaceholder": "Enter your API key",
+        "wordSelection": "Word Selection",
+        "wordSelectionDescription": "Control whether to enable word selection menu",
+        "enableWordSelection": "Enable word selection",
+        "wordSelectionEnabled": "Word selection enabled",
+        "wordSelectionDisabled": "Word selection disabled",
+        "customMenuActions": "Custom Word Selection Menu",
+        "noMenuActions": "No menu functions selected",
+        "availableMenuActionsTitle": "Available functions:",
+        "noAvailableMenuActions": "No available functions",
+        "disabledAppsList": "Disabled Apps List",
+        "availableAppsTitle": "Apps that triggered word selection:",
+        "noAvailableApps": "No apps have triggered word selection",
+        "noDisabledApps": "No disabled apps",
+        "verify": "Verify",
+        "verifying": "Verifying...",
+        "verifiedSuccess": "verified successfully!",
+        "errorNoApiKey": "Please enter an API key",
+        "successVerified": "API key verified and saved successfully",
+        "errorSaveFailed": "Failed to save settings",
+        "errorVerificationFailed": "Verification failed",
+        "errorVerify": "Error verifying API key",
+        "errorAtLeastOneAction": "At least one action must be kept",
+        "save": "Save",
+        "saving": "Saving..."
+    },
+    "conversation": {
+        "noConversations": "No conversations yet",
+        "startNewConversation": "Feel free to chat with Slimory",
+        "newConversation": "New Conversation"
+    },
+    "tooltip": {
+        "newChat": "New Chat",
+        "minimize": "Minimize",
+        "close": "Close"
+    },
+    "onboarding": {
+        "welcome": "Welcome to Slimory",
+        "next": "Next",
+        "previous": "Previous",
+        "close": "Close",
+        "complete": "Complete",
+        "verified": "Verified",
+        "step1": {
+            "title": "Select Language",
+            "description": "Please select your preferred interface language"
+        },
+        "step2": {
+            "title": "Configure API Key",
+            "description": "Please select an API provider and enter your API key. After verification, you can proceed to the next step."
+        },
+        "step3": {
+            "title": "Text Selection Menu",
+            "description": "When you select text, a menu will automatically appear, allowing you to choose translation, Q&A, or explanation features.",
+            "demoText": "This is a sample text. Select it to see the menu.",
+            "instruction": "Watch the animation to learn how to use the text selection feature"
+        },
+        "step4": {
+            "title": "Keyboard Shortcut",
+            "description": "You can use keyboard shortcuts to quickly open the chat interface.",
+            "hint": "Press Ctrl + Space to open the chat interface"
+        }
+    },
+    "tray": {
+        "chat": "Chat           ",
+        "settings": "Settings",
+        "quit": "Quit"
+    },
+    "tools": {
+        "searchKeywords": "Search for keywords: {{keywords}}",
+        "searchCompleted": "Search completed",
+        "webSearch": {
+            "searching": "Search: {{query}}",
+            "foundResults": "Found {{count}} search results",
+            "browseUrls": "Browse content from {{count}} URLs",
+            "fetching": "Fetching [{{current}}/{{total}}]: {{url}}",
+            "completed": "Completed [{{current}}/{{total}}]: {{url}}",
+            "fetchCompleted": "Completed: {{success}}/{{total}} successful"
+        },
+        "webPilot": {
+            "navigate": "Visit {{url}}",
+            "extractPageContent": "Analyze page content",
+            "search": "Search {{query}}",
+            "clickElement": "Click element {{targetName}}",
+            "fillInput": "Fill input: {{value}}",
+            "waitForElement": "Wait for element {{targetName}}",
+            "selectOption": "Select option: {{value}}",
+            "scrollToBottom": "Scroll to bottom",
+            "scrollToTop": "Scroll to top",
+            "scrollBy": "Scroll page: {{pixels}} px",
+            "executing": "Executing: {{operationName}}",
+            "visitingUrl": "Visiting {{url}} (extracted {{current}}/{{max}} patterns)",
+            "completedGenerated": "Completed: Generated {{count}} operations",
+            "generationFailed": "Generation failed: {{error}}",
+            "analyzingSearch": "Analyzing search functionality for {{domain}}...",
+            "generatingSearchCode": "Generating search operation code...",
+            "executingOperations": "Executing operations on {{domain}}",
+            "firstTimeExploring": "First time visiting {{domain}}, exploring...",
+            "generationFailedUsingCommon": "Operation generation failed, using common operations: {{error}}",
+            "pageContentExtracted": "[Page content extracted]",
+            "operationsSuccessful": "Operations successful",
+            "executionFailed": "Execution failed: {{error}}",
+            "error": "Error: {{error}}",
+            "generateScriptAndExecute": "Generate script and execute",
+            "deleteScript": "Delete Script",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "deleteFailed": "Delete failed: {{error}}",
+            "codeGeneration": "Code Generation",
+            "back": "Back",
+            "forward": "Forward",
+            "reload": "Reload",
+            "effect": "Effect",
+            "clearEffect": "Clear Effect",
+            "noSavedScripts": "No saved scripts",
+            "unnamedScript": "Unnamed Script",
+            "saveCode": "Save current code",
+            "saving": "Saving...",
+            "saved": "Saved",
+            "save": "Save"
+        }
+    }
+}

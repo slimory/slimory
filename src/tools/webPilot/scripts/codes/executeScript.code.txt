@@ -1,0 +1,2 @@
+(function() { try { const code = {{code}}; const result = (new Function(code))(); return { success: true, result: result, message: 'Script executed successfully' }; } catch(e) { return { success: false, error: 'Failed to execute script: ' + (e.message || String(e)), stack: e.stack }; } })()
+

@@ -1,0 +1,151 @@
+{
+    "menu": {
+        "translate": "ترجمة",
+        "ask": "اسأل",
+        "explain": "شرح",
+        "modify": "تعديل"
+    },
+    "chat": {
+        "placeholder": "أدخل سؤالك...",
+        "initialMessage": "كيف يمكنني مساعدتك في \"{{text}}\"؟",
+        "send": "إرسال"
+    },
+    "alt": {
+        "translate": "ترجمة",
+        "ask": "اسأل",
+        "explain": "شرح",
+        "modify": "تعديل",
+        "send": "إرسال"
+    },
+    "settings": {
+        "title": "الإعدادات",
+        "language": "اللغة",
+        "languageDescription": "اختر لغة الواجهة",
+        "apiSettings": "إعدادات API",
+        "apiSettingsDescription": "تكوين مزود API والمفتاح",
+        "provider": "المزود:",
+        "apiKey": "مفتاح API:",
+        "apiKeyPlaceholder": "أدخل مفتاح API الخاص بك",
+        "wordSelection": "تحديد الكلمات",
+        "wordSelectionDescription": "التحكم في تفعيل قائمة تحديد الكلمات",
+        "enableWordSelection": "تفعيل تحديد الكلمات",
+        "wordSelectionEnabled": "تم تفعيل تحديد الكلمات",
+        "wordSelectionDisabled": "تم تعطيل تحديد الكلمات",
+        "customMenuActions": "قائمة تحديد الكلمات المخصصة",
+        "noMenuActions": "لم يتم اختيار أي وظيفة قائمة",
+        "availableMenuActionsTitle": "الوظائف المتاحة:",
+        "noAvailableMenuActions": "لا توجد وظائف متاحة",
+        "disabledAppsList": "قائمة التطبيقات المعطلة",
+        "availableAppsTitle": "التطبيقات التي أطلقت تحديد الكلمات:",
+        "noAvailableApps": "لم يطلق أي تطبيق تحديد الكلمات",
+        "noDisabledApps": "لا توجد تطبيقات معطلة",
+        "verify": "التحقق",
+        "verifying": "جارٍ التحقق...",
+        "verifiedSuccess": "تم التحقق بنجاح!",
+        "errorNoApiKey": "يرجى إدخال مفتاح API",
+        "successVerified": "تم التحقق من مفتاح API وحفظه بنجاح",
+        "errorSaveFailed": "فشل حفظ الإعدادات",
+        "errorVerificationFailed": "فشل التحقق",
+        "errorVerify": "خطأ في التحقق من مفتاح API",
+        "errorAtLeastOneAction": "يجب الاحتفاظ بعمل واحد على الأقل",
+        "save": "حفظ",
+        "saving": "جارٍ الحفظ..."
+    },
+    "conversation": {
+        "noConversations": "لا توجد محادثات بعد",
+        "startNewConversation": "لا تتردد في الدردشة مع Slimory",
+        "newConversation": "محادثة جديدة"
+    },
+    "tooltip": {
+        "newChat": "محادثة جديدة",
+        "minimize": "تصغير",
+        "close": "إغلاق"
+    },
+    "onboarding": {
+        "welcome": "مرحبًا بك في Slimory",
+        "next": "التالي",
+        "previous": "السابق",
+        "close": "إغلاق",
+        "complete": "إكمال",
+        "verified": "تم التحقق",
+        "step1": {
+            "title": "اختر اللغة",
+            "description": "يرجى اختيار لغة الواجهة المفضلة لديك"
+        },
+        "step2": {
+            "title": "تكوين مفتاح API",
+            "description": "يرجى اختيار مزود API وإدخال مفتاح API الخاص بك. بعد التحقق، يمكنك المتابعة إلى الخطوة التالية."
+        },
+        "step3": {
+            "title": "قائمة تحديد النص",
+            "description": "عند تحديد النص، ستظهر قائمة تلقائيًا، مما يسمح لك باختيار ميزات الترجمة أو الأسئلة والأجوبة أو الشرح.",
+            "demoText": "هذا نص تجريبي. حدده لرؤية القائمة.",
+            "instruction": "شاهد الرسوم المتحركة لمعرفة كيفية استخدام ميزة تحديد النص"
+        },
+        "step4": {
+            "title": "اختصار لوحة المفاتيح",
+            "description": "يمكنك استخدام اختصارات لوحة المفاتيح لفتح واجهة الدردشة بسرعة.",
+            "hint": "اضغط على Ctrl + Space لفتح واجهة الدردشة"
+        }
+    },
+    "tray": {
+        "chat": "دردشة           ",
+        "settings": "الإعدادات",
+        "quit": "خروج"
+    },
+    "tools": {
+        "searchKeywords": "البحث عن الكلمات المفتاحية: {{keywords}}",
+        "searchCompleted": "اكتمل البحث",
+        "webSearch": {
+            "searching": "البحث: {{query}}",
+            "foundResults": "تم العثور على {{count}} نتيجة بحث",
+            "browseUrls": "تصفح محتوى من {{count}} عناوين URL",
+            "fetching": "جارٍ الجلب [{{current}}/{{total}}]: {{url}}",
+            "completed": "اكتمل [{{current}}/{{total}}]: {{url}}",
+            "fetchCompleted": "اكتمل: {{success}}/{{total}} ناجح"
+        },
+        "webPilot": {
+            "navigate": "زيارة {{url}}",
+            "extractPageContent": "تحليل محتوى الصفحة",
+            "search": "البحث عن {{query}}",
+            "clickElement": "النقر على العنصر {{targetName}}",
+            "fillInput": "ملء الإدخال: {{value}}",
+            "waitForElement": "انتظار العنصر {{targetName}}",
+            "selectOption": "تحديد الخيار: {{value}}",
+            "scrollToBottom": "التمرير إلى الأسفل",
+            "scrollToTop": "التمرير إلى الأعلى",
+            "scrollBy": "تمرير الصفحة: {{pixels}} بكسل",
+            "executing": "تنفيذ: {{operationName}}",
+            "visitingUrl": "زيارة {{url}} (تم استخراج {{current}}/{{max}} نمط)",
+            "completedGenerated": "اكتمل: تم إنشاء {{count}} عملية",
+            "generationFailed": "فشل الإنشاء: {{error}}",
+            "analyzingSearch": "جارٍ تحليل وظيفة البحث لـ {{domain}}...",
+            "generatingSearchCode": "جارٍ إنشاء كود عملية البحث...",
+            "executingOperations": "تنفيذ العمليات على {{domain}}",
+            "firstTimeExploring": "زيارة {{domain}} لأول مرة، جارٍ الاستكشاف...",
+            "generationFailedUsingCommon": "فشل إنشاء العمليات، استخدام العمليات الشائعة: {{error}}",
+            "pageContentExtracted": "[تم استخراج محتوى الصفحة]",
+            "operationsSuccessful": "نجحت العمليات",
+            "executionFailed": "فشل التنفيذ: {{error}}",
+            "error": "خطأ: {{error}}",
+            "generateScriptAndExecute": "إنشاء السكريبت وتنفيذه",
+            "deleteScript": "حذف السكريبت",
+            "cancel": "إلغاء",
+            "delete": "حذف",
+            "deleteFailed": "فشل الحذف: {{error}}",
+            "codeGeneration": "إنشاء الكود",
+            "back": "رجوع",
+            "forward": "تقدم",
+            "reload": "إعادة التحميل",
+            "effect": "تأثير",
+            "clearEffect": "مسح التأثير",
+            "noSavedScripts": "لا توجد سكريبتات محفوظة",
+            "unnamedScript": "سكريبت بدون اسم",
+            "saveCode": "حفظ الكود الحالي",
+            "saving": "جارٍ الحفظ...",
+            "saved": "تم الحفظ",
+            "save": "حفظ"
+        }
+    }
+}
+

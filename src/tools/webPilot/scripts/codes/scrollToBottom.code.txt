@@ -1,0 +1,2 @@
+(function() { try { const scrollHeight = document.documentElement.scrollHeight; window.scrollTo({ top: scrollHeight, behavior: 'smooth' }); return { success: true, message: 'Scrolled to bottom', scrollHeight: scrollHeight, scrollTop: window.pageYOffset || document.documentElement.scrollTop }; } catch(e) { return { success: false, error: 'Failed to scroll: ' + (e.message || String(e)) }; } })()
+

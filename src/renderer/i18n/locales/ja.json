@@ -1,0 +1,151 @@
+{
+    "menu": {
+        "translate": "翻訳",
+        "ask": "質問",
+        "explain": "説明",
+        "modify": "修正"
+    },
+    "chat": {
+        "placeholder": "質問を入力...",
+        "initialMessage": "「{{text}}」について、どのようにお手伝いできますか？",
+        "send": "送信"
+    },
+    "alt": {
+        "translate": "翻訳",
+        "ask": "質問",
+        "explain": "説明",
+        "modify": "修正",
+        "send": "送信"
+    },
+    "settings": {
+        "title": "設定",
+        "language": "言語",
+        "languageDescription": "インターフェース言語を選択",
+        "apiSettings": "API設定",
+        "apiSettingsDescription": "APIプロバイダーとキーを設定",
+        "provider": "プロバイダー:",
+        "apiKey": "APIキー:",
+        "apiKeyPlaceholder": "APIキーを入力",
+        "wordSelection": "単語選択",
+        "wordSelectionDescription": "単語選択メニューを有効にするかどうかを制御",
+        "enableWordSelection": "単語選択を有効にする",
+        "wordSelectionEnabled": "単語選択が有効",
+        "wordSelectionDisabled": "単語選択が無効",
+        "customMenuActions": "カスタム単語選択メニュー",
+        "noMenuActions": "メニュー機能が選択されていません",
+        "availableMenuActionsTitle": "利用可能な機能:",
+        "noAvailableMenuActions": "利用可能な機能がありません",
+        "disabledAppsList": "無効化されたアプリのリスト",
+        "availableAppsTitle": "単語選択をトリガーしたアプリ:",
+        "noAvailableApps": "単語選択をトリガーしたアプリがありません",
+        "noDisabledApps": "無効化されたアプリがありません",
+        "verify": "確認",
+        "verifying": "確認中...",
+        "verifiedSuccess": "確認成功！",
+        "errorNoApiKey": "APIキーを入力してください",
+        "successVerified": "APIキーが確認され、正常に保存されました",
+        "errorSaveFailed": "設定の保存に失敗しました",
+        "errorVerificationFailed": "確認に失敗しました",
+        "errorVerify": "APIキーの確認中にエラーが発生しました",
+        "errorAtLeastOneAction": "少なくとも1つのアクションを保持する必要があります",
+        "save": "保存",
+        "saving": "保存中..."
+    },
+    "conversation": {
+        "noConversations": "まだ会話がありません",
+        "startNewConversation": "Slimoryとチャットしてください",
+        "newConversation": "新しい会話"
+    },
+    "tooltip": {
+        "newChat": "新しいチャット",
+        "minimize": "最小化",
+        "close": "閉じる"
+    },
+    "onboarding": {
+        "welcome": "Slimoryへようこそ",
+        "next": "次へ",
+        "previous": "前へ",
+        "close": "閉じる",
+        "complete": "完了",
+        "verified": "確認済み",
+        "step1": {
+            "title": "言語を選択",
+            "description": "希望するインターフェース言語を選択してください"
+        },
+        "step2": {
+            "title": "APIキーを設定",
+            "description": "APIプロバイダーを選択し、APIキーを入力してください。確認後、次のステップに進むことができます。"
+        },
+        "step3": {
+            "title": "テキスト選択メニュー",
+            "description": "テキストを選択すると、自動的にメニューが表示され、翻訳、Q&A、または説明機能を選択できます。",
+            "demoText": "これはサンプルテキストです。選択してメニューを表示してください。",
+            "instruction": "アニメーションを見て、テキスト選択機能の使い方を学びましょう"
+        },
+        "step4": {
+            "title": "キーボードショートカット",
+            "description": "キーボードショートカットを使用して、チャットインターフェースをすばやく開くことができます。",
+            "hint": "Ctrl + Spaceを押してチャットインターフェースを開く"
+        }
+    },
+    "tray": {
+        "chat": "チャット           ",
+        "settings": "設定",
+        "quit": "終了"
+    },
+    "tools": {
+        "searchKeywords": "キーワードを検索: {{keywords}}",
+        "searchCompleted": "検索完了",
+        "webSearch": {
+            "searching": "検索中: {{query}}",
+            "foundResults": "{{count}} 件の検索結果が見つかりました",
+            "browseUrls": "{{count}} 個のURLのコンテンツを閲覧中",
+            "fetching": "取得中 [{{current}}/{{total}}]: {{url}}",
+            "completed": "完了 [{{current}}/{{total}}]: {{url}}",
+            "fetchCompleted": "完了: {{success}}/{{total}} 成功"
+        },
+        "webPilot": {
+            "navigate": "{{url}} にアクセス",
+            "extractPageContent": "ページコンテンツを分析",
+            "search": "{{query}} を検索",
+            "clickElement": "要素 {{targetName}} をクリック",
+            "fillInput": "入力欄に入力: {{value}}",
+            "waitForElement": "要素 {{targetName}} を待機",
+            "selectOption": "オプションを選択: {{value}}",
+            "scrollToBottom": "ページ下部にスクロール",
+            "scrollToTop": "ページ上部にスクロール",
+            "scrollBy": "ページをスクロール: {{pixels}} px",
+            "executing": "実行中: {{operationName}}",
+            "visitingUrl": "{{url}} にアクセス中 ({{current}}/{{max}} 個のパターンを抽出)",
+            "completedGenerated": "完了: {{count}} 個の操作を生成しました",
+            "generationFailed": "生成失敗: {{error}}",
+            "analyzingSearch": "{{domain}} の検索機能を分析中...",
+            "generatingSearchCode": "検索操作コードを生成中...",
+            "executingOperations": "{{domain}} で操作を実行中",
+            "firstTimeExploring": "初めて {{domain}} にアクセスしています。探索中...",
+            "generationFailedUsingCommon": "操作の生成に失敗しました。共通操作を使用します: {{error}}",
+            "pageContentExtracted": "[ページコンテンツを抽出しました]",
+            "operationsSuccessful": "操作成功",
+            "executionFailed": "実行失敗: {{error}}",
+            "error": "エラー: {{error}}",
+            "generateScriptAndExecute": "スクリプトを生成して実行",
+            "deleteScript": "スクリプトを削除",
+            "cancel": "キャンセル",
+            "delete": "削除",
+            "deleteFailed": "削除に失敗しました: {{error}}",
+            "codeGeneration": "コード生成",
+            "back": "戻る",
+            "forward": "進む",
+            "reload": "再読み込み",
+            "effect": "効果",
+            "clearEffect": "効果をクリア",
+            "noSavedScripts": "保存されたスクリプトがありません",
+            "unnamedScript": "名前のないスクリプト",
+            "saveCode": "現在のコードを保存",
+            "saving": "保存中...",
+            "saved": "保存済み",
+            "save": "保存"
+        }
+    }
+}
+

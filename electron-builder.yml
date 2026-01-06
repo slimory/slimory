@@ -1,0 +1,39 @@
+appId: com.evita.slimory
+productName: Slimory
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - src/prompts/**/*
+  - package.json
+
+extraResources:
+  - from: resources/GetSelectedText.exe
+    to: GetSelectedText.exe
+  - from: resources/UpdateSelectedText.exe
+    to: UpdateSelectedText.exe
+
+mac:
+  category: public.app-category.utilities
+  target:
+    - dmg
+    - zip
+  icon: build/icon.icns
+  darkModeSupport: true
+
+win:
+  target:
+    - nsis
+    - portable
+  icon: build/icon.ico
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Utility
+  icon: build/icon.png

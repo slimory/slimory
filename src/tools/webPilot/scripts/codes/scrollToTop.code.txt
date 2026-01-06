@@ -1,0 +1,2 @@
+(function() { try { window.scrollTo({ top: 0, behavior: 'smooth' }); return { success: true, message: 'Scrolled to top' }; } catch(e) { return { success: false, error: 'Failed to scroll: ' + (e.message || String(e)) }; } })()
+

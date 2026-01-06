@@ -1,0 +1,152 @@
+{
+  "domain": "common",
+  "operations": [
+    {
+      "name": "navigate",
+      "description": "Navigate to a specific URL. Use this to open any website or go to a specific page.",
+      "code": "navigate.code.txt",
+      "waitConditions": ["domContentLoaded"],
+      "parameters": {
+        "url": {
+          "type": "string",
+          "required": true,
+          "description": "The URL to navigate to (e.g., 'https://www.example.com')"
+        }
+      },
+      "timeout": 30000
+    },
+    {
+      "name": "extractPageContent",
+      "description": "Extract complete HTML structure and content from the current page without modifying it. Returns the full HTML of the main content area with only script tags removed. This helps LLM understand the complete page structure including all elements, links, buttons, and content to decide next actions. Use this after navigation or when you need to check the current page state.",
+      "code": "extractPageContent.code.txt",
+      "waitConditions": ["domContentLoaded", "networkIdle:2000"],
+      "parameters": {},
+      "timeout": 10000
+    },
+    {
+      "name": "clickElement",
+      "description": "Click on an element identified by CSS selector. Use this to interact with buttons, links, or any clickable elements on the page.",
+      "code": "clickElement.code.txt",
+      "waitConditions": ["networkIdle:1000"],
+      "parameters": {
+        "selector": {
+          "type": "string",
+          "required": true,
+          "description": "Standard CSS selector to identify the element to click. MUST use valid CSS selectors only (e.g., 'button.submit', '#myButton', 'a[href*=\"video\"]'). DO NOT use jQuery-style pseudo-selectors like :contains() - they are not valid CSS. Use attribute selectors, class selectors, ID selectors, or element selectors instead."
+        },
+        "targetName": {
+          "type": "string",
+          "required": false,
+          "description": "Human-readable name of the target element for display purposes. Use the language that matches the target website (e.g., for Chinese sites use '搜索按钮', '提交按钮', '视频链接'; for English sites use 'Search Button', 'Submit Button', 'Video Link'). This helps improve user experience when viewing operation logs."
+        }
+      },
+      "timeout": 10000
+    },
+    {
+      "name": "fillInput",
+      "description": "Fill an input field or textarea with text. Use this to enter text into search boxes, forms, or any input elements.",
+      "code": "fillInput.code.txt",
+      "waitConditions": [],
+      "parameters": {
+        "selector": {
+          "type": "string",
+          "required": true,
+          "description": "Standard CSS selector for the input element. MUST use valid CSS selectors only (e.g., 'input[name=\"search\"]', '#searchBox', 'textarea.comment', 'input[type=\"text\"]'). DO NOT use jQuery-style pseudo-selectors like :contains() - they are not valid CSS. Use attribute selectors, class selectors, ID selectors, or element selectors instead."
+        },
+        "value": {
+          "type": "string",
+          "required": true,
+          "description": "Text value to fill into the input field"
+        }
+      },
+      "timeout": 10000
+    },
+    {
+      "name": "scrollToBottom",
+      "description": "Scroll the page to the bottom to load more content. Useful for infinite scroll pages or when you need to see content at the bottom of the page.",
+      "code": "scrollToBottom.code.txt",
+      "waitConditions": ["networkIdle:1000"],
+      "parameters": {},
+      "timeout": 5000
+    },
+    {
+      "name": "scrollToTop",
+      "description": "Scroll the page to the top.",
+      "code": "scrollToTop.code.txt",
+      "waitConditions": [],
+      "parameters": {},
+      "timeout": 5000
+    },
+    {
+      "name": "scrollBy",
+      "description": "Scroll the page by a specified number of pixels. Positive values scroll down, negative values scroll up.",
+      "code": "scrollBy.code.txt",
+      "waitConditions": [],
+      "parameters": {
+        "pixels": {
+          "type": "string",
+          "required": true,
+          "description": "Number of pixels to scroll (positive for down, negative for up, e.g., '500', '-300')"
+        }
+      },
+      "timeout": 5000
+    },
+    {
+      "name": "waitForElement",
+      "description": "Check if an element exists on the page. Returns immediately with element status. For actual waiting, the operation executor will handle retries based on waitConditions.",
+      "code": "waitForElement.code.txt",
+      "waitConditions": [],
+      "parameters": {
+        "selector": {
+          "type": "string",
+          "required": true,
+          "description": "Standard CSS selector for the element to wait for. MUST use valid CSS selectors only (e.g., '#content', '.loading', 'div[data-id=\"123\"]'). DO NOT use jQuery-style pseudo-selectors like :contains() - they are not valid CSS. Use attribute selectors, class selectors, ID selectors, or element selectors instead."
+        },
+        "targetName": {
+          "type": "string",
+          "required": false,
+          "description": "Human-readable name of the target element for display purposes. Use the language that matches the target website (e.g., for Chinese sites use '搜索结果', '加载指示器', '内容区域'; for English sites use 'Search Results', 'Loading Indicator', 'Content Area'). This helps improve user experience when viewing operation logs."
+        },
+        "maxWait": {
+          "type": "string",
+          "required": false,
+          "description": "Maximum wait time in milliseconds (default: 5000)"
+        }
+      },
+      "timeout": 10000
+    },
+    {
+      "name": "selectOption",
+      "description": "Select an option from a dropdown/select element.",
+      "code": "selectOption.code.txt",
+      "waitConditions": [],
+      "parameters": {
+        "selector": {
+          "type": "string",
+          "required": true,
+          "description": "Standard CSS selector for the select element. MUST use valid CSS selectors only (e.g., 'select[name=\"category\"]', '#dropdown', 'select.form-control'). DO NOT use jQuery-style pseudo-selectors like :contains() - they are not valid CSS. Use attribute selectors, class selectors, ID selectors, or element selectors instead."
+        },
+        "value": {
+          "type": "string",
+          "required": true,
+          "description": "Value of the option to select"
+        }
+      },
+      "timeout": 10000
+    },
+    {
+      "name": "executeScript",
+      "description": "Generate and execute JavaScript code in the page context using LLM. Use this to perform custom operations that are not covered by other operations, such as accessing page variables, calling page functions, or performing complex DOM manipulations. The LLM will generate the code based on your description and execute it automatically.",
+      "code": "executeScript.code.txt",
+      "waitConditions": [],
+      "parameters": {
+        "description": {
+          "type": "string",
+          "required": true,
+          "description": "Natural language description of what you want to accomplish. IMPORTANT: Only provide a natural language description of your requirements - do NOT include any JavaScript code. The LLM will automatically generate the appropriate JavaScript code to execute in the page context based on your description. Be specific about what you want to do, what elements to interact with, and what result you expect. "
+        }
+      },
+      "timeout": 30000
+    }
+  ]
+}

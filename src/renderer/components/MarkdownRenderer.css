@@ -1,0 +1,380 @@
+.markdown-renderer {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #121e20;
+    word-wrap: break-word;
+    font-size: 15px;
+    font-weight: 350;
+    padding: 0px;
+    position: relative;
+    overflow: visible;
+}
+
+/* Headings */
+.markdown-heading {
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    line-height: 1.25;
+    color: #1a1a1a;
+}
+
+.markdown-h1 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.markdown-h2 {
+    font-size: 1.25em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.markdown-h3 {
+    font-size: 1em;
+}
+
+.markdown-h4 {
+    font-size: 1em;
+}
+
+.markdown-h5 {
+    font-size: 0.875em;
+}
+
+.markdown-h6 {
+    font-size: 0.85em;
+    color: #6a737d;
+}
+
+/* Paragraphs */
+.markdown-paragraph {
+    margin: 0 0 1em 0;
+}
+
+.markdown-paragraph:last-child {
+    margin-bottom: 0;
+}
+
+/* Lists */
+.markdown-list {
+    margin: 0 0 1em 0;
+    padding-left: 2em;
+    list-style-type: disc;
+}
+
+.markdown-list-item {
+    margin: 0.25em 0;
+    line-height: 1.6;
+}
+
+.markdown-list-item p {
+    margin: 0;
+}
+
+/* Code block wrapper */
+.markdown-code-block-wrapper {
+    position: relative;
+    margin: 1em 0;
+}
+
+/* Code blocks */
+.markdown-code-block {
+    background-color: #f6f8fa;
+    border-radius: 12px;
+    padding: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-family: Menlo, Monaco, Consolas, "Cascadia Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", "JetBrains Mono", "Fira Code", Cousine, "Roboto Mono", "Courier New", Courier, sans-serif, system-ui;
+    font-size: 0.9em;
+    line-height: 1.45;
+    border: 0px solid #e1e4e8;
+    min-width: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f6f8fa;
+}
+
+/* Copy button */
+.code-copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0);
+    border: 0px solid #e1e4e8;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #6a737d;
+    transition: all 0.2s ease;
+    opacity: 0;
+    z-index: 10;
+}
+
+.markdown-code-block-wrapper:hover .code-copy-button {
+    opacity: 1;
+}
+
+.code-copy-button:hover {
+    background-color: #ffffff;
+    color: #24292e;
+    border-color: #d1d5da;
+}
+
+.code-copy-button:active {
+    background-color: #f6f8fa;
+    transform: scale(0.95);
+}
+
+.code-copy-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.markdown-code-block::-webkit-scrollbar {
+    height: 8px;
+}
+
+.markdown-code-block::-webkit-scrollbar-track {
+    background: #f6f8fa;
+    border-radius: 4px;
+}
+
+.markdown-code-block::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.markdown-code-block::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.markdown-code-block code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+    color: #24292e;
+    white-space: pre;
+    display: block;
+    min-width: fit-content;
+}
+
+/* Inline code */
+.markdown-inline-code {
+    background-color: rgba(175, 184, 193, 0.2);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #e83e8c;
+}
+
+/* Text formatting */
+.markdown-bold {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.markdown-italic {
+    font-style: italic;
+}
+
+/* Links */
+.markdown-link {
+    color: #0366d6;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.markdown-link:hover {
+    border-bottom-color: #0366d6;
+    text-decoration: none;
+}
+
+.markdown-link:visited {
+    color: #6f42c1;
+}
+
+/* Horizontal rule */
+.markdown-hr {
+    height: 0;
+    margin: 1.5em 0;
+    border: 0;
+    border-top: 1px solid #eaecef;
+}
+
+/* Blockquote (if needed in future) */
+.markdown-blockquote {
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+    margin: 1em 0;
+}
+
+/* Tables (if needed in future) */
+.markdown-table {
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+}
+
+.markdown-table th,
+.markdown-table td {
+    border: 1px solid #dfe2e5;
+    padding: 6px 13px;
+}
+
+.markdown-table th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+}
+
+.markdown-table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+/* Citation button styles */
+.citation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    margin: 2px 0px 2px 4px;
+    /* margin-top: 3px; */
+    background-color: #f4fcfc;
+    color: rgb(158, 193, 197);
+    border: none;
+    border-radius: 8px;
+    font-size: 0.7em;
+    font-weight: 500;
+    cursor: pointer;
+    vertical-align: top;
+    align-items: center;
+    min-width: 20px;
+    height: 20px;
+}
+
+.citation-button:hover {
+    background-color: #e8f9f9;
+}
+
+.citation-button:active {
+    background-color: #def8f8;
+}
+
+.citation-text {
+    color: #0366d6;
+    font-weight: 500;
+}
+
+.citation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    margin: 2px 0px 2px 4px;
+    background-color: #f4fcfc;
+    color: rgb(158, 193, 197);
+    border: none;
+    border-radius: 8px;
+    font-size: 0.7em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    vertical-align: top;
+    min-width: 20px;
+    height: 20px;
+    position: relative;
+}
+
+.citation-button:hover {
+    background-color: #e4f4f4;
+    color: rgb(67, 104, 108)
+}
+
+.citation-button:active {
+    background-color: #d8efef;
+}
+
+/* Citation button tooltip */
+.citation-button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(calc(-50% + var(--tooltip-offset, 0px))) translateY(-4px);
+    white-space: pre-line;
+    background: #ffffff;
+    color: #6a737d;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    width: 200px;
+    word-wrap: break-word;
+    word-break: break-word;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 1000;
+    box-shadow: 0 0px 10px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+.citation-button:hover::after {
+    opacity: 1;
+    transform: translateX(calc(-50% + var(--tooltip-offset, 0px))) translateY(0);
+}
+
+.citation-text {
+    font-weight: 500;
+    margin: 0 2px;
+}
+
+/* Math blocks */
+.markdown-math-block {
+    margin: 1em 0;
+    padding: 0.5em;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+}
+
+.markdown-math-block .katex {
+    font-size: 1.1em;
+}
+
+.markdown-math-block.markdown-math-error {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    padding: 0.5em;
+    font-family: monospace;
+    color: #c00;
+}
+
+/* Inline math */
+.markdown-inline-math {
+    display: inline-block;
+    margin: 0 0.1em;
+}
+
+.markdown-inline-math .katex {
+    font-size: 1em;
+}
+
+.markdown-inline-math.markdown-math-error {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    border-radius: 3px;
+    padding: 0.1em 0.3em;
+    font-family: monospace;
+    color: #c00;
+}
+

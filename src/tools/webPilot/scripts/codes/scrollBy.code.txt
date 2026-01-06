@@ -1,0 +1,2 @@
+(function() { try { const pixels = parseInt('{{pixels}}') || 0; window.scrollBy({ top: pixels, behavior: 'smooth' }); return { success: true, message: 'Scrolled by ' + pixels + ' pixels', scrollTop: window.pageYOffset || document.documentElement.scrollTop }; } catch(e) { return { success: false, error: 'Failed to scroll: ' + (e.message || String(e)) }; } })()
+

@@ -1,0 +1,151 @@
+{
+    "menu": {
+        "translate": "Übersetzen",
+        "ask": "Fragen",
+        "explain": "Erklären",
+        "modify": "Ändern"
+    },
+    "chat": {
+        "placeholder": "Geben Sie Ihre Frage ein...",
+        "initialMessage": "Wie kann ich Ihnen bei \"{{text}}\" helfen?",
+        "send": "Senden"
+    },
+    "alt": {
+        "translate": "Übersetzen",
+        "ask": "Fragen",
+        "explain": "Erklären",
+        "modify": "Ändern",
+        "send": "Senden"
+    },
+    "settings": {
+        "title": "Einstellungen",
+        "language": "Sprache",
+        "languageDescription": "Benutzeroberflächensprache auswählen",
+        "apiSettings": "API-Einstellungen",
+        "apiSettingsDescription": "API-Anbieter und Schlüssel konfigurieren",
+        "provider": "Anbieter:",
+        "apiKey": "API-Schlüssel:",
+        "apiKeyPlaceholder": "Geben Sie Ihren API-Schlüssel ein",
+        "wordSelection": "Wortauswahl",
+        "wordSelectionDescription": "Steuern, ob das Wortauswahlmenü aktiviert werden soll",
+        "enableWordSelection": "Wortauswahl aktivieren",
+        "wordSelectionEnabled": "Wortauswahl aktiviert",
+        "wordSelectionDisabled": "Wortauswahl deaktiviert",
+        "customMenuActions": "Benutzerdefiniertes Wortauswahlmenü",
+        "noMenuActions": "Keine Menüfunktion ausgewählt",
+        "availableMenuActionsTitle": "Verfügbare Funktionen:",
+        "noAvailableMenuActions": "Keine verfügbaren Funktionen",
+        "disabledAppsList": "Deaktivierte Apps-Liste",
+        "availableAppsTitle": "Apps, die die Wortauswahl ausgelöst haben:",
+        "noAvailableApps": "Keine Apps haben die Wortauswahl ausgelöst",
+        "noDisabledApps": "Keine deaktivierten Apps",
+        "verify": "Überprüfen",
+        "verifying": "Überprüfung...",
+        "verifiedSuccess": "Erfolgreich überprüft!",
+        "errorNoApiKey": "Bitte geben Sie einen API-Schlüssel ein",
+        "successVerified": "API-Schlüssel erfolgreich überprüft und gespeichert",
+        "errorSaveFailed": "Fehler beim Speichern der Einstellungen",
+        "errorVerificationFailed": "Überprüfung fehlgeschlagen",
+        "errorVerify": "Fehler beim Überprüfen des API-Schlüssels",
+        "errorAtLeastOneAction": "Mindestens eine Aktion muss beibehalten werden",
+        "save": "Speichern",
+        "saving": "Speichern..."
+    },
+    "conversation": {
+        "noConversations": "Noch keine Unterhaltungen",
+        "startNewConversation": "Chatten Sie gerne mit Slimory",
+        "newConversation": "Neue Unterhaltung"
+    },
+    "tooltip": {
+        "newChat": "Neuer Chat",
+        "minimize": "Minimieren",
+        "close": "Schließen"
+    },
+    "onboarding": {
+        "welcome": "Willkommen bei Slimory",
+        "next": "Weiter",
+        "previous": "Zurück",
+        "close": "Schließen",
+        "complete": "Abgeschlossen",
+        "verified": "Überprüft",
+        "step1": {
+            "title": "Sprache auswählen",
+            "description": "Bitte wählen Sie Ihre bevorzugte Benutzeroberflächensprache"
+        },
+        "step2": {
+            "title": "API-Schlüssel konfigurieren",
+            "description": "Bitte wählen Sie einen API-Anbieter und geben Sie Ihren API-Schlüssel ein. Nach der Überprüfung können Sie zum nächsten Schritt fortfahren."
+        },
+        "step3": {
+            "title": "Textauswahlmenü",
+            "description": "Wenn Sie Text auswählen, erscheint automatisch ein Menü, mit dem Sie Übersetzungs-, Frage-Antwort- oder Erklärungsfunktionen auswählen können.",
+            "demoText": "Dies ist ein Beispieltext. Wählen Sie ihn aus, um das Menü anzuzeigen.",
+            "instruction": "Sehen Sie sich die Animation an, um zu erfahren, wie Sie die Textauswahlfunktion verwenden"
+        },
+        "step4": {
+            "title": "Tastenkombination",
+            "description": "Sie können Tastenkombinationen verwenden, um schnell die Chat-Oberfläche zu öffnen.",
+            "hint": "Drücken Sie Strg + Leertaste, um die Chat-Oberfläche zu öffnen"
+        }
+    },
+    "tray": {
+        "chat": "Chat           ",
+        "settings": "Einstellungen",
+        "quit": "Beenden"
+    },
+    "tools": {
+        "searchKeywords": "Suche nach Schlüsselwörtern: {{keywords}}",
+        "searchCompleted": "Suche abgeschlossen",
+        "webSearch": {
+            "searching": "Suche: {{query}}",
+            "foundResults": "{{count}} Suchergebnisse gefunden",
+            "browseUrls": "Durchsuchen von Inhalten aus {{count}} URLs",
+            "fetching": "Abrufen [{{current}}/{{total}}]: {{url}}",
+            "completed": "Abgeschlossen [{{current}}/{{total}}]: {{url}}",
+            "fetchCompleted": "Abgeschlossen: {{success}}/{{total}} erfolgreich"
+        },
+        "webPilot": {
+            "navigate": "{{url}} besuchen",
+            "extractPageContent": "Seiteninhalt analysieren",
+            "search": "{{query}} suchen",
+            "clickElement": "Element {{targetName}} anklicken",
+            "fillInput": "Eingabe ausfüllen: {{value}}",
+            "waitForElement": "Auf Element {{targetName}} warten",
+            "selectOption": "Option auswählen: {{value}}",
+            "scrollToBottom": "Zum Ende scrollen",
+            "scrollToTop": "Zum Anfang scrollen",
+            "scrollBy": "Seite scrollen: {{pixels}} px",
+            "executing": "Ausführen: {{operationName}}",
+            "visitingUrl": "{{url}} besuchen ({{current}}/{{max}} Muster extrahiert)",
+            "completedGenerated": "Abgeschlossen: {{count}} Operationen generiert",
+            "generationFailed": "Generierung fehlgeschlagen: {{error}}",
+            "analyzingSearch": "Suchfunktionalität für {{domain}} analysieren...",
+            "generatingSearchCode": "Suchoperationscode generieren...",
+            "executingOperations": "Operationen auf {{domain}} ausführen",
+            "firstTimeExploring": "Erstmaliger Besuch von {{domain}}, erkunden...",
+            "generationFailedUsingCommon": "Operationen-Generierung fehlgeschlagen, verwende allgemeine Operationen: {{error}}",
+            "pageContentExtracted": "[Seiteninhalt extrahiert]",
+            "operationsSuccessful": "Operationen erfolgreich",
+            "executionFailed": "Ausführung fehlgeschlagen: {{error}}",
+            "error": "Fehler: {{error}}",
+            "generateScriptAndExecute": "Skript generieren und ausführen",
+            "deleteScript": "Skript löschen",
+            "cancel": "Abbrechen",
+            "delete": "Löschen",
+            "deleteFailed": "Löschen fehlgeschlagen: {{error}}",
+            "codeGeneration": "Code-Generierung",
+            "back": "Zurück",
+            "forward": "Vorwärts",
+            "reload": "Neu laden",
+            "effect": "Effekt",
+            "clearEffect": "Effekt löschen",
+            "noSavedScripts": "Keine gespeicherten Skripte",
+            "unnamedScript": "Unbenanntes Skript",
+            "saveCode": "Aktuellen Code speichern",
+            "saving": "Speichern...",
+            "saved": "Gespeichert",
+            "save": "Speichern"
+        }
+    }
+}
+

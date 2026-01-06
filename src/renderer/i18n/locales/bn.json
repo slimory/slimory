@@ -1,0 +1,151 @@
+{
+    "menu": {
+        "translate": "অনুবাদ",
+        "ask": "জিজ্ঞাসা করুন",
+        "explain": "ব্যাখ্যা করুন",
+        "modify": "পরিবর্তন করুন"
+    },
+    "chat": {
+        "placeholder": "আপনার প্রশ্ন লিখুন...",
+        "initialMessage": "\"{{text}}\" এর সাথে আমি কীভাবে আপনাকে সাহায্য করতে পারি?",
+        "send": "পাঠান"
+    },
+    "alt": {
+        "translate": "অনুবাদ",
+        "ask": "জিজ্ঞাসা করুন",
+        "explain": "ব্যাখ্যা করুন",
+        "modify": "পরিবর্তন করুন",
+        "send": "পাঠান"
+    },
+    "settings": {
+        "title": "সেটিংস",
+        "language": "ভাষা",
+        "languageDescription": "ইন্টারফেস ভাষা নির্বাচন করুন",
+        "apiSettings": "API সেটিংস",
+        "apiSettingsDescription": "API প্রদানকারী এবং কী কনফিগার করুন",
+        "provider": "প্রদানকারী:",
+        "apiKey": "API কী:",
+        "apiKeyPlaceholder": "আপনার API কী লিখুন",
+        "wordSelection": "শব্দ নির্বাচন",
+        "wordSelectionDescription": "নিয়ন্ত্রণ করুন যে শব্দ নির্বাচন মেনু সক্ষম করা হবে কিনা",
+        "enableWordSelection": "শব্দ নির্বাচন সক্ষম করুন",
+        "wordSelectionEnabled": "শব্দ নির্বাচন সক্ষম",
+        "wordSelectionDisabled": "শব্দ নির্বাচন অক্ষম",
+        "customMenuActions": "কাস্টম শব্দ নির্বাচন মেনু",
+        "noMenuActions": "কোন মেনু ফাংশন নির্বাচন করা হয়নি",
+        "availableMenuActionsTitle": "উপলব্ধ ফাংশন:",
+        "noAvailableMenuActions": "কোন উপলব্ধ ফাংশন নেই",
+        "disabledAppsList": "অক্ষম অ্যাপের তালিকা",
+        "availableAppsTitle": "অ্যাপগুলি যা শব্দ নির্বাচন ট্রিগার করেছে:",
+        "noAvailableApps": "কোনও অ্যাপ শব্দ নির্বাচন ট্রিগার করেনি",
+        "noDisabledApps": "কোন অক্ষম অ্যাপ নেই",
+        "verify": "যাচাই করুন",
+        "verifying": "যাচাই করা হচ্ছে...",
+        "verifiedSuccess": "সফলভাবে যাচাই করা হয়েছে!",
+        "errorNoApiKey": "অনুগ্রহ করে একটি API কী লিখুন",
+        "successVerified": "API কী যাচাই করা হয়েছে এবং সফলভাবে সংরক্ষণ করা হয়েছে",
+        "errorSaveFailed": "সেটিংস সংরক্ষণ করতে ব্যর্থ",
+        "errorVerificationFailed": "যাচাই ব্যর্থ",
+        "errorVerify": "API কী যাচাই করতে ত্রুটি",
+        "errorAtLeastOneAction": "অন্তত একটি অ্যাকশন রাখতে হবে",
+        "save": "সংরক্ষণ করুন",
+        "saving": "সংরক্ষণ করা হচ্ছে..."
+    },
+    "conversation": {
+        "noConversations": "এখনও কোনও কথোপকথন নেই",
+        "startNewConversation": "Slimory এর সাথে চ্যাট করতে নির্দ্বিধায়",
+        "newConversation": "নতুন কথোপকথন"
+    },
+    "tooltip": {
+        "newChat": "নতুন চ্যাট",
+        "minimize": "ছোট করুন",
+        "close": "বন্ধ করুন"
+    },
+    "onboarding": {
+        "welcome": "Slimory এ স্বাগতম",
+        "next": "পরবর্তী",
+        "previous": "পূর্ববর্তী",
+        "close": "বন্ধ করুন",
+        "complete": "সম্পূর্ণ করুন",
+        "verified": "যাচাই করা হয়েছে",
+        "step1": {
+            "title": "ভাষা নির্বাচন করুন",
+            "description": "অনুগ্রহ করে আপনার পছন্দের ইন্টারফেস ভাষা নির্বাচন করুন"
+        },
+        "step2": {
+            "title": "API কী কনফিগার করুন",
+            "description": "অনুগ্রহ করে একটি API প্রদানকারী নির্বাচন করুন এবং আপনার API কী লিখুন। যাচাইকরণের পর, আপনি পরবর্তী ধাপে যেতে পারেন।"
+        },
+        "step3": {
+            "title": "টেক্সট নির্বাচন মেনু",
+            "description": "আপনি যখন টেক্সট নির্বাচন করবেন, একটি মেনু স্বয়ংক্রিয়ভাবে উপস্থিত হবে, যা আপনাকে অনুবাদ, প্রশ্ন-উত্তর, বা ব্যাখ্যা বৈশিষ্ট্য নির্বাচন করতে দেবে।",
+            "demoText": "এটি একটি নমুনা টেক্সট। মেনু দেখতে এটি নির্বাচন করুন।",
+            "instruction": "টেক্সট নির্বাচন বৈশিষ্ট্য কীভাবে ব্যবহার করবেন তা শিখতে অ্যানিমেশন দেখুন"
+        },
+        "step4": {
+            "title": "কীবোর্ড শর্টকাট",
+            "description": "আপনি চ্যাট ইন্টারফেস দ্রুত খুলতে কীবোর্ড শর্টকাট ব্যবহার করতে পারেন।",
+            "hint": "চ্যাট ইন্টারফেস খুলতে Ctrl + Space চাপুন"
+        }
+    },
+    "tray": {
+        "chat": "চ্যাট           ",
+        "settings": "সেটিংস",
+        "quit": "প্রস্থান"
+    },
+    "tools": {
+        "searchKeywords": "কীওয়ার্ড অনুসন্ধান করুন: {{keywords}}",
+        "searchCompleted": "অনুসন্ধান সম্পন্ন হয়েছে",
+        "webSearch": {
+            "searching": "অনুসন্ধান করা হচ্ছে: {{query}}",
+            "foundResults": "{{count}} টি অনুসন্ধান ফলাফল পাওয়া গেছে",
+            "browseUrls": "{{count}} টি URL থেকে বিষয়বস্তু ব্রাউজ করা হচ্ছে",
+            "fetching": "আনয়ন করা হচ্ছে [{{current}}/{{total}}]: {{url}}",
+            "completed": "সম্পন্ন [{{current}}/{{total}}]: {{url}}",
+            "fetchCompleted": "সম্পন্ন: {{success}}/{{total}} সফল"
+        },
+        "webPilot": {
+            "navigate": "{{url}} পরিদর্শন করুন",
+            "extractPageContent": "পৃষ্ঠার বিষয়বস্তু বিশ্লেষণ করুন",
+            "search": "{{query}} অনুসন্ধান করুন",
+            "clickElement": "উপাদান {{targetName}} এ ক্লিক করুন",
+            "fillInput": "ইনপুট পূরণ করুন: {{value}}",
+            "waitForElement": "উপাদান {{targetName}} এর জন্য অপেক্ষা করুন",
+            "selectOption": "বিকল্প নির্বাচন করুন: {{value}}",
+            "scrollToBottom": "নীচে স্ক্রোল করুন",
+            "scrollToTop": "শীর্ষে স্ক্রোল করুন",
+            "scrollBy": "পৃষ্ঠা স্ক্রোল করুন: {{pixels}} px",
+            "executing": "নির্বাহ করা হচ্ছে: {{operationName}}",
+            "visitingUrl": "{{url}} পরিদর্শন করা হচ্ছে ({{current}}/{{max}} প্যাটার্ন নিষ্কাশন করা হয়েছে)",
+            "completedGenerated": "সম্পন্ন: {{count}} টি অপারেশন তৈরি করা হয়েছে",
+            "generationFailed": "জেনারেশন ব্যর্থ: {{error}}",
+            "analyzingSearch": "{{domain}} এর জন্য অনুসন্ধান কার্যকারিতা বিশ্লেষণ করা হচ্ছে...",
+            "generatingSearchCode": "অনুসন্ধান অপারেশন কোড তৈরি করা হচ্ছে...",
+            "executingOperations": "{{domain}} এ অপারেশন নির্বাহ করা হচ্ছে",
+            "firstTimeExploring": "প্রথমবার {{domain}} পরিদর্শন করা হচ্ছে, অন্বেষণ করা হচ্ছে...",
+            "generationFailedUsingCommon": "অপারেশন জেনারেশন ব্যর্থ, সাধারণ অপারেশন ব্যবহার করা হচ্ছে: {{error}}",
+            "pageContentExtracted": "[পৃষ্ঠার বিষয়বস্তু নিষ্কাশন করা হয়েছে]",
+            "operationsSuccessful": "অপারেশন সফল",
+            "executionFailed": "নির্বাহ ব্যর্থ: {{error}}",
+            "error": "ত্রুটি: {{error}}",
+            "generateScriptAndExecute": "স্ক্রিপ্ট তৈরি করুন এবং নির্বাহ করুন",
+            "deleteScript": "স্ক্রিপ্ট মুছুন",
+            "cancel": "বাতিল করুন",
+            "delete": "মুছুন",
+            "deleteFailed": "মুছে ফেলা ব্যর্থ: {{error}}",
+            "codeGeneration": "কোড জেনারেশন",
+            "back": "পিছনে",
+            "forward": "সামনে",
+            "reload": "পুনরায় লোড করুন",
+            "effect": "প্রভাব",
+            "clearEffect": "প্রভাব সাফ করুন",
+            "noSavedScripts": "কোনো সংরক্ষিত স্ক্রিপ্ট নেই",
+            "unnamedScript": "নামবিহীন স্ক্রিপ্ট",
+            "saveCode": "বর্তমান কোড সংরক্ষণ করুন",
+            "saving": "সংরক্ষণ করা হচ্ছে...",
+            "saved": "সংরক্ষিত",
+            "save": "সংরক্ষণ করুন"
+        }
+    }
+}
+

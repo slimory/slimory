@@ -1,0 +1,133 @@
+(function() {
+    try {
+        const mainContent = document.body;
+        let html = '';
+        if (mainContent) {
+            // Helper function to check if element is visible
+            function isElementVisible(el) {
+                if (!el || el.nodeType !== 1) return false; // Not an element node
+                if (el.hasAttribute('hidden')) return false;
+                if (el.getAttribute('aria-hidden') === 'true') return false;
+                try {
+                    const style = window.getComputedStyle(el);
+                    if (style.display === 'none') return false;
+                    if (style.visibility === 'hidden') return false;
+                    if (style.opacity === '0') return false;
+                    if (parseFloat(style.width) === 0 && parseFloat(style.height) === 0) {
+                        // Only remove if both are 0 and element has no content
+                        if (!el.textContent || el.textContent.trim().length === 0) {
+                            return false;
+                        }
+                    }
+                } catch(e) {
+                    // If can't compute style, assume visible
+                }
+                return true;
+            }
+            
+            // Collect visibility info from original DOM before cloning
+            const visibilityMap = new Map();
+            const allElements = mainContent.querySelectorAll('*');
+            allElements.forEach(el => {
+                visibilityMap.set(el, isElementVisible(el));
+            });
+            visibilityMap.set(mainContent, isElementVisible(mainContent));
+            
+            // Clone the element
+            const clone = mainContent.cloneNode(true);
+            
+            // Remove invisible elements from clone based on original visibility
+            // We need to match cloned elements with original elements
+            const originalElementsArray = [mainContent, ...Array.from(allElements)];
+            const cloneElementsArray = [clone, ...Array.from(clone.querySelectorAll('*'))];
+            
+            const elementsToRemove = [];
+            cloneElementsArray.forEach((cloneEl, idx) => {
+                const originalEl = originalElementsArray[idx];
+                if (originalEl && !visibilityMap.get(originalEl) && !originalEl.hasAttribute('data-webpilot-executed')) {
+                    elementsToRemove.push(cloneEl);
+                }
+            });
+            
+            elementsToRemove.forEach(el => {
+                if (el.parentNode) {
+                    el.parentNode.removeChild(el);
+                }
+            });
+            
+            // Remove script tags except those injected by WebPilot
+            clone.querySelectorAll('script').forEach(s => {
+                if (!s.hasAttribute('data-webpilot-executed')) {
+                    s.remove();
+                }
+            });
+            clone.querySelectorAll('style').forEach(s => s.remove());
+            clone.querySelectorAll('svg').forEach(s => s.remove());
+            
+            // Remove all attributes except class and id
+            const allCloneElements = clone.querySelectorAll('*');
+            allCloneElements.forEach(el => {
+                const attrs = Array.from(el.attributes);
+                attrs.forEach(attr => {
+                    if (attr.name !== 'class' && attr.name !== 'id' && attr.name !== 'href' && attr.name !== 'data-webpilot-executed') {
+                        try {
+                            el.removeAttribute(attr.name);
+                        } catch(e) {}
+                    }
+                });
+            });
+            // Also clean attributes on the root element
+            const rootAttrs = Array.from(clone.attributes);
+            rootAttrs.forEach(attr => {
+                if (attr.name !== 'class' && attr.name !== 'id' && attr.name !== 'href' && attr.name !== 'data-webpilot-executed') {
+                    clone.removeAttribute(attr.name);
+                }
+            });
+            
+            // Remove empty tags without class, id, or href attributes
+            // Process from deepest to shallowest to avoid index issues
+            const allElementsForCleanup = Array.from(clone.querySelectorAll('*'));
+            // Reverse to process from deepest elements first
+            allElementsForCleanup.reverse().forEach(el => {
+                const hasClass = el.hasAttribute('class');
+                const hasId = el.hasAttribute('id');
+                const hasHref = el.hasAttribute('href');
+                const innerHTML = el.innerHTML || '';
+                const innerText = el.innerText || el.textContent || '';
+                
+                // Remove if no important attributes and both innerHTML and innerText are empty
+                if (!hasId && !hasHref && !hasClass &&
+                    innerHTML.trim().length === 0 && innerText.trim().length === 0) {
+                    if (el.parentNode) {
+                        el.parentNode.removeChild(el);
+                    }
+                }
+            });
+            
+            html = clone.innerHTML || '';
+        }
+        // Remove HTML comments
+        // Decode HTML entities and escape sequences, then remove comments
+        html = html.replace(/\\x3C/g, '<').replace(/&lt;/g, '<').replace(/\\x3E/g, '>').replace(/&gt;/g, '>');
+        html = html.replace(/<!--[\s\S]*?-->/g, '');
+        // Remove <br> tags
+        html = html.replace(/<br\s*\/?>/gi, '');
+        // Remove whitespace between tags (preserve whitespace inside text nodes)
+        html = html.replace(/>\s+</g, '><');
+        html = html.replace(/href="[^"]{300,}"/g, '')
+        const maxHtmlLength = 100000;
+        const originalLength = html.length;
+        if (html.length > maxHtmlLength) {
+            html = html.substring(0, maxHtmlLength) + '... [truncated]';
+        }
+        return {
+            success: true,
+            url: window.location.href,
+            title: document.querySelector('h1')?.innerText || document.title || '',
+            html: html,
+            htmlLength: originalLength
+        };
+    } catch(e) {
+        return { success: false, error: 'Failed: ' + (e.message || String(e)) };
+    }
+})()

@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "esnext",
+        "lib": [
+            "ES2020"
+        ],
+        "skipLibCheck": true,
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "outDir": "dist-electron",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "composite": true,
+        "typeRoots": ["./node_modules/@types", "./src/types"],
+        "types": ["node"]
+    },
+    "include": [
+        "src/main/**/*",
+        "src/preload/**/*",
+        "src/services/**/*",
+        "src/config/**/*",
+        "src/types/**/*",
+        "scripts/tests/**/*", 
+        "src/tools",
+        "src/prompts/**/*.ts"
+    ]
+}

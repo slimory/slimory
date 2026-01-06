@@ -1,0 +1,230 @@
+.asr-panel {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+}
+
+.asr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.asr-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.asr-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-ready {
+    color: #10b981;
+    font-weight: 500;
+}
+
+.status-loading {
+    color: #6b7280;
+}
+
+.asr-error {
+    padding: 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #dc2626;
+    margin-bottom: 24px;
+}
+
+.asr-controls {
+    margin-bottom: 24px;
+}
+
+.recording-mode-selector {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.recording-mode-selector label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.recording-mode-selector input[type="radio"] {
+    cursor: pointer;
+}
+
+.asr-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.microphone-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.microphone-btn:hover:not(:disabled) {
+    background: #5BCFD1;
+    color: rgb(18, 33, 33);
+}
+
+.microphone-btn.recording {
+    background: #ef4444;
+    animation: pulse 1s infinite;
+}
+
+.microphone-btn:disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.microphone-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.microphone-icon.recording {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.upload-btn {
+    padding: 12px 24px;
+    background: #f1f3f4;
+    color: #000000;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.upload-btn:hover:not(:disabled) {
+    background: #e5e7eb;
+}
+
+.upload-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.transcribing-status {
+    padding: 16px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.transcription-result {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+}
+
+.transcription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.transcription-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.transcription-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.transcription-actions button {
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.transcription-actions button:hover {
+    background: #f3f4f6;
+}
+
+.transcription-text {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 8px;
+    line-height: 1.6;
+    font-size: 15px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-bottom: 16px;
+}
+
+.transcription-segments {
+    margin-top: 16px;
+}
+
+.transcription-segments h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.segment {
+    display: flex;
+    gap: 12px;
+    padding: 8px;
+    margin-bottom: 8px;
+    background: #ffffff;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.segment-time {
+    color: #6b7280;
+    font-weight: 500;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.segment-text {
+    flex: 1;
+}
+

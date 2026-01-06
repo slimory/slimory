@@ -1,0 +1,151 @@
+{
+    "menu": {
+        "translate": "Traduire",
+        "ask": "Demander",
+        "explain": "Expliquer",
+        "modify": "Modifier"
+    },
+    "chat": {
+        "placeholder": "Entrez votre question...",
+        "initialMessage": "Comment puis-je vous aider avec \"{{text}}\" ?",
+        "send": "Envoyer"
+    },
+    "alt": {
+        "translate": "Traduire",
+        "ask": "Demander",
+        "explain": "Expliquer",
+        "modify": "Modifier",
+        "send": "Envoyer"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "language": "Langue",
+        "languageDescription": "Sélectionner la langue de l'interface",
+        "apiSettings": "Paramètres API",
+        "apiSettingsDescription": "Configurer le fournisseur API et la clé",
+        "provider": "Fournisseur :",
+        "apiKey": "Clé API :",
+        "apiKeyPlaceholder": "Entrez votre clé API",
+        "wordSelection": "Sélection de mots",
+        "wordSelectionDescription": "Contrôler si le menu de sélection de mots doit être activé",
+        "enableWordSelection": "Activer la sélection de mots",
+        "wordSelectionEnabled": "Sélection de mots activée",
+        "wordSelectionDisabled": "Sélection de mots désactivée",
+        "customMenuActions": "Menu de sélection de mots personnalisé",
+        "noMenuActions": "Aucune fonction de menu sélectionnée",
+        "availableMenuActionsTitle": "Fonctions disponibles:",
+        "noAvailableMenuActions": "Aucune fonction disponible",
+        "disabledAppsList": "Liste des applications désactivées",
+        "availableAppsTitle": "Applications qui ont déclenché la sélection de mots:",
+        "noAvailableApps": "Aucune application n'a déclenché la sélection de mots",
+        "noDisabledApps": "Aucune application désactivée",
+        "verify": "Vérifier",
+        "verifying": "Vérification...",
+        "verifiedSuccess": "Vérifié avec succès !",
+        "errorNoApiKey": "Veuillez entrer une clé API",
+        "successVerified": "Clé API vérifiée et enregistrée avec succès",
+        "errorSaveFailed": "Échec de l'enregistrement des paramètres",
+        "errorVerificationFailed": "Échec de la vérification",
+        "errorVerify": "Erreur lors de la vérification de la clé API",
+        "errorAtLeastOneAction": "Au moins une action doit être conservée",
+        "save": "Enregistrer",
+        "saving": "Enregistrement..."
+    },
+    "conversation": {
+        "noConversations": "Aucune conversation pour le moment",
+        "startNewConversation": "N'hésitez pas à discuter avec Slimory",
+        "newConversation": "Nouvelle conversation"
+    },
+    "tooltip": {
+        "newChat": "Nouveau Chat",
+        "minimize": "Réduire",
+        "close": "Fermer"
+    },
+    "onboarding": {
+        "welcome": "Bienvenue sur Slimory",
+        "next": "Suivant",
+        "previous": "Précédent",
+        "close": "Fermer",
+        "complete": "Terminer",
+        "verified": "Vérifié",
+        "step1": {
+            "title": "Sélectionner la langue",
+            "description": "Veuillez sélectionner votre langue d'interface préférée"
+        },
+        "step2": {
+            "title": "Configurer la clé API",
+            "description": "Veuillez sélectionner un fournisseur API et entrer votre clé API. Après vérification, vous pourrez passer à l'étape suivante."
+        },
+        "step3": {
+            "title": "Menu de sélection de texte",
+            "description": "Lorsque vous sélectionnez du texte, un menu apparaîtra automatiquement, vous permettant de choisir les fonctionnalités de traduction, questions-réponses ou explication.",
+            "demoText": "Ceci est un texte d'exemple. Sélectionnez-le pour voir le menu.",
+            "instruction": "Regardez l'animation pour apprendre à utiliser la fonction de sélection de texte"
+        },
+        "step4": {
+            "title": "Raccourci clavier",
+            "description": "Vous pouvez utiliser des raccourcis clavier pour ouvrir rapidement l'interface de chat.",
+            "hint": "Appuyez sur Ctrl + Espace pour ouvrir l'interface de chat"
+        }
+    },
+    "tray": {
+        "chat": "Chat           ",
+        "settings": "Paramètres",
+        "quit": "Quitter"
+    },
+    "tools": {
+        "searchKeywords": "Rechercher les mots-clés : {{keywords}}",
+        "searchCompleted": "Recherche terminée",
+        "webSearch": {
+            "searching": "Recherche : {{query}}",
+            "foundResults": "{{count}} résultats de recherche trouvés",
+            "browseUrls": "Parcourir le contenu de {{count}} URLs",
+            "fetching": "Récupération [{{current}}/{{total}}] : {{url}}",
+            "completed": "Terminé [{{current}}/{{total}}] : {{url}}",
+            "fetchCompleted": "Terminé : {{success}}/{{total}} réussis"
+        },
+        "webPilot": {
+            "navigate": "Visiter {{url}}",
+            "extractPageContent": "Analyser le contenu de la page",
+            "search": "Rechercher {{query}}",
+            "clickElement": "Cliquer sur l'élément {{targetName}}",
+            "fillInput": "Remplir l'entrée : {{value}}",
+            "waitForElement": "Attendre l'élément {{targetName}}",
+            "selectOption": "Sélectionner l'option : {{value}}",
+            "scrollToBottom": "Faire défiler vers le bas",
+            "scrollToTop": "Faire défiler vers le haut",
+            "scrollBy": "Faire défiler la page : {{pixels}} px",
+            "executing": "Exécution : {{operationName}}",
+            "visitingUrl": "Visite de {{url}} ({{current}}/{{max}} modèles extraits)",
+            "completedGenerated": "Terminé : {{count}} opérations générées",
+            "generationFailed": "Génération échouée : {{error}}",
+            "analyzingSearch": "Analyse de la fonctionnalité de recherche pour {{domain}}...",
+            "generatingSearchCode": "Génération du code d'opération de recherche...",
+            "executingOperations": "Exécution d'opérations sur {{domain}}",
+            "firstTimeExploring": "Première visite de {{domain}}, exploration...",
+            "generationFailedUsingCommon": "Génération d'opérations échouée, utilisation d'opérations communes : {{error}}",
+            "pageContentExtracted": "[Contenu de page extrait]",
+            "operationsSuccessful": "Opérations réussies",
+            "executionFailed": "Exécution échouée : {{error}}",
+            "error": "Erreur : {{error}}",
+            "generateScriptAndExecute": "Générer le script et exécuter",
+            "deleteScript": "Supprimer le Script",
+            "cancel": "Annuler",
+            "delete": "Supprimer",
+            "deleteFailed": "Échec de la suppression : {{error}}",
+            "codeGeneration": "Génération de Code",
+            "back": "Retour",
+            "forward": "Avancer",
+            "reload": "Recharger",
+            "effect": "Effet",
+            "clearEffect": "Effacer l'effet",
+            "noSavedScripts": "Aucun script enregistré",
+            "unnamedScript": "Script sans nom",
+            "saveCode": "Enregistrer le code actuel",
+            "saving": "Enregistrement...",
+            "saved": "Enregistré",
+            "save": "Enregistrer"
+        }
+    }
+}
+
