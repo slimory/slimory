@@ -148,7 +148,10 @@ app.whenReady().then(async () => {
     // selection
     startTextMonitor(
         async (selectedText: string, downX: number, downY: number, upX: number, upY: number) => {
-            if (menuWindow && selectedText) {
+            if (!menuWindow || menuWindow.isDestroyed()) {
+                menuWindow = createMenuWindow(getCurrentLanguage())
+            }
+            if (selectedText) {
                 console.log('show menu window')
                 menuDirection = await showMenuWindow(menuWindow, selectedText, downX, downY, upX, upY, getCurrentLanguage())
             }
