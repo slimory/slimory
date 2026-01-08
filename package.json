@@ -1,6 +1,7 @@
 {
     "name": "slimory",
     "version": "0.1.0",
+    "author": "Slimory",
     "description": "An open-source, free AI desktop assistant for Windows that works in any application.",
     "main": "dist-electron/main/main.js",
     "type": "module",
@@ -39,7 +40,6 @@
         "chat",
         "llm"
     ],
-    "author": "",
     "license": "MIT",
     "devDependencies": {
         "@types/katex": "0.16.7",
