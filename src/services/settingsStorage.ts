@@ -32,7 +32,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     'moonshot': {
         provider: 'Moonshot',
         baseUrl: 'https://api.moonshot.cn/v1',
-        model: 'kimi-k2-0905-preview'
+        model: 'kimi-k2.5'
     },
     'openai': {
         provider: 'Openai',
@@ -48,6 +48,26 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
         provider: 'Gemini',
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
         model: 'gemini-2.5-flash'
+    },
+    'groq': {
+        provider: 'Groq',
+        baseUrl: 'https://api.groq.com/openai/v1',
+        model: 'llama-3.3-70b-versatile'
+    },
+    'fireworks': {
+        provider: 'Fireworks AI',
+        baseUrl: 'https://api.fireworks.ai/inference/v1',
+        model: 'accounts/fireworks/models/llama-v3p1-70b-instruct'
+    },
+    'minimax': {
+        provider: 'Minimax',
+        baseUrl: 'https://api.minimaxi.com/v1',
+        model: 'MiniMax-M2.5'
+    },
+    'openrouter': {
+        provider: 'OpenRouter',
+        baseUrl: 'https://openrouter.ai/api/v1',
+        model: 'deepseek/deepseek-chat'
     }
 }
 
