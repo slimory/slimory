@@ -27,6 +27,7 @@ let tray: Tray | null = null
 let menuWindow: BrowserWindow | null = null
 let chatWindow: BrowserWindow | null = null
 let messageWindow: BrowserWindow | null = null
+let messageWindowSessionId: string = ''  // Track current message window session to ignore stale streaming chunks
 let fullChatWindow: BrowserWindow | null = null
 let onboardingWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
@@ -665,7 +666,9 @@ ipcMain.on('menu-action', async (_event, data: { action: string; text: string })
                 content: `${data.text}`
             }]
             const direction = showMessageWindow(messageWindow, menuBounds, menuDirection)
-            messageWindow.webContents.send('show-message', messageData, data.text, true, 'translate', direction)
+            // Generate new session ID for this message window to filter stale streaming chunks
+            messageWindowSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
+            messageWindow.webContents.send('show-message', messageData, data.text, true, 'translate', direction, messageWindowSessionId)
         }
     } else if (data.action === 'explain') {
         if (messageWindow && menuWindow) {
@@ -679,7 +682,9 @@ ipcMain.on('menu-action', async (_event, data: { action: string; text: string })
                 content: `${data.text}`
             }]
             const direction = showMessageWindow(messageWindow, menuBounds, menuDirection)
-            messageWindow.webContents.send('show-message', messageData, data.text, true, 'explain', direction)
+            // Generate new session ID for this message window to filter stale streaming chunks
+            messageWindowSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
+            messageWindow.webContents.send('show-message', messageData, data.text, true, 'explain', direction, messageWindowSessionId)
         }
     } else if (data.action === 'modify') {
         // Open chat window for modify action
@@ -706,6 +711,21 @@ ipcMain.on('menu-action', async (_event, data: { action: string; text: string })
                 isChatShowOnce = true
             }
             hideMenuWindow(menuWindow, getCurrentLanguage())
+        }
+    } else if (data.action.startsWith('custom:')) {
+        if (messageWindow && menuWindow) {
+            if (!messageWindow || messageWindow.isDestroyed()) {
+                messageWindow = createMessageWindow()
+            }
+            const menuBounds = menuWindow.getBounds()
+            const messageData = [{
+                role: 'user' as const,
+                content: data.text
+            }]
+            const direction = showMessageWindow(messageWindow, menuBounds, menuDirection)
+            // Generate new session ID for this message window to filter stale streaming chunks
+            messageWindowSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
+            messageWindow.webContents.send('show-message', messageData, data.text, true, data.action, direction, messageWindowSessionId)
         }
     }
     
@@ -900,21 +920,23 @@ ipcMain.on('open-message-window', (_event, messageData: { role: 'user' | 'assist
     if (!messageWindow || messageWindow.isDestroyed()) {
         messageWindow = createMessageWindow()
     }
+    // Generate new session ID for this message window to filter stale streaming chunks
+    messageWindowSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
     if (command === 'ask') {
         if (chatWindow && messageWindow) {
             if (messageWindow.isVisible()) {
-                messageWindow.webContents.send('show-message', messageData, selectedText, false, command, menuDirection)
+                messageWindow.webContents.send('show-message', messageData, selectedText, false, command, menuDirection, messageWindowSessionId)
             } else {
                 let direction = showChatMessageWindow(messageWindow, chatWindow, menuDirection)
-                messageWindow.webContents.send('show-message', messageData, selectedText, true, command, direction)
+                messageWindow.webContents.send('show-message', messageData, selectedText, true, command, direction, messageWindowSessionId)
             }
         }
     } else if (command === 'modify') {
         if (chatWindow) {
             const bounds = chatWindow.getBounds()
-            let direction = showMessageWindow(messageWindow, bounds, menuDirection)
+            let direction = showMessageWindow(messageWindow, bounds, menuDirection, true)
             hideChatWindow(chatWindow)
-            messageWindow.webContents.send('show-message', messageData, selectedText, true, command, direction)
+            messageWindow.webContents.send('show-message', messageData, selectedText, true, command, direction, messageWindowSessionId)
         }
     }
 })
@@ -1029,6 +1051,25 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                 },
                 false
             )
+        } else if (command.startsWith('custom:')) {
+            // Handle custom action
+            const customActionId = command.replace('custom:', '')
+            const customActions = settingsStorage.getCustomActions()
+            const customAction = customActions.find((a: any) => a.id === customActionId)
+            if (customAction) {
+                // Build the prompt by replacing {{text}} with selected text
+                const prompt = customAction.prompt.replace(/\{\{text\}\}/g, selectedText)
+                // Custom action: prompt is already composed in the message content
+                streamingResponse = chatService.generateStreamingResponse(
+                    [{
+                        role: 'system',
+                        content: prompt
+                    }, ...messages],
+                    undefined,
+                    {},
+                    false
+                )
+            }
         } else if (command == 'chat') {
             // Initialize streaming state for this conversation
             const streamingState: StreamingState = {
@@ -1109,16 +1150,26 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                         originalMessages: streamingState.generatedMessages,
                         conversationId: conversationId
                     })
-                } else if ((command == 'translate' || command == 'explain' || command == 'ask' || command == 'modify') && 
+                } else if ((command == 'translate' || command == 'explain' || command == 'ask' || command == 'modify' || command.startsWith('custom:')) &&
                     messageWindow && !messageWindow.isDestroyed() && messageWindow.isVisible()) {
-                    messageWindow.webContents.send('chat-response-chunk', chunk)
+                    messageWindow.webContents.send('chat-response-chunk', { ...chunk, sessionId: conversationId })
                 }
             }
         }
         
         const streamingState = streamingStates.get(conversationId)
-        // Update selected text for 'modify' command after streaming completes
-        if (command === 'modify' && assistantContent) {
+        // Check if this is a custom action with canEdit
+        let isCustomCanEdit = false
+        if (command.startsWith('custom:') && assistantContent) {
+            const customActionId = command.replace('custom:', '')
+            const customActions = settingsStorage.getCustomActions()
+            const customAction = customActions.find((a: any) => a.id === customActionId)
+            if (customAction?.canEdit) {
+                isCustomCanEdit = true
+            }
+        }
+        // Update selected text for 'modify' command (or custom action with canEdit) after streaming completes
+        if ((command === 'modify' || isCustomCanEdit) && assistantContent) {
             try {
                 setForegroundWindowFocus()
                 if (selectedText.endsWith('\r') && !assistantContent.endsWith('\r')) {
@@ -1129,6 +1180,7 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                 console.log('clickInfo', clickInfo)
                 const direction = (clickInfo.mouseDownX < clickInfo.mouseUpX || clickInfo.mouseDownY < clickInfo.mouseUpY) ? 'toEnd' : 'toStart'
                 console.log('direction', direction)
+                assistantContent = assistantContent.replace(/<think>.*?<\/think>[\r\n]{1,2}/gs, '');
                 await updateSelectedTextByCSharp(selectedText, assistantContent, direction)
                 if (chatWindow && !chatWindow.isDestroyed() && chatWindow.isVisible()) {
                     chatWindow.webContents.send('chat-response-complete', {
@@ -1420,7 +1472,7 @@ ipcMain.handle('open-external-url', async (_event, url: string) => {
     }
 })
 
-ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string) => {
+ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string, model?: string) => {
     try {
         const providerConfig = settingsStorage.getProviderConfig(provider)
         if (!providerConfig) {
@@ -1436,6 +1488,10 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string)
         // Load existing settings to preserve language and wordSelectionEnabled
         const existingSettings = settingsStorage.loadSettings()
         const currentLanguage = getCurrentLanguage()
+        // Get user-defined custom model (from param or storage), fallback to default model
+        const customModel = (model && model.trim()) ? model : providerConfig.model
+        const modelToUse = customModel || providerConfig.model
+        console.log('model to use', modelToUse)
 
         // Update language and wordSelectionEnabled if needed
         if (existingSettings) {
@@ -1443,7 +1499,7 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string)
                 provider: provider,
                 apiKey: apiKey,
                 baseUrl: providerConfig.baseUrl,
-                model: providerConfig.model,
+                model: modelToUse,
                 language: existingSettings.language || currentLanguage || 'zh',
                 wordSelectionEnabled: existingSettings.wordSelectionEnabled !== false
             }
@@ -1456,7 +1512,7 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string)
         chatService.updateConfig({
             baseUrl: providerConfig.baseUrl,
             apiKey: apiKey,
-            model: providerConfig.model
+            model: modelToUse
         })
 
         // Update tray menu after settings are saved
@@ -1469,27 +1525,55 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string)
     }
 })
 
-ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string) => {
+ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string, model?: string) => {
     try {
         const providerConfig = settingsStorage.getProviderConfig(provider)
         if (!providerConfig) {
             return { success: false, error: 'Invalid provider' }
         }
 
+        // Use custom model if provided, otherwise use default model
+        const verifyModel = model && model.trim() ? model : providerConfig.model
+
         // Create a temporary chat service instance for verification
         const tempChatService = new ChatService({
             baseUrl: providerConfig.baseUrl,
             apiKey: apiKey,
-            model: providerConfig.model
+            model: verifyModel
         })
 
-        // Send a simple test message
+        // Send a simple test message with tool call to verify model supports tools
         const testMessages = [{ role: 'user' as const, content: 'Hello' }]
         let hasResponse = false
         let errorMessage = ''
 
+        // Define a simple test tool to verify tool calling capability
+        const testTools = [{
+            type: 'function' as const,
+            function: {
+                name: 'test_tool',
+                description: 'A simple test tool',
+                parameters: {
+                    type: 'object',
+                    properties: {
+                        test_param: {
+                            type: 'string',
+                            description: 'Test parameter'
+                        }
+                    },
+                    required: ['test_param']
+                }
+            }
+        }]
+
         try {
-            for await (const chunk of tempChatService.generateStreamingResponse(testMessages, undefined, undefined, false)) {
+            for await (const chunk of tempChatService.generateStreamingResponseWithTools(
+                testMessages,
+                undefined,
+                undefined,
+                undefined,
+                testTools
+            )) {
                 if (chunk.done) {
                     hasResponse = true
                     break
@@ -1507,6 +1591,20 @@ ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string
         }
 
         if (hasResponse) {
+            // Verification successful, update the main chatService with the verified model
+            // Only update if this is the current provider or if no provider is set yet
+            const currentProvider = settingsStorage.getCurrentProvider()
+            if (!currentProvider || currentProvider === provider) {
+                // Get the provider config for baseUrl
+                const providerConfigForUpdate = settingsStorage.getProviderConfig(provider)
+                if (providerConfigForUpdate) {
+                    chatService.updateConfig({
+                        baseUrl: providerConfigForUpdate.baseUrl,
+                        apiKey: apiKey,
+                        model: verifyModel
+                    })
+                }
+            }
             return { success: true }
         } else {
             return { success: false, error: 'No response received' }
@@ -1567,6 +1665,7 @@ ipcMain.handle('get-language', () => {
 
 ipcMain.handle('save-language', async (_event, language: string) => {
     try {
+        console.log('save lang')
         const currentSettings = settingsStorage.loadSettings()
         if (!currentSettings) {
             // If no settings exist, create a minimal settings object
@@ -1578,7 +1677,8 @@ ipcMain.handle('save-language', async (_event, language: string) => {
                 language: language,
                 wordSelectionEnabled: true
             }
-            settingsStorage.saveSettings(settings)
+            const saved = settingsStorage.saveSettings(settings)
+            console.log('save result', saved)
             // Update tray menu with new language
             updateTrayMenu()
             // Notify fullChatWindow to update language
@@ -1731,6 +1831,55 @@ ipcMain.handle('save-menu-actions', async (_event, actions: string[]) => {
     }
 })
 
+ipcMain.handle('get-custom-actions', async () => {
+    try {
+        const actions = settingsStorage.getCustomActions()
+        return { success: true, actions }
+    } catch (error) {
+        console.error('Error getting custom actions:', error)
+        return { success: false, actions: [], error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('add-custom-action', async (_event, action: any) => {
+    try {
+        const saved = settingsStorage.addCustomAction(action)
+        if (!saved) {
+            return { success: false, error: 'Failed to add custom action' }
+        }
+        return { success: true }
+    } catch (error) {
+        console.error('Error adding custom action:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('update-custom-action', async (_event, id: string, updated: any) => {
+    try {
+        const saved = settingsStorage.updateCustomAction(id, updated)
+        if (!saved) {
+            return { success: false, error: 'Failed to update custom action' }
+        }
+        return { success: true }
+    } catch (error) {
+        console.error('Error updating custom action:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('delete-custom-action', async (_event, id: string) => {
+    try {
+        const saved = settingsStorage.deleteCustomAction(id)
+        if (!saved) {
+            return { success: false, error: 'Failed to delete custom action' }
+        }
+        return { success: true }
+    } catch (error) {
+        console.error('Error deleting custom action:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
 ipcMain.handle('get-provider-api-key', async (_event, provider: string) => {
     try {
         const apiKey = settingsStorage.getProviderApiKey(provider)
@@ -1742,6 +1891,22 @@ ipcMain.handle('get-provider-api-key', async (_event, provider: string) => {
     } catch (error) {
         console.error('Error getting provider API key:', error)
         return { success: false, apiKey: null, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('get-provider-model', async (_event, provider: string) => {
+    try {
+        const model = settingsStorage.getProviderModel(provider)
+        if (model) {
+            return { success: true, model: model }
+        } else {
+            // Return default model from provider config
+            const providerConfig = settingsStorage.getProviderConfig(provider)
+            return { success: true, model: providerConfig?.model || null }
+        }
+    } catch (error) {
+        console.error('Error getting provider model:', error)
+        return { success: false, model: null, error: error instanceof Error ? error.message : String(error) }
     }
 })
 
@@ -1759,17 +1924,20 @@ ipcMain.handle('set-current-provider', async (_event, provider: string) => {
             return { success: false, error: 'Invalid provider' }
         }
 
+        // Get user-defined custom model, fallback to default model
+        const customModel = settingsStorage.getProviderModel(provider)
+        const modelToUse = customModel || providerConfig.model
+
         // Set as current provider
         const setResult = settingsStorage.setCurrentProvider(provider)
         if (!setResult) {
             return { success: false, error: 'Failed to set current provider' }
         }
-
-        // Update chat service configuration
+        // Update chat service configuration with custom model if available
         chatService.updateConfig({
             baseUrl: providerConfig.baseUrl,
             apiKey: apiKey,
-            model: providerConfig.model
+            model: modelToUse
         })
 
         return { success: true }

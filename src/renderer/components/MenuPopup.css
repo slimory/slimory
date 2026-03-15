@@ -31,8 +31,13 @@
 
 .menu-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 0px;
     padding: 6px;
+    max-width: 480px;
+    /* max-height: 100px; */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .action-btn {

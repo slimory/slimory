@@ -4,6 +4,7 @@ import i18n from '../i18n'
 import './OnboardingPanel.css'
 import closeIcon from '../assets/icons/close.svg'
 import TagListSelector from './TagListSelector'
+import IconPicker, { getIconComponent } from './IconPicker'
 
 interface Provider {
     provider: string
@@ -30,6 +31,8 @@ const SettingsPanel = () => {
     const [selectedLanguage, setSelectedLanguage] = useState<string>('zh')
     const [selectedProvider, setSelectedProvider] = useState<string>('deepseek')
     const [apiKey, setApiKey] = useState<string>('')
+    const [model, setModel] = useState<string>('')
+    const [defaultModel, setDefaultModel] = useState<string>('')
     const [wordSelectionEnabled, setWordSelectionEnabled] = useState<boolean>(true)
     const [isVerifying, setIsVerifying] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
@@ -40,14 +43,24 @@ const SettingsPanel = () => {
     const [disabledApps, setDisabledApps] = useState<Array<{ name: string; displayName: string }>>([])
     const [menuActions, setMenuActions] = useState<Array<{ name: string; displayName: string }>>([])
     const [menuActionsError, setMenuActionsError] = useState<string | null>(null)
+
+    // Custom actions state
+    const [customActions, setCustomActions] = useState<Array<{ id: string; name: string; prompt: string; icon?: string; canEdit?: boolean }>>([])
+    const [isAddingCustomAction, setIsAddingCustomAction] = useState(false)
+    const [editingCustomActionId, setEditingCustomActionId] = useState<string | null>(null)
+    const [customActionName, setCustomActionName] = useState('')
+    const [customActionPrompt, setCustomActionPrompt] = useState('')
+    const [customActionCanEdit, setCustomActionCanEdit] = useState(false)
+    const [customActionIcon, setCustomActionIcon] = useState<string>('Type')
     
     // Available menu actions - use useMemo to update when language changes
     const availableMenuActions: Array<{ name: string; displayName: string }> = useMemo(() => [
         { name: 'explain', displayName: t('menu.explain') },
         { name: 'translate', displayName: t('menu.translate') },
         { name: 'ask', displayName: t('menu.ask') },
-        { name: 'modify', displayName: t('menu.modify') }
-    ], [t, selectedLanguage])
+        { name: 'modify', displayName: t('menu.modify') },
+        ...customActions.map(ca => ({ name: `custom:${ca.id}`, displayName: ca.name }))
+    ], [t, selectedLanguage, customActions])
     
     // Provider dropdown state
     const [isProviderDropdownOpen, setIsProviderDropdownOpen] = useState(false)
@@ -83,6 +96,19 @@ const SettingsPanel = () => {
                     } else {
                         setApiKey('')
                     }
+                    // Load model for current provider
+                    const provider = providersResult.providers?.find((p: Provider) => p.provider === currentProvider)
+                    const defaultModelValue = provider?.model || ''
+                    setDefaultModel(defaultModelValue)
+
+                    const modelResult = await window.electronAPI.getProviderModel(currentProvider)
+                    if (modelResult.success && modelResult.model) {
+                        // User has custom model, set it to model input
+                        setModel(modelResult.model)
+                    } else {
+                        // No custom model, leave model empty
+                        setModel('')
+                    }
                     setWordSelectionEnabled(allSettingsResult.settings?.wordSelectionEnabled !== false)
                     const language = allSettingsResult.settings?.language || 'zh'
                     setSelectedLanguage(language)
@@ -100,11 +126,24 @@ const SettingsPanel = () => {
                     setDisabledApps(disabledAppsResult.apps || [])
                 }
                 
+                // Load custom actions (before menu actions, so we can resolve display names)
+                let loadedCustomActions: Array<{ id: string; name: string; prompt: string }> = []
+                const customActionsResult = await window.electronAPI.getCustomActions()
+                if (customActionsResult.success) {
+                    loadedCustomActions = customActionsResult.actions || []
+                    setCustomActions(loadedCustomActions)
+                }
+
                 // Load menu actions - use i18n.t() to ensure correct language after changeLanguage
                 const menuActionsResult = await window.electronAPI.getMenuActions()
                 if (menuActionsResult.success) {
                     const actions = menuActionsResult.actions || ['explain', 'translate', 'ask']
                     const actionItems = actions.map(action => {
+                        if (action.startsWith('custom:')) {
+                            const customId = action.replace('custom:', '')
+                            const ca = loadedCustomActions.find(a => a.id === customId)
+                            return { name: action, displayName: ca?.name || action }
+                        }
                         return { name: action, displayName: i18n.t('menu.' + action) }
                     })
                     setMenuActions(actionItems)
@@ -122,7 +161,14 @@ const SettingsPanel = () => {
     // Update menuActions display names when language changes
     useEffect(() => {
         if (menuActions.length > 0) {
-            setMenuActions(prev => prev.map(action => ({ ...action, displayName: t('menu.' + action.name) })))
+            setMenuActions(prev => prev.map(action => {
+                if (action.name.startsWith('custom:')) {
+                    const customId = action.name.replace('custom:', '')
+                    const ca = customActions.find(a => a.id === customId)
+                    return { ...action, displayName: ca?.name || action.name }
+                }
+                return { ...action, displayName: t('menu.' + action.name) }
+            }))
         }
     }, [selectedLanguage, t])
 
@@ -148,7 +194,14 @@ const SettingsPanel = () => {
     const handleLanguageSelect = async (language: string) => {
         setSelectedLanguage(language)
         i18n.changeLanguage(language)
-        setMenuActions(prev => prev.map(action => ({ ...action, displayName: t('menu.' + action.name) })))
+        setMenuActions(prev => prev.map(action => {
+            if (action.name.startsWith('custom:')) {
+                const customId = action.name.replace('custom:', '')
+                const ca = customActions.find(a => a.id === customId)
+                return { ...action, displayName: ca?.name || action.name }
+            }
+            return { ...action, displayName: t('menu.' + action.name) }
+        }))
         closeLanguageDropdown()
         if (window.electronAPI) {
             // Auto save language
@@ -171,35 +224,34 @@ const SettingsPanel = () => {
             setError(t('settings.errorNoApiKey'))
             return
         }
-        
+
         setIsVerifying(true)
         setError(null)
         setSuccess(null)
-        
+
         try {
-            const verifyResult = await window.electronAPI.verifyApiKey(selectedProvider, apiKey)
+            // Pass model to verify (use custom model if provided, otherwise undefined to use default)
+            const verifyModel = model.trim() ? model : undefined
+            const verifyResult = await window.electronAPI.verifyApiKey(selectedProvider, apiKey, verifyModel)
             if (!verifyResult.success) {
-                setError(t('settings.errorVerificationFailed'))
+                // Show the full error message from the server
+                const errorMsg = verifyResult.error || t('settings.errorVerificationFailed')
+                setError(errorMsg)
                 setIsVerifying(false)
                 return
             }
-            
-            // Save the API key for this provider
-            const saveResult = await window.electronAPI.saveSettings(selectedProvider, apiKey)
+
+            // Save the API key and model for this provider (saveSettings already updates chatService)
+            const saveModel = model.trim() ? model : undefined
+            const saveResult = await window.electronAPI.saveSettings(selectedProvider, apiKey, saveModel)
             if (!saveResult.success) {
                 setError(t('settings.errorSaveFailed'))
                 setIsVerifying(false)
                 return
             }
-            
-            // After successful verification, set this provider as current provider
-            const setProviderResult = await window.electronAPI.setCurrentProvider(selectedProvider)
-            if (setProviderResult.success) {
-                setSuccess(t('settings.verifiedSuccess'))
-            } else {
-                setSuccess(t('settings.verifiedSuccess'))
-            }
-            
+
+            setSuccess(t('settings.verifiedSuccess'))
+
             // Keep API key in input for user to see it's saved (masked as password type)
             // Don't clear it so user knows it's saved
         } catch (err) {
@@ -242,7 +294,7 @@ const SettingsPanel = () => {
         closeProviderDropdown()
         setError(null)
         setSuccess(null)
-        
+
         // Load API key for the selected provider
         if (window.electronAPI) {
             try {
@@ -250,12 +302,26 @@ const SettingsPanel = () => {
                 if (result.success && result.apiKey) {
                     // Show the API key in the input (will be masked as password type)
                     setApiKey(result.apiKey)
-                    
+
                     // If this provider has a verified API key, set it as current provider
                     await window.electronAPI.setCurrentProvider(provider)
                 } else {
                     // No API key for this provider, clear the input
                     setApiKey('')
+                }
+
+                // Load model for the selected provider
+                const providerInfo = availableProviders.find(p => p.provider === provider)
+                const defaultModelValue = providerInfo?.model || ''
+                setDefaultModel(defaultModelValue)
+
+                const modelResult = await window.electronAPI.getProviderModel(provider)
+                if (modelResult.success && modelResult.model) {
+                    // User has custom model, set it to model input
+                    setModel(modelResult.model)
+                } else {
+                    // No custom model, leave model empty
+                    setModel('')
                 }
             } catch (error) {
                 console.error('Error loading provider API key:', error)
@@ -384,12 +450,66 @@ const SettingsPanel = () => {
         }
     }
 
-    // Auto-hide error and success messages after 5 seconds
+    const handleAddCustomAction = async () => {
+        if (!customActionName.trim() || !customActionPrompt.trim()) return
+        const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
+        const newAction = { id, name: customActionName.trim(), prompt: customActionPrompt.trim(), icon: customActionIcon, canEdit: customActionCanEdit }
+        const result = await window.electronAPI.addCustomAction(newAction)
+        if (result.success) {
+            setCustomActions([...customActions, newAction])
+            setCustomActionName('')
+            setCustomActionPrompt('')
+            setCustomActionCanEdit(false)
+            setCustomActionIcon('Type')
+            setIsAddingCustomAction(false)
+        }
+    }
+
+    const handleEditCustomAction = async () => {
+        if (!editingCustomActionId || !customActionName.trim() || !customActionPrompt.trim()) return
+        const updated = { name: customActionName.trim(), prompt: customActionPrompt.trim(), icon: customActionIcon, canEdit: customActionCanEdit }
+        const result = await window.electronAPI.updateCustomAction(editingCustomActionId, updated)
+        if (result.success) {
+            setCustomActions(customActions.map(a => a.id === editingCustomActionId ? { ...a, ...updated } : a))
+            setCustomActionName('')
+            setCustomActionPrompt('')
+            setCustomActionCanEdit(false)
+            setCustomActionIcon('Type')
+            setEditingCustomActionId(null)
+        }
+    }
+
+    const handleDeleteCustomAction = async (id: string) => {
+        const result = await window.electronAPI.deleteCustomAction(id)
+        if (result.success) {
+            setCustomActions(customActions.filter(a => a.id !== id))
+        }
+    }
+
+    const startEditCustomAction = (action: { id: string; name: string; prompt: string; icon?: string; canEdit?: boolean }) => {
+        setEditingCustomActionId(action.id)
+        setCustomActionName(action.name)
+        setCustomActionPrompt(action.prompt)
+        setCustomActionCanEdit(action.canEdit || false)
+        setCustomActionIcon(action.icon || 'Type')
+        setIsAddingCustomAction(false)
+    }
+
+    const cancelCustomActionForm = () => {
+        setIsAddingCustomAction(false)
+        setEditingCustomActionId(null)
+        setCustomActionName('')
+        setCustomActionPrompt('')
+        setCustomActionCanEdit(false)
+        setCustomActionIcon('Type')
+    }
+
+    // Auto-hide error and success messages after 15 seconds
     useEffect(() => {
         if (error) {
             const timer = setTimeout(() => {
                 setError(null)
-            }, 3000)
+            }, 15000)
             return () => clearTimeout(timer)
         }
     }, [error])
@@ -518,17 +638,8 @@ const SettingsPanel = () => {
                                 
                                 <div className="api-key-form">
                                     <div className="form-group">
-                                        <label htmlFor="provider-select" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span>{t('settings.provider')}</span>
-                                            {(error || success) && (
-                                                <span style={{
-                                                    fontSize: '14px',
-                                                    color: error ? '#dc2626' : '#5bd18e',
-                                                    fontWeight: 'normal'
-                                                }}>
-                                                    {error || success}
-                                                </span>
-                                            )}
+                                        <label htmlFor="provider-select">
+                                            {t('settings.provider')}
                                         </label>
                                         <div className="provider-dropdown" style={{ position: 'relative' }}>
                                             <button
@@ -592,7 +703,7 @@ const SettingsPanel = () => {
                                                 className="onboarding-button primary"
                                                 onClick={handleVerifyApiKey}
                                                 disabled={isVerifying || !apiKey.trim()}
-                                                style={{ 
+                                                style={{
                                                     whiteSpace: 'nowrap',
                                                     minWidth: '80px'
                                                 }}
@@ -601,6 +712,64 @@ const SettingsPanel = () => {
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Model Configuration */}
+                                    <div className="form-group">
+                                        <label htmlFor="model-input">{t('settings.model') || 'Model'}</label>
+                                        <input
+                                            id="model-input"
+                                            type="text"
+                                            value={model}
+                                            onChange={(e) => setModel(e.target.value)}
+                                            // placeholder={defaultModel ? t('settings.modelPlaceholder', { defaultModel }) : ''}
+                                            placeholder={defaultModel ? t('settings.defaultModelHint', { defaultModel }) : ''}
+                                            className="onboarding-input"
+                                            disabled={isVerifying}
+                                            style={{ flex: 1 }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !isVerifying && apiKey.trim()) {
+                                                    handleVerifyApiKey()
+                                                }
+                                            }}
+                                        />
+                                        {/* {defaultModel && (
+                                            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                                                {t('settings.defaultModelHint', { defaultModel })}
+                                            </p>
+                                        )} */}
+                                    </div>
+
+                                    {/* Error Message Display */}
+                                    {error && (
+                                        <div style={{
+                                            padding: '12px',
+                                            background: '#fef2f2',
+                                            border: '1px solid #fecaca',
+                                            borderRadius: '8px',
+                                            marginTop: '0px',
+                                            marginBottom: '8px'
+                                        }}>
+                                            <p style={{ color: '#dc2626', fontSize: '14px', margin: 0, wordBreak: 'break-word' }}>
+                                                {error}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Success Message Display */}
+                                    {success && (
+                                        <div style={{
+                                            padding: '12px',
+                                            background: '#f0fdf4',
+                                            border: '1px solid #bbf7d0',
+                                            borderRadius: '8px',
+                                            marginTop: '0px',
+                                            marginBottom: '8px'
+                                        }}>
+                                            <p style={{ color: '#16a34a', fontSize: '14px', margin: 0 }}>
+                                                {success}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -711,6 +880,215 @@ const SettingsPanel = () => {
                                         return []
                                     }}
                                 />
+
+                                {/* Custom Actions */}
+                                <div style={{ marginBottom: '26px', marginTop: '26px' }}>
+                                    <div className="step-title">{t('settings.customActions')}</div>
+                                    <p className="step-description">{t('settings.customActionsDescription')}</p>
+
+                                    {customActions.length === 0 && !isAddingCustomAction && !editingCustomActionId && (
+                                        <p style={{ fontSize: '13px', color: '#9ca3af', marginTop: '8px' }}>{t('settings.noCustomActions')}</p>
+                                    )}
+
+                                    {customActions.map(action => {
+                                        const ActionIcon = getIconComponent(action.icon || 'Type')
+                                        if (editingCustomActionId === action.id) {
+                                            // Render edit form at the position of the action being edited
+                                            return (
+                                                <div key={action.id} style={{
+                                                    marginTop: '8px', padding: '12px',
+                                                    background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb'
+                                                }}>
+                                                    <div style={{ marginBottom: '10px', marginTop: '4px' }}>
+                                                        <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                                                            {t('settings.customActionIcon')}
+                                                        </label>
+                                                        <IconPicker value={customActionIcon} onChange={setCustomActionIcon} />
+                                                    </div>
+                                                    <div style={{ marginBottom: '10px' }}>
+                                                        <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                                                            {t('settings.customActionName')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={customActionName}
+                                                            onChange={e => setCustomActionName(e.target.value)}
+                                                            placeholder={t('settings.customActionNamePlaceholder')}
+                                                            style={{
+                                                                width: '100%', padding: '6px 10px', fontSize: '13px',
+                                                                border: '1px solid #d1d5db', borderRadius: '6px', outline: 'none',
+                                                                boxSizing: 'border-box'
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ marginBottom: '10px' }}>
+                                                        <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                                                            {t('settings.customActionPrompt')}
+                                                        </label>
+                                                        <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 6px 0' }}>
+                                                            {t('settings.customActionPromptHint')}
+                                                        </p>
+                                                        <textarea
+                                                            value={customActionPrompt}
+                                                            onChange={e => setCustomActionPrompt(e.target.value)}
+                                                            placeholder={t('settings.customActionPromptPlaceholder')}
+                                                            rows={3}
+                                                            style={{
+                                                                width: '100%', padding: '6px 10px', fontSize: '13px',
+                                                                border: '1px solid #d1d5db', borderRadius: '6px', outline: 'none',
+                                                                resize: 'vertical', fontFamily: 'inherit',
+                                                                boxSizing: 'border-box'
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ marginBottom: '8px' }}>
+                                                        <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={customActionCanEdit}
+                                                                onChange={e => setCustomActionCanEdit(e.target.checked)}
+                                                                style={{ marginRight: '6px', cursor: 'pointer' }}
+                                                            />
+                                                            {t('settings.customActionCanEdit')}
+                                                        </label>
+                                                        <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0 0px' }}>
+                                                            {t('settings.customActionCanEditHint')}
+                                                        </p>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                                        <button onClick={cancelCustomActionForm} style={{
+                                                            padding: '6px 12px', fontSize: '13px', border: '1px solid #d1d5db',
+                                                            borderRadius: '6px', background: '#fff', cursor: 'pointer', color: '#374151'
+                                                        }}>{t('settings.cancel')}</button>
+                                                        <button
+                                                            onClick={handleEditCustomAction}
+                                                            disabled={!customActionName.trim() || !customActionPrompt.trim()}
+                                                            style={{
+                                                                padding: '6px 12px', fontSize: '13px', border: 'none',
+                                                                borderRadius: '6px', background: customActionName.trim() && customActionPrompt.trim() ? '#10b981' : '#d1d5db',
+                                                                cursor: customActionName.trim() && customActionPrompt.trim() ? 'pointer' : 'default',
+                                                                color: '#fff'
+                                                            }}
+                                                        >{t('settings.save')}</button>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                        return (
+                                            <div key={action.id} className="custom-action-item" style={{
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                padding: '8px 12px', marginTop: '8px',
+                                                background: '#ffffff', borderRadius: '8px', border: '1px solid #e5e7eb'
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+                                                    <ActionIcon size={16} style={{ flexShrink: 0, color: '#6b7280' }} />
+                                                    <div style={{ minWidth: 0 }}>
+                                                        <div style={{ fontSize: '14px', fontWeight: 500, color: '#374151' }}>{action.name}</div>
+                                                        <div style={{ fontSize: '12px', color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{action.prompt}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="custom-action-buttons" style={{ display: 'flex', gap: '4px', marginLeft: '8px', flexShrink: 0 }}>
+                                                    <button onClick={() => startEditCustomAction(action)} style={{
+                                                        padding: '4px 8px', fontSize: '12px', border: '1px solid #d1d5db',
+                                                        borderRadius: '6px', background: '#fff', cursor: 'pointer', color: '#374151'
+                                                    }}>{t('settings.edit')}</button>
+                                                    <button onClick={() => handleDeleteCustomAction(action.id)} style={{
+                                                        padding: '4px 8px', fontSize: '12px', border: '1px solid #fca5a5',
+                                                        borderRadius: '6px', background: '#fff', cursor: 'pointer', color: '#ef4444'
+                                                    }}>{t('settings.delete')}</button>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+
+                                    {isAddingCustomAction && (
+                                        <div style={{
+                                            marginTop: '8px', padding: '12px',
+                                            background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb'
+                                        }}>
+                                            <div style={{ marginBottom: '10px', marginTop: '4px' }}>
+                                                <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                                                    {t('settings.customActionIcon')}
+                                                </label>
+                                                <IconPicker value={customActionIcon} onChange={setCustomActionIcon} />
+                                            </div>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                                                    {t('settings.customActionName')}
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={customActionName}
+                                                    onChange={e => setCustomActionName(e.target.value)}
+                                                    placeholder={t('settings.customActionNamePlaceholder')}
+                                                    style={{
+                                                        width: '100%', padding: '6px 10px', fontSize: '13px',
+                                                        border: '1px solid #d1d5db', borderRadius: '6px', outline: 'none',
+                                                        boxSizing: 'border-box'
+                                                    }}
+                                                />
+                                            </div>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
+                                                    {t('settings.customActionPrompt')}
+                                                </label>
+                                                <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 6px 0' }}>
+                                                    {t('settings.customActionPromptHint')}
+                                                </p>
+                                                <textarea
+                                                    value={customActionPrompt}
+                                                    onChange={e => setCustomActionPrompt(e.target.value)}
+                                                    placeholder={t('settings.customActionPromptPlaceholder')}
+                                                    rows={3}
+                                                    style={{
+                                                        width: '100%', padding: '6px 10px', fontSize: '13px',
+                                                        border: '1px solid #d1d5db', borderRadius: '6px', outline: 'none',
+                                                        resize: 'vertical', fontFamily: 'inherit',
+                                                        boxSizing: 'border-box'
+                                                    }}
+                                                />
+                                            </div>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={customActionCanEdit}
+                                                        onChange={e => setCustomActionCanEdit(e.target.checked)}
+                                                        style={{ marginRight: '6px', cursor: 'pointer' }}
+                                                    />
+                                                    {t('settings.customActionCanEdit')}
+                                                </label>
+                                                <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0 0px' }}>
+                                                    {t('settings.customActionCanEditHint')}
+                                                </p>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                                <button onClick={cancelCustomActionForm} style={{
+                                                    padding: '6px 12px', fontSize: '13px', border: '1px solid #d1d5db',
+                                                    borderRadius: '6px', background: '#fff', cursor: 'pointer', color: '#374151'
+                                                }}>{t('settings.cancel')}</button>
+                                                <button
+                                                    onClick={handleAddCustomAction}
+                                                    disabled={!customActionName.trim() || !customActionPrompt.trim()}
+                                                    style={{
+                                                        padding: '6px 12px', fontSize: '13px', border: 'none',
+                                                        borderRadius: '6px', background: customActionName.trim() && customActionPrompt.trim() ? '#10b981' : '#d1d5db',
+                                                        cursor: customActionName.trim() && customActionPrompt.trim() ? 'pointer' : 'default',
+                                                        color: '#fff'
+                                                    }}
+                                                >{t('settings.save')}</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {!isAddingCustomAction && !editingCustomActionId && (
+                                        <button onClick={() => { setIsAddingCustomAction(true); setCustomActionName(''); setCustomActionPrompt(''); setCustomActionCanEdit(false) }} style={{
+                                            marginTop: '8px', padding: '6px 12px', fontSize: '13px',
+                                            border: '1px dashed #d1d5db', borderRadius: '6px',
+                                            background: '#fff', cursor: 'pointer', color: '#6b7280', width: '100%'
+                                        }}>+ {t('settings.addCustomAction')}</button>
+                                    )}
+                                </div>
                             </div>
                             <br></br>
                             <br></br>

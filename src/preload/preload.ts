@@ -41,7 +41,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     // Message window APIs
-    onShowMessage: (callback: (event: any, messages: { role: 'user' | 'assistant'; content: string }[], selectedText: string, isNewSession: boolean, command: string, direction: string) => void) => {
+    onShowMessage: (callback: (event: any, messages: { role: 'user' | 'assistant'; content: string }[], selectedText: string, isNewSession: boolean, command: string, direction: string, sessionId?: string) => void) => {
         ipcRenderer.on('show-message', callback)
     },
     onHideMessage: (callback: (event: any) => void) => {
@@ -78,7 +78,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     stopChatResponse: (conversationId: string = 'default') => {
         return ipcRenderer.invoke('stop-chat-response', conversationId)
     },
-    onChatResponseChunk: (callback: (event: any, chunk: { content: string; done: boolean; finishReason?: string }) => void) => {
+    onChatResponseChunk: (callback: (event: any, chunk: { content: string; done: boolean; finishReason?: string; sessionId?: string }) => void) => {
         // Remove all existing listeners first to prevent duplicates
         ipcRenderer.removeAllListeners('chat-response-chunk')
         ipcRenderer.on('chat-response-chunk', callback)
@@ -121,9 +121,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     
     // Settings APIs
     getAllSettings: () => ipcRenderer.invoke('get-all-settings'),
-    saveSettings: (provider: string, apiKey: string) => ipcRenderer.invoke('save-settings', provider, apiKey),
-    verifyApiKey: (provider: string, apiKey: string) => ipcRenderer.invoke('verify-api-key', provider, apiKey),
+    saveSettings: (provider: string, apiKey: string, model?: string) => ipcRenderer.invoke('save-settings', provider, apiKey, model),
+    verifyApiKey: (provider: string, apiKey: string, model?: string) => ipcRenderer.invoke('verify-api-key', provider, apiKey, model),
     getAvailableProviders: () => ipcRenderer.invoke('get-available-providers'),
+    getProviderModel: (provider: string) => ipcRenderer.invoke('get-provider-model', provider),
     getProviderApiKey: (provider: string) => ipcRenderer.invoke('get-provider-api-key', provider),
     setCurrentProvider: (provider: string) => ipcRenderer.invoke('set-current-provider', provider),
     saveWordSelectionEnabled: (enabled: boolean) => ipcRenderer.invoke('save-word-selection-enabled', enabled),
@@ -134,6 +135,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     removeDisabledApp: (app: string) => ipcRenderer.invoke('remove-disabled-app', app),
     getMenuActions: () => ipcRenderer.invoke('get-menu-actions'),
     saveMenuActions: (actions: string[]) => ipcRenderer.invoke('save-menu-actions', actions),
+    getCustomActions: () => ipcRenderer.invoke('get-custom-actions'),
+    addCustomAction: (action: any) => ipcRenderer.invoke('add-custom-action', action),
+    updateCustomAction: (id: string, updated: any) => ipcRenderer.invoke('update-custom-action', id, updated),
+    deleteCustomAction: (id: string) => ipcRenderer.invoke('delete-custom-action', id),
     
     // Onboarding APIs
     closeOnboardingWindow: () => ipcRenderer.send('close-onboarding-window'),

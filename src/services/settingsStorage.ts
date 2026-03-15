@@ -8,11 +8,20 @@ export interface ProviderConfig {
     model: string
 }
 
+export interface CustomAction {
+    id: string
+    name: string
+    prompt: string
+    icon?: string
+    canEdit?: boolean
+}
+
 export interface Settings {
     provider: string
     apiKey: string
     baseUrl: string
     model: string
+    customModel?: string
     language?: string
     wordSelectionEnabled?: boolean
 }
@@ -100,7 +109,8 @@ export class SettingsStorage {
                     language: 'zh',
                     wordSelectionEnabled: true,
                     providers: {},
-                    menuActions: ['explain', 'translate', 'ask']
+                    menuActions: ['explain', 'translate', 'ask'],
+                    customActions: []
                 }
             }
 
@@ -116,7 +126,8 @@ export class SettingsStorage {
                     providers: {},
                     availableApps: saved.availableApps || [],
                     disabledApps: saved.disabledApps || [],
-                    menuActions: saved.menuActions || ['explain', 'translate', 'ask']
+                    menuActions: saved.menuActions || ['explain', 'translate', 'ask'],
+                    customActions: []
                 }
                 
                 if (saved.apiKey) {
@@ -136,7 +147,8 @@ export class SettingsStorage {
                 providers: saved.providers || {},
                 availableApps: saved.availableApps || [],
                 disabledApps: saved.disabledApps || [],
-                menuActions: saved.menuActions || ['explain', 'translate', 'ask']
+                menuActions: saved.menuActions || ['explain', 'translate', 'ask'],
+                customActions: saved.customActions || []
             }
         } catch (error) {
             console.error('Error loading all settings:', error)
@@ -147,7 +159,8 @@ export class SettingsStorage {
                 providers: {},
                 availableApps: [],
                 disabledApps: [],
-                menuActions: ['explain', 'translate', 'ask']
+                menuActions: ['explain', 'translate', 'ask'],
+                customActions: []
             }
         }
     }
@@ -190,6 +203,7 @@ export class SettingsStorage {
                     const encryptedKey = safeStorage.encryptString(settings.apiKey)
                     allSettings.providers[settings.provider] = {
                         apiKey: encryptedKey.toString('base64'),
+                        model: settings.model,
                         encrypted: true
                     }
                 } else {
@@ -197,6 +211,7 @@ export class SettingsStorage {
                     console.warn('⚠️ Encryption not available, storing API key in plain text')
                     allSettings.providers[settings.provider] = {
                         apiKey: settings.apiKey,
+                        model: settings.model,
                         encrypted: false
                     }
                 }
@@ -215,31 +230,47 @@ export class SettingsStorage {
     saveProviderApiKey(provider: string, apiKey: string): boolean {
         try {
             const allSettings = this.loadAllSettings()
-            
+
             if (!allSettings.providers) {
                 allSettings.providers = {}
             }
-            
+
+            const providerConfig = allSettings.providers[provider] || {}
             // Encrypt API key if encryption is available
             if (this.isEncryptionAvailable && apiKey) {
                 const encryptedKey = safeStorage.encryptString(apiKey)
-                allSettings.providers[provider] = {
-                    apiKey: encryptedKey.toString('base64'),
-                    encrypted: true
-                }
+                providerConfig.apiKey = encryptedKey.toString('base64')
+                providerConfig.encrypted = true
             } else if (apiKey) {
                 // Fallback: store as plain text
                 console.warn('⚠️ Encryption not available, storing API key in plain text')
-                allSettings.providers[provider] = {
-                    apiKey: apiKey,
-                    encrypted: false
-                }
+                providerConfig.apiKey = apiKey
+                providerConfig.encrypted = false
             }
 
+            allSettings.providers[provider] = providerConfig
             return this.saveAllSettings(allSettings)
         } catch (error) {
             console.error('Error saving provider API key:', error)
             return false
+        }
+    }
+
+    /**
+     * Get model for a specific provider
+     */
+    getProviderModel(provider: string): string | null {
+        try {
+            const allSettings = this.loadAllSettings()
+
+            if (!allSettings.providers || !allSettings.providers[provider]) {
+                return null
+            }
+
+            return allSettings.providers[provider].model || null
+        } catch (error) {
+            console.error('Error getting provider model:', error)
+            return null
         }
     }
 
@@ -302,23 +333,25 @@ export class SettingsStorage {
         try {
             const allSettings = this.loadAllSettings()
             const currentProvider = allSettings.currentProvider || ''
-            
-            if (!currentProvider) {
-                return null
-            }
 
-            const providerConfig = this.getProviderConfig(currentProvider)
-            if (!providerConfig) {
-                return null
-            }
+            // if (!currentProvider) {
+            //     return null
+            // }
 
-            const apiKey = this.getProviderApiKey(currentProvider) || ''
+            const providerConfig = currentProvider? this.getProviderConfig(currentProvider) : null
+            // if (!providerConfig) {
+            //     return null
+            // }
+
+            const apiKey = currentProvider? this.getProviderApiKey(currentProvider) || '' : ''
+            const customModel = currentProvider? this.getProviderModel(currentProvider) : ''
 
             return {
                 provider: currentProvider,
                 apiKey: apiKey,
-                baseUrl: providerConfig.baseUrl,
-                model: providerConfig.model,
+                baseUrl: providerConfig?.baseUrl || '',
+                model: customModel || providerConfig?.model || '',
+                customModel: customModel || undefined,
                 language: allSettings.language || 'zh',
                 wordSelectionEnabled: allSettings.wordSelectionEnabled !== false
             }
@@ -506,6 +539,67 @@ export class SettingsStorage {
             return this.saveAllSettings(allSettings)
         } catch (error) {
             console.error('Error saving menu actions:', error)
+            return false
+        }
+    }
+
+    /**
+     * Get all custom actions
+     */
+    getCustomActions(): CustomAction[] {
+        const allSettings = this.loadAllSettings()
+        return allSettings.customActions || []
+    }
+
+    /**
+     * Add a custom action
+     */
+    addCustomAction(action: CustomAction): boolean {
+        try {
+            const allSettings = this.loadAllSettings()
+            if (!allSettings.customActions) {
+                allSettings.customActions = []
+            }
+            allSettings.customActions.push(action)
+            return this.saveAllSettings(allSettings)
+        } catch (error) {
+            console.error('Error adding custom action:', error)
+            return false
+        }
+    }
+
+    /**
+     * Update a custom action
+     */
+    updateCustomAction(id: string, updated: Partial<Omit<CustomAction, 'id'>>): boolean {
+        try {
+            const allSettings = this.loadAllSettings()
+            if (!allSettings.customActions) return false
+            const index = allSettings.customActions.findIndex((a: CustomAction) => a.id === id)
+            if (index === -1) return false
+            allSettings.customActions[index] = { ...allSettings.customActions[index], ...updated }
+            return this.saveAllSettings(allSettings)
+        } catch (error) {
+            console.error('Error updating custom action:', error)
+            return false
+        }
+    }
+
+    /**
+     * Delete a custom action
+     */
+    deleteCustomAction(id: string): boolean {
+        try {
+            const allSettings = this.loadAllSettings()
+            if (!allSettings.customActions) return true
+            allSettings.customActions = allSettings.customActions.filter((a: CustomAction) => a.id !== id)
+            // Also remove from menuActions if present
+            if (allSettings.menuActions) {
+                allSettings.menuActions = allSettings.menuActions.filter((a: string) => a !== `custom:${id}`)
+            }
+            return this.saveAllSettings(allSettings)
+        } catch (error) {
+            console.error('Error deleting custom action:', error)
             return false
         }
     }
