@@ -38,7 +38,7 @@ export function createMessageWindow(): BrowserWindow {
     const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
     if (isDev) {
         // In development, load from Vite dev server
-        win.loadURL('http://localhost:5173/message.html')
+        win.loadURL('http://localhost:5174/message.html')
     } else {
         // In production, load from file
         win.loadFile(path.join(__dirname, '../../dist/message.html'))
@@ -59,7 +59,8 @@ export function createMessageWindow(): BrowserWindow {
 export function showMessageWindow(
     window: BrowserWindow,
     menuBounds: Electron.Rectangle,
-    menuDirection: string
+    menuDirection: string,
+    isModify: Boolean = false
 ): string {
     const menuX = menuBounds.x
     const menuY = menuBounds.y
@@ -76,7 +77,7 @@ export function showMessageWindow(
     if (messageY < 0) messageY = 10
 
     if (menuDirection === 'top') {
-        messageY = menuY - (messageWindowHeight - menuHeight)
+        messageY = menuY - messageWindowHeight + menuHeight - (isModify ? 0 : 53)
     } else {
         messageY = menuY
     }

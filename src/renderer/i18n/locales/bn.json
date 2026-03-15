@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "আপনার প্রশ্ন লিখুন...",
         "initialMessage": "\"{{text}}\" এর সাথে আমি কীভাবে আপনাকে সাহায্য করতে পারি?",
-        "send": "পাঠান"
+        "send": "পাঠান",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考終了"
     },
     "alt": {
         "translate": "অনুবাদ",
@@ -22,10 +24,13 @@
         "language": "ভাষা",
         "languageDescription": "ইন্টারফেস ভাষা নির্বাচন করুন",
         "apiSettings": "API সেটিংস",
-        "apiSettingsDescription": "API প্রদানকারী এবং কী কনফিগার করুন",
+        "apiSettingsDescription": "API প্রদানকারী, কী এবং মডেল কনফিগার করুন। মডেলকে টুল কলিং সমর্থন করতে হবে।",
         "provider": "প্রদানকারী:",
         "apiKey": "API কী:",
         "apiKeyPlaceholder": "আপনার API কী লিখুন",
+        "model": "মডেল:",
+        "modelPlaceholder": "মডেলের নাম লিখুন (ঐচ্ছিক)",
+        "defaultModelHint": "ডিফল্ট মডেল: {{defaultModel}}",
         "wordSelection": "শব্দ নির্বাচন",
         "wordSelectionDescription": "নিয়ন্ত্রণ করুন যে শব্দ নির্বাচন মেনু সক্ষম করা হবে কিনা",
         "enableWordSelection": "শব্দ নির্বাচন সক্ষম করুন",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "শব্দ নির্বাচন অক্ষম",
         "customMenuActions": "কাস্টম শব্দ নির্বাচন মেনু",
         "noMenuActions": "কোন মেনু ফাংশন নির্বাচন করা হয়নি",
-        "availableMenuActionsTitle": "উপলব্ধ ফাংশন:",
+        "availableMenuActionsTitle": "উপলব্ধ অ্যাকশন:",
         "noAvailableMenuActions": "কোন উপলব্ধ ফাংশন নেই",
         "disabledAppsList": "অক্ষম অ্যাপের তালিকা",
         "availableAppsTitle": "অ্যাপগুলি যা শব্দ নির্বাচন ট্রিগার করেছে:",
@@ -87,6 +92,9 @@
             "description": "আপনি চ্যাট ইন্টারফেস দ্রুত খুলতে কীবোর্ড শর্টকাট ব্যবহার করতে পারেন।",
             "hint": "চ্যাট ইন্টারফেস খুলতে Ctrl + Space চাপুন"
         }
+    },
+    "common": {
+        "gotIt": "বুঝেছি"
     },
     "tray": {
         "chat": "চ্যাট           ",

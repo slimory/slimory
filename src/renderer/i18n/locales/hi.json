@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "अपना प्रश्न दर्ज करें...",
         "initialMessage": "मैं आपकी \"{{text}}\" के साथ कैसे मदद कर सकता हूं?",
-        "send": "भेजें"
+        "send": "भेजें",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考終了"
     },
     "alt": {
         "translate": "अनुवाद",
@@ -22,10 +24,13 @@
         "language": "भाषा",
         "languageDescription": "इंटरफ़ेस भाषा चुनें",
         "apiSettings": "API सेटिंग्स",
-        "apiSettingsDescription": "API प्रदाता और कुंजी कॉन्फ़िगर करें",
+        "apiSettingsDescription": "API प्रदाता, कुंजी और मॉडल कॉन्फ़िगर करें। मॉडल को टूल कॉलिंग का समर्थन करना होगा।",
         "provider": "प्रदाता:",
         "apiKey": "API कुंजी:",
         "apiKeyPlaceholder": "अपनी API कुंजी दर्ज करें",
+        "model": "मॉडल:",
+        "modelPlaceholder": "मॉडल का नाम दर्ज करें (वैकल्पिक)",
+        "defaultModelHint": "डिफ़ॉल्ट मॉडल: {{defaultModel}}",
         "wordSelection": "शब्द चयन",
         "wordSelectionDescription": "नियंत्रित करें कि शब्द चयन मेनू सक्षम करना है या नहीं",
         "enableWordSelection": "शब्द चयन सक्षम करें",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "शब्द चयन अक्षम है",
         "customMenuActions": "कस्टम शब्द चयन मेनू",
         "noMenuActions": "कोई मेनू फ़ंक्शन चयनित नहीं है",
-        "availableMenuActionsTitle": "उपलब्ध फ़ंक्शन:",
+        "availableMenuActionsTitle": "उपलब्ध क्रियाएँ:",
         "noAvailableMenuActions": "कोई उपलब्ध फ़ंक्शन नहीं",
         "disabledAppsList": "अक्षम ऐप्स की सूची",
         "availableAppsTitle": "ऐप्स जिन्होंने शब्द चयन ट्रिगर किया:",
@@ -87,6 +92,9 @@
             "description": "आप चैट इंटरफ़ेस को जल्दी खोलने के लिए कीबोर्ड शॉर्टकट का उपयोग कर सकते हैं।",
             "hint": "चैट इंटरफ़ेस खोलने के लिए Ctrl + Space दबाएं"
         }
+    },
+    "common": {
+        "gotIt": "समझ गया"
     },
     "tray": {
         "chat": "चैट           ",

@@ -15,20 +15,23 @@ interface ApiKeyStepProps {
     currentStep: number
 }
 
-const ApiKeyStep: React.FC<ApiKeyStepProps> = ({ 
-    onVerified, 
-    onPrevious, 
-    onClose, 
-    currentStep 
+const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
+    onVerified,
+    onPrevious,
+    onClose,
+    currentStep
 }) => {
     const { t } = useTranslation()
     const [selectedProvider, setSelectedProvider] = useState<string>('deepseek')
     const [apiKey, setApiKey] = useState<string>('')
+    const [model, setModel] = useState<string>('')
+    const [defaultModel, setDefaultModel] = useState<string>('')
     const [isVerifying, setIsVerifying] = useState<boolean>(false)
     const [isVerified, setIsVerified] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
     const [availableProviders, setAvailableProviders] = useState<Provider[]>([])
-    
+    const [showErrorModal, setShowErrorModal] = useState<boolean>(false)
+
     // Provider dropdown state
     const [isProviderDropdownOpen, setIsProviderDropdownOpen] = useState(false)
     const providerDropdownRef = useRef<HTMLDivElement>(null)
@@ -38,36 +41,55 @@ const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
     useEffect(() => {
         const loadProviders = async () => {
             if (!window.electronAPI) return
-            
+
             try {
                 const providersResult = await window.electronAPI.getAvailableProviders()
                 if (providersResult.success) {
                     setAvailableProviders(providersResult.providers)
                     if (providersResult.providers.length > 0) {
-                        setSelectedProvider(providersResult.providers[0].provider)
+                        const firstProvider = providersResult.providers[0].provider
+                        setSelectedProvider(firstProvider)
+                        // Set default model for initial provider
+                        const defaultModelValue = providersResult.providers[0].model || ''
+                        setDefaultModel(defaultModelValue)
                     }
                 }
             } catch (error) {
                 console.error('Error loading providers:', error)
             }
         }
-        
+
         loadProviders()
     }, [])
+
+    // Update default model when provider changes
+    useEffect(() => {
+        const provider = availableProviders.find(p => p.provider === selectedProvider)
+        if (provider) {
+            setDefaultModel(provider.model || '')
+            // Clear custom model when switching providers
+            setModel('')
+        }
+    }, [selectedProvider, availableProviders])
 
     const handleVerify = async () => {
         if (!apiKey.trim()) {
             setError(t('settings.errorNoApiKey'))
+            setShowErrorModal(true)
             return
         }
-        
+
         setIsVerifying(true)
         setError(null)
-        
+
         try {
-            const result = await window.electronAPI.verifyApiKey(selectedProvider, apiKey)
+            // Pass model to verify (use custom model if provided, otherwise undefined to use default)
+            const verifyModel = model.trim() ? model : undefined
+            const result = await window.electronAPI.verifyApiKey(selectedProvider, apiKey, verifyModel)
             if (result.success) {
-                const saveResult = await window.electronAPI.saveSettings(selectedProvider, apiKey)
+                // Save the API key and model for this provider
+                const saveModel = model.trim() ? model : undefined
+                const saveResult = await window.electronAPI.saveSettings(selectedProvider, apiKey, saveModel)
                 await window.electronAPI.saveWordSelectionEnabled(true)
                 if (saveResult.success) {
                     setIsVerified(true)
@@ -76,17 +98,28 @@ const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
                         onVerified()
                     }, 1000)
                 } else {
-                    setError(t('settings.errorSaveFailed'))
+                    const errorMsg = saveResult.error || t('settings.errorSaveFailed')
+                    setError(errorMsg)
+                    setShowErrorModal(true)
                 }
             } else {
-                setError(t('settings.errorVerificationFailed'))
+                // Show the full error message from the API
+                const errorMsg = result.error || t('settings.errorVerificationFailed')
+                setError(errorMsg)
+                setShowErrorModal(true)
             }
         } catch (err) {
             console.error('Error verifying API key:', err)
             setError(t('settings.errorVerify'))
+            setShowErrorModal(true)
         } finally {
             setIsVerifying(false)
         }
+    }
+
+    const handleCloseErrorModal = () => {
+        setShowErrorModal(false)
+        setError(null)
     }
 
     const openProviderDropdown = () => {
@@ -135,7 +168,7 @@ const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
         <div className="onboarding-step">
             <div className="step-content">
                 <h2 className="step-title">{t('onboarding.step2.title')}</h2>
-                <p className="step-description">{t('onboarding.step2.description')}</p>
+                <p className="step-description" style={{marginBottom: '4px'}}>{t('onboarding.step2.description')}</p>
                 
                 <div className="api-key-form">
                     <div className="form-group">
@@ -197,14 +230,49 @@ const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
                             }}
                         />
                     </div>
-                    {error && (
-                        <div className="error-message">{error}</div>
-                    )}
-                    {isVerified && (
+                    {/* Model Configuration */}
+                    <div className="form-group">
+                        <label htmlFor="model-input">{t('settings.model') || 'Model'}</label>
+                        <input
+                            id="model-input"
+                            type="text"
+                            value={model}
+                            onChange={(e) => setModel(e.target.value)}
+                            placeholder={defaultModel ? t('settings.defaultModelHint', { defaultModel }) || `Default: ${defaultModel}` : ''}
+                            className="onboarding-input"
+                            disabled={isVerifying || isVerified}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !isVerifying && !isVerified) {
+                                    handleVerify()
+                                }
+                            }}
+                        />
+                    </div>
+                    {/* {isVerified && (
                         <div className="success-message">{t('settings.verifiedSuccess')}</div>
-                    )}
+                    )} */}
                 </div>
             </div>
+
+            {/* Error Modal */}
+            {showErrorModal && (
+                <div className="error-modal-overlay" onClick={handleCloseErrorModal}>
+                    <div className="error-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="error-modal-content">
+                            <div className="error-modal-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="#dc2626" strokeWidth="2"/>
+                                    <path d="M12 7v6M12 17h.01" stroke="#dc2626" strokeWidth="2" strokeLinecap="round"/>
+                                </svg>
+                            </div>
+                            <div className="error-modal-message">{error}</div>
+                            <button className="error-modal-button" onClick={handleCloseErrorModal}>
+                                {t('common.gotIt') || '我知道了'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             
             <div className="step-actions">
                 <div className="step-actions-left">

@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "输入你的问题...",
         "initialMessage": "关于 \"{{text}}\"，我能帮你什么？",
-        "send": "发送"
+        "send": "发送",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考结束"
     },
     "alt": {
         "translate": "翻译",
@@ -23,10 +25,13 @@
         "language": "语言设置",
         "languageDescription": "选择界面显示语言",
         "apiSettings": "API 设置",
-        "apiSettingsDescription": "配置 API 提供商和密钥",
+        "apiSettingsDescription": "配置 API 提供商、密钥和模型，模型必须支持工具调用",
         "provider": "提供商:",
         "apiKey": "API 密钥:",
         "apiKeyPlaceholder": "请输入您的 API 密钥",
+        "model": "模型:",
+        "modelPlaceholder": "请输入模型名称（可选）",
+        "defaultModelHint": "默认模型为 {{defaultModel}}",
         "wordSelection": "划词功能",
         "wordSelectionDescription": "控制是否启用划词弹出菜单",
         "enableWordSelection": "启用划词功能",
@@ -34,7 +39,7 @@
         "wordSelectionDisabled": "已关闭划词功能",
         "customMenuActions": "自定义划词菜单",
         "noMenuActions": "未选择任何菜单功能",
-        "availableMenuActionsTitle": "可用功能:",
+        "availableMenuActionsTitle": "可用操作:",
         "noAvailableMenuActions": "没有可用功能",
         "disabledAppsList": "禁用划词的应用列表",
         "availableAppsTitle": "曾触发划词的应用:",
@@ -50,7 +55,26 @@
         "errorVerify": "验证 API 密钥时出错",
         "errorAtLeastOneAction": "至少保留一个操作",
         "save": "保存",
-        "saving": "保存中..."
+        "saving": "保存中...",
+        "customActions": "自定义动作",
+        "customActionsDescription": "创建自定义动作和提示词",
+        "addCustomAction": "添加自定义动作",
+        "editCustomAction": "编辑自定义动作",
+        "deleteCustomAction": "删除自定义动作",
+        "customActionName": "动作名称",
+        "customActionNamePlaceholder": "输入动作名称",
+        "customActionPrompt": "提示词模板",
+        "customActionPromptPlaceholder": "输入提示词模板（使用 {{text}} 代表选中的文本）",
+        "customActionPromptHint": "使用 {{text}} 作为选中文本的占位符",
+        "customActionCanEdit": "启用编辑能力",
+        "customActionCanEditHint": "开启后，AI 的回复将直接替换选中的文本",
+        "customActionIcon": "图标",
+        "customActionIconSearch": "搜索图标...",
+        "noCustomActions": "暂无自定义动作",
+        "confirmDeleteCustomAction": "确定要删除这个自定义动作吗？",
+        "cancel": "取消",
+        "delete": "删除",
+        "edit": "编辑"
     },
     "conversation": {
         "noConversations": "还没有对话记录",
@@ -88,6 +112,9 @@
             "description": "您可以使用快捷键快速打开聊天界面。",
             "hint": "按 Ctrl + Space 打开聊天界面"
         }
+    },
+    "common": {
+        "gotIt": "我知道了"
     },
     "tray": {
         "chat": "聊天           ",

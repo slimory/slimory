@@ -38,7 +38,7 @@ export function createChatWindow(): BrowserWindow {
     const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
     if (isDev) {
         // In development, load from Vite dev server
-        win.loadURL('http://localhost:5173/chat.html')
+        win.loadURL('http://localhost:5174/chat.html')
     } else {
         // In production, load from file
         win.loadFile(path.join(__dirname, '../../dist/chat.html'))

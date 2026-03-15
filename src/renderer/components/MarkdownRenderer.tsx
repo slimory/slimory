@@ -208,6 +208,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
         let listItems: string[] = []
         let inMathBlock = false
         let mathBlockContent: string[] = []
+        let inThinkBlock = false
+        let thinkBlockContent: string[] = []
 
         const flushParagraph = () => {
             if (currentParagraph.length > 0) {
@@ -277,6 +279,18 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
             }
         }
 
+        const flushThinkBlock = () => {
+            if (thinkBlockContent.length > 0) {
+                const thinkText = thinkBlockContent.join('\n')
+                elements.push(
+                    <div key={`think-${elements.length}`} style={{"marginBottom": `${text.endsWith('</think>') ? "0em":"1em"}`}}>
+                        <pre className="markdown-think-content">{thinkText}</pre>
+                    </div>
+                )
+                thinkBlockContent = []
+            }
+        }
+
         const flushList = () => {
             if (listItems.length > 0) {
                 elements.push(
@@ -339,6 +353,43 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
 
             if (inCodeBlock) {
                 codeBlockContent.push(line)
+                continue
+            }
+
+            // Think blocks:<think>...</think>
+            if (trimmedLine.startsWith('<think>')) {
+                if (inThinkBlock) {
+                    flushThinkBlock()
+                    inThinkBlock = false
+                } else {
+                    flushParagraph()
+                    flushList()
+                    inList = false
+                    // Remove the starting tag from the line
+                    const content = trimmedLine.slice(7).trim()
+                    if (content) {
+                        thinkBlockContent.push(content)
+                    }
+                    inThinkBlock = true
+                }
+                continue
+            }
+
+            if (trimmedLine.endsWith('</think>')) {
+                if (inThinkBlock) {
+                    // Remove the ending tag from the line
+                    const content = trimmedLine.slice(0, -8).trim()
+                    if (content) {
+                        thinkBlockContent.push(content)
+                    }
+                    flushThinkBlock()
+                    inThinkBlock = false
+                }
+                continue
+            }
+
+            if (inThinkBlock) {
+                thinkBlockContent.push(line)
                 continue
             }
 
@@ -405,6 +456,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
         flushList()
         flushCodeBlock()
         flushMathBlock()
+        flushThinkBlock()
 
         return elements.length > 0 ? <>{elements}</> : null
     }

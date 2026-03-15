@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "質問を入力...",
         "initialMessage": "「{{text}}」について、どのようにお手伝いできますか？",
-        "send": "送信"
+        "send": "送信",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考終了"
     },
     "alt": {
         "translate": "翻訳",
@@ -22,10 +24,13 @@
         "language": "言語",
         "languageDescription": "インターフェース言語を選択",
         "apiSettings": "API設定",
-        "apiSettingsDescription": "APIプロバイダーとキーを設定",
+        "apiSettingsDescription": "APIプロバイダー、キー、モデルを設定。モデルはツール呼び出しをサポートする必要があります。",
         "provider": "プロバイダー:",
         "apiKey": "APIキー:",
         "apiKeyPlaceholder": "APIキーを入力",
+        "model": "モデル:",
+        "modelPlaceholder": "モデル名を入力（オプション）",
+        "defaultModelHint": "デフォルトモデル: {{defaultModel}}",
         "wordSelection": "単語選択",
         "wordSelectionDescription": "単語選択メニューを有効にするかどうかを制御",
         "enableWordSelection": "単語選択を有効にする",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "単語選択が無効",
         "customMenuActions": "カスタム単語選択メニュー",
         "noMenuActions": "メニュー機能が選択されていません",
-        "availableMenuActionsTitle": "利用可能な機能:",
+        "availableMenuActionsTitle": "利用可能なアクション:",
         "noAvailableMenuActions": "利用可能な機能がありません",
         "disabledAppsList": "無効化されたアプリのリスト",
         "availableAppsTitle": "単語選択をトリガーしたアプリ:",
@@ -87,6 +92,9 @@
             "description": "キーボードショートカットを使用して、チャットインターフェースをすばやく開くことができます。",
             "hint": "Ctrl + Spaceを押してチャットインターフェースを開く"
         }
+    },
+    "common": {
+        "gotIt": "わかりました"
     },
     "tray": {
         "chat": "チャット           ",

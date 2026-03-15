@@ -40,10 +40,11 @@ const MessageApp = () => {
     const [isHidden, setIsHidden] = useState(false)
     const [command, setCommand] = useState('')
     const messagePanelRef = useRef<HTMLDivElement>(null)
+    const currentSessionIdRef = useRef<string>('')
 
     useEffect(() => {
         // Listen for message data from main process
-        const handleShowMessage = async (_event: any, messages: MessageData[], selectedText: string, _isNewSession: boolean, command: string, direction: string) => {
+        const handleShowMessage = async (_event: any, messages: MessageData[], selectedText: string, _isNewSession: boolean, command: string, direction: string, sessionId?: string) => {
             setIsHidden(false)
             setMessagesData({
                 messages,
@@ -55,6 +56,8 @@ const MessageApp = () => {
             setDirectionState({ direction })
             setCommand(command)
             streamingContentRef.current = ''
+            // Store session ID to filter stale streaming chunks
+            currentSessionIdRef.current = sessionId || ''
             
             // Get the last message (should be the user's question)
             const lastMessage = messages[messages.length - 1]
@@ -68,7 +71,7 @@ const MessageApp = () => {
                 try {
                     // Start the chat response generation with full conversation history
                     // Use 'default' conversationId for message window (backend will save assistant message)
-                    await window.electronAPI.generateChatResponse(selectedText, messages, command, 'default')
+                    await window.electronAPI.generateChatResponse(selectedText, messages, command, sessionId)
                 } catch (error) {
                     console.error('Error generating chat response:', error)
                     setStreamingState({
@@ -81,7 +84,11 @@ const MessageApp = () => {
         }
 
         // Listen for streaming chunks
-        const handleChatResponseChunk = (_event: any, chunk: { content: string; done: boolean }) => {
+        const handleChatResponseChunk = (_event: any, chunk: { content: string; done: boolean; sessionId?: string }) => {
+            // Ignore chunks from previous sessions
+            if (chunk.sessionId && chunk.sessionId !== currentSessionIdRef.current) {
+                return
+            }
             if (isHidden) {
                 return
             }

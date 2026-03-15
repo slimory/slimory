@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "Geben Sie Ihre Frage ein...",
         "initialMessage": "Wie kann ich Ihnen bei \"{{text}}\" helfen?",
-        "send": "Senden"
+        "send": "Senden",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考終了"
     },
     "alt": {
         "translate": "Übersetzen",
@@ -22,10 +24,13 @@
         "language": "Sprache",
         "languageDescription": "Benutzeroberflächensprache auswählen",
         "apiSettings": "API-Einstellungen",
-        "apiSettingsDescription": "API-Anbieter und Schlüssel konfigurieren",
+        "apiSettingsDescription": "API-Anbieter, Schlüssel und Modell konfigurieren. Modell muss Tool-Aufrufe unterstützen.",
         "provider": "Anbieter:",
         "apiKey": "API-Schlüssel:",
         "apiKeyPlaceholder": "Geben Sie Ihren API-Schlüssel ein",
+        "model": "Modell:",
+        "modelPlaceholder": "Modellname eingeben (optional)",
+        "defaultModelHint": "Standardmodell: {{defaultModel}}",
         "wordSelection": "Wortauswahl",
         "wordSelectionDescription": "Steuern, ob das Wortauswahlmenü aktiviert werden soll",
         "enableWordSelection": "Wortauswahl aktivieren",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "Wortauswahl deaktiviert",
         "customMenuActions": "Benutzerdefiniertes Wortauswahlmenü",
         "noMenuActions": "Keine Menüfunktion ausgewählt",
-        "availableMenuActionsTitle": "Verfügbare Funktionen:",
+        "availableMenuActionsTitle": "Verfügbare Aktionen:",
         "noAvailableMenuActions": "Keine verfügbaren Funktionen",
         "disabledAppsList": "Deaktivierte Apps-Liste",
         "availableAppsTitle": "Apps, die die Wortauswahl ausgelöst haben:",
@@ -87,6 +92,9 @@
             "description": "Sie können Tastenkombinationen verwenden, um schnell die Chat-Oberfläche zu öffnen.",
             "hint": "Drücken Sie Strg + Leertaste, um die Chat-Oberfläche zu öffnen"
         }
+    },
+    "common": {
+        "gotIt": "Verstanden"
     },
     "tray": {
         "chat": "Chat           ",

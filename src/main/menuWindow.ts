@@ -12,7 +12,7 @@ const settingsStorage = new SettingsStorage()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const windowHeight = 64
+const windowHeight = 128
 const windowWidth = 500
 
 let isReady: boolean = false
@@ -93,7 +93,7 @@ export function createMenuWindow(_language: string = 'en'): BrowserWindow {
     const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
     if (isDev) {
         // In development, load from Vite dev server
-        win.loadURL('http://localhost:5173/menu.html')
+        win.loadURL('http://localhost:5174/menu.html')
     } else {
         // In production, load from file
         win.loadFile(path.join(__dirname, '../../dist/menu.html'))
@@ -138,6 +138,7 @@ export async function showMenuWindow(
     let menuHeight = windowHeight
     if (menuPopupSize) {
         menuWidth = menuPopupSize.width
+        menuHeight = menuPopupSize.height
     }
 
     let menuX = (downX < upX ? downX : upX) - 16
@@ -148,7 +149,7 @@ export async function showMenuWindow(
     if (menuX < 0) menuX = 1
     if (menuX + menuWidth > screenWidth) menuX = screenWidth - menuWidth - 20
     if (menuY + messageWindowHeight + windowHeight - 16 > screenHeight) {
-        menuY = downY - menuHeight - 11
+        menuY = downY - menuHeight - 31
         direction = 'top'
     }
 

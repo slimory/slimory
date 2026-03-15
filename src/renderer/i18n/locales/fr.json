@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "Entrez votre question...",
         "initialMessage": "Comment puis-je vous aider avec \"{{text}}\" ?",
-        "send": "Envoyer"
+        "send": "Envoyer",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考終了"
     },
     "alt": {
         "translate": "Traduire",
@@ -22,10 +24,13 @@
         "language": "Langue",
         "languageDescription": "Sélectionner la langue de l'interface",
         "apiSettings": "Paramètres API",
-        "apiSettingsDescription": "Configurer le fournisseur API et la clé",
+        "apiSettingsDescription": "Configurer le fournisseur, la clé et le modèle API. Le modèle doit prendre en charge les appels d'outils.",
         "provider": "Fournisseur :",
         "apiKey": "Clé API :",
         "apiKeyPlaceholder": "Entrez votre clé API",
+        "model": "Modèle :",
+        "modelPlaceholder": "Entrez le nom du modèle (optionnel)",
+        "defaultModelHint": "Modèle par défaut : {{defaultModel}}",
         "wordSelection": "Sélection de mots",
         "wordSelectionDescription": "Contrôler si le menu de sélection de mots doit être activé",
         "enableWordSelection": "Activer la sélection de mots",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "Sélection de mots désactivée",
         "customMenuActions": "Menu de sélection de mots personnalisé",
         "noMenuActions": "Aucune fonction de menu sélectionnée",
-        "availableMenuActionsTitle": "Fonctions disponibles:",
+        "availableMenuActionsTitle": "Actions disponibles :",
         "noAvailableMenuActions": "Aucune fonction disponible",
         "disabledAppsList": "Liste des applications désactivées",
         "availableAppsTitle": "Applications qui ont déclenché la sélection de mots:",
@@ -87,6 +92,9 @@
             "description": "Vous pouvez utiliser des raccourcis clavier pour ouvrir rapidement l'interface de chat.",
             "hint": "Appuyez sur Ctrl + Espace pour ouvrir l'interface de chat"
         }
+    },
+    "common": {
+        "gotIt": "J'ai compris"
     },
     "tray": {
         "chat": "Chat           ",

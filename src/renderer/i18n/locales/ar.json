@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "أدخل سؤالك...",
         "initialMessage": "كيف يمكنني مساعدتك في \"{{text}}\"؟",
-        "send": "إرسال"
+        "send": "إرسال",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考終了"
     },
     "alt": {
         "translate": "ترجمة",
@@ -22,10 +24,13 @@
         "language": "اللغة",
         "languageDescription": "اختر لغة الواجهة",
         "apiSettings": "إعدادات API",
-        "apiSettingsDescription": "تكوين مزود API والمفتاح",
+        "apiSettingsDescription": "تكوين مزود API والمفتاح والنموذج. يجب أن يدعم النموذج استدعاء الأدوات.",
         "provider": "المزود:",
         "apiKey": "مفتاح API:",
         "apiKeyPlaceholder": "أدخل مفتاح API الخاص بك",
+        "model": "النموذج:",
+        "modelPlaceholder": "أدخل اسم النموذج (اختياري)",
+        "defaultModelHint": "النموذج الافتراضي: {{defaultModel}}",
         "wordSelection": "تحديد الكلمات",
         "wordSelectionDescription": "التحكم في تفعيل قائمة تحديد الكلمات",
         "enableWordSelection": "تفعيل تحديد الكلمات",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "تم تعطيل تحديد الكلمات",
         "customMenuActions": "قائمة تحديد الكلمات المخصصة",
         "noMenuActions": "لم يتم اختيار أي وظيفة قائمة",
-        "availableMenuActionsTitle": "الوظائف المتاحة:",
+        "availableMenuActionsTitle": "الإجراءات المتاحة:",
         "noAvailableMenuActions": "لا توجد وظائف متاحة",
         "disabledAppsList": "قائمة التطبيقات المعطلة",
         "availableAppsTitle": "التطبيقات التي أطلقت تحديد الكلمات:",
@@ -87,6 +92,9 @@
             "description": "يمكنك استخدام اختصارات لوحة المفاتيح لفتح واجهة الدردشة بسرعة.",
             "hint": "اضغط على Ctrl + Space لفتح واجهة الدردشة"
         }
+    },
+    "common": {
+        "gotIt": "فهمت"
     },
     "tray": {
         "chat": "دردشة           ",

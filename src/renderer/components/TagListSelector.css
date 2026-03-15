@@ -52,6 +52,25 @@
     z-index: 1000;
     max-height: 200px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+.tag-list-selector-dropdown::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tag-list-selector-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tag-list-selector-dropdown::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 2px;
+}
+
+.tag-list-selector-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
 }
 
 .tag-list-selector-dropdown-title {

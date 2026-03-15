@@ -24,7 +24,7 @@ interface Window {
         // Generic window ignore mouse API
         setWindowIgnoreMouse?: (windowName: string, ignore: boolean, forward?: boolean) => void
         // Message window APIs
-        onShowMessage: (callback: (event: any, messages: { role: 'user' | 'assistant'; content: string }[], selectedText: string, isNewSession: boolean, command: string, direction: string) => void) => void
+        onShowMessage: (callback: (event: any, messages: { role: 'user' | 'assistant'; content: string }[], selectedText: string, isNewSession: boolean, command: string, direction: string, sessionId?: string) => void) => void
         onHideMessage: (callback: (event: any) => void) => void
         onHideFullChatWindow: (callback: () => void) => void
         closeMessageWindow: () => void
@@ -35,7 +35,7 @@ interface Window {
         // Chat service APIs
         generateChatResponse: (selectedText: string, messages: { role: 'user' | 'assistant'; content: string }[], command: string, conversationId?: string) => Promise<{ success: boolean }>
         stopChatResponse: (conversationId?: string) => Promise<{ success: boolean; error?: string }>
-        onChatResponseChunk: (callback: (event: any, chunk: { content: string; done: boolean; finishReason?: string }) => void) => void
+        onChatResponseChunk: (callback: (event: any, chunk: { content: string; done: boolean; finishReason?: string; sessionId?: string }) => void) => void
         sendChatResponseComplete: (message: { role: 'user' | 'assistant'; content: string }) => void
         onChatResponseComplete: (callback: (event: any, message: { role: 'user' | 'assistant'; content: string }) => void) => void
         onChatResponseError: (callback: (event: any, error: string) => void) => void
@@ -52,9 +52,10 @@ interface Window {
         openExternalUrl: (url: string) => Promise<{ success: boolean; error?: string }>
         // Settings APIs
         getAllSettings: () => Promise<{ success: boolean; hasSettings: boolean; settings?: { provider: string; baseUrl: string; model: string; language?: string; wordSelectionEnabled?: boolean; menuActions?: string[] }; error?: string }>
-        saveSettings: (provider: string, apiKey: string) => Promise<{ success: boolean; error?: string }>
-        verifyApiKey: (provider: string, apiKey: string) => Promise<{ success: boolean; error?: string }>
+        saveSettings: (provider: string, apiKey: string, model?: string) => Promise<{ success: boolean; error?: string }>
+        verifyApiKey: (provider: string, apiKey: string, model?: string) => Promise<{ success: boolean; error?: string }>
         getAvailableProviders: () => Promise<{ success: boolean; providers: Array<{ provider: string; providerName: string; baseUrl: string; model: string }>; error?: string }>
+        getProviderModel: (provider: string) => Promise<{ success: boolean; model: string | null; error?: string }>
         getProviderApiKey: (provider: string) => Promise<{ success: boolean; apiKey: string | null; error?: string }>
         setCurrentProvider: (provider: string) => Promise<{ success: boolean; error?: string }>
         saveWordSelectionEnabled: (enabled: boolean) => Promise<{ success: boolean; error?: string }>
@@ -65,6 +66,10 @@ interface Window {
         removeDisabledApp: (app: string) => Promise<{ success: boolean; error?: string }>
         getMenuActions: () => Promise<{ success: boolean; actions: string[]; error?: string }>
         saveMenuActions: (actions: string[]) => Promise<{ success: boolean; error?: string }>
+        getCustomActions: () => Promise<{ success: boolean; actions: Array<{ id: string; name: string; prompt: string; icon?: string; canEdit?: boolean }>; error?: string }>
+        addCustomAction: (action: { id: string; name: string; prompt: string; icon?: string; canEdit?: boolean }) => Promise<{ success: boolean; error?: string }>
+        updateCustomAction: (id: string, updated: { name?: string; prompt?: string; icon?: string; canEdit?: boolean }) => Promise<{ success: boolean; error?: string }>
+        deleteCustomAction: (id: string) => Promise<{ success: boolean; error?: string }>
         closeOnboardingWindow: () => void
         quitApp: () => void
         // Settings window APIs

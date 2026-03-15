@@ -71,7 +71,7 @@ export default defineConfig({
         renderer()
     ],
     server: {
-        port: 5173,
+        port: 5174,
         host: '127.0.0.1', // 明确绑定到 127.0.0.1，避免 VPN TUN 模式下的 localhost 路由问题
         strictPort: true
     },

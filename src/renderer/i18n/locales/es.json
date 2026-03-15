@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "Ingrese su pregunta...",
         "initialMessage": "¿Cómo puedo ayudarte con \"{{text}}\"?",
-        "send": "Enviar"
+        "send": "Enviar",
+        "thinkingStart": "思考中",
+        "thinkingEnd": "思考終了"
     },
     "alt": {
         "translate": "Traducir",
@@ -22,10 +24,13 @@
         "language": "Idioma",
         "languageDescription": "Seleccione el idioma de la interfaz",
         "apiSettings": "Configuración de API",
-        "apiSettingsDescription": "Configure el proveedor de API y la clave",
+        "apiSettingsDescription": "Configure el proveedor, clave y modelo de API. El modelo debe soportar llamadas de herramientas.",
         "provider": "Proveedor:",
         "apiKey": "Clave de API:",
         "apiKeyPlaceholder": "Ingrese su clave de API",
+        "model": "Modelo:",
+        "modelPlaceholder": "Ingrese el nombre del modelo (opcional)",
+        "defaultModelHint": "Modelo predeterminado: {{defaultModel}}",
         "wordSelection": "Selección de palabras",
         "wordSelectionDescription": "Controlar si se habilita el menú de selección de palabras",
         "enableWordSelection": "Habilitar selección de palabras",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "Selección de palabras deshabilitada",
         "customMenuActions": "Menú de selección de palabras personalizado",
         "noMenuActions": "No se ha seleccionado ninguna función de menú",
-        "availableMenuActionsTitle": "Funciones disponibles:",
+        "availableMenuActionsTitle": "Acciones disponibles:",
         "noAvailableMenuActions": "No hay funciones disponibles",
         "disabledAppsList": "Lista de aplicaciones deshabilitadas",
         "availableAppsTitle": "Aplicaciones que activaron la selección de palabras:",
@@ -87,6 +92,9 @@
             "description": "Puede usar atajos de teclado para abrir rápidamente la interfaz de chat.",
             "hint": "Presione Ctrl + Espacio para abrir la interfaz de chat"
         }
+    },
+    "common": {
+        "gotIt": "Entendido"
     },
     "tray": {
         "chat": "Chat           ",

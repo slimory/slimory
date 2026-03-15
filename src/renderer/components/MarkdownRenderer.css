@@ -378,3 +378,19 @@
     color: #c00;
 }
 
+/* Think blocks */
+.markdown-think-block {
+    margin: 0 0 1em 0;
+}
+
+.markdown-think-content {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #9ca3af;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+    font-style: italic;
+}
+

@@ -8,7 +8,9 @@
     "chat": {
         "placeholder": "Enter your question...",
         "initialMessage": "How can I help you with \"{{text}}\"?",
-        "send": "Send"
+        "send": "Send",
+        "thinkingStart": "Thinking",
+        "thinkingEnd": "Thinking done"
     },
     "alt": {
         "translate": "Translate",
@@ -22,10 +24,13 @@
         "language": "Language",
         "languageDescription": "Select interface language",
         "apiSettings": "API Settings",
-        "apiSettingsDescription": "Configure API provider and key",
+        "apiSettingsDescription": "Configure API provider, key and model. Model must support tool calling.",
         "provider": "Provider:",
         "apiKey": "API Key:",
         "apiKeyPlaceholder": "Enter your API key",
+        "model": "Model:",
+        "modelPlaceholder": "Enter model name (optional)",
+        "defaultModelHint": "Default model: {{defaultModel}}",
         "wordSelection": "Word Selection",
         "wordSelectionDescription": "Control whether to enable word selection menu",
         "enableWordSelection": "Enable word selection",
@@ -33,7 +38,7 @@
         "wordSelectionDisabled": "Word selection disabled",
         "customMenuActions": "Custom Word Selection Menu",
         "noMenuActions": "No menu functions selected",
-        "availableMenuActionsTitle": "Available functions:",
+        "availableMenuActionsTitle": "Available actions:",
         "noAvailableMenuActions": "No available functions",
         "disabledAppsList": "Disabled Apps List",
         "availableAppsTitle": "Apps that triggered word selection:",
@@ -49,7 +54,26 @@
         "errorVerify": "Error verifying API key",
         "errorAtLeastOneAction": "At least one action must be kept",
         "save": "Save",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "customActions": "Custom Actions",
+        "customActionsDescription": "Create custom actions with your own prompts",
+        "addCustomAction": "Add Custom Action",
+        "editCustomAction": "Edit Custom Action",
+        "deleteCustomAction": "Delete Custom Action",
+        "customActionName": "Action Name",
+        "customActionNamePlaceholder": "Enter action name",
+        "customActionPrompt": "Prompt Template",
+        "customActionPromptPlaceholder": "Enter prompt template (use {{text}} for selected text)",
+        "customActionPromptHint": "Use {{text}} as a placeholder for the selected text",
+        "customActionCanEdit": "Enable edit capability",
+        "customActionCanEditHint": "When enabled, the AI response will replace the selected text directly",
+        "customActionIcon": "Icon",
+        "customActionIconSearch": "Search icons...",
+        "noCustomActions": "No custom actions created",
+        "confirmDeleteCustomAction": "Are you sure you want to delete this custom action?",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit"
     },
     "conversation": {
         "noConversations": "No conversations yet",
@@ -87,6 +111,9 @@
             "description": "You can use keyboard shortcuts to quickly open the chat interface.",
             "hint": "Press Ctrl + Space to open the chat interface"
         }
+    },
+    "common": {
+        "gotIt": "Got it"
     },
     "tray": {
         "chat": "Chat           ",

@@ -89,12 +89,21 @@ export class ChatService {
                 })
             }
 
-            console.log(messagesCopy)
+            // console.log(messagesCopy)
 
             // console.log('thinking:', thinking)
 
-            const thinking = this.config.model?.startsWith('gemini') ? {} : { thinking: { "type": _thinking ? "enabled" : "disabled" } }
+            const shouldSkipThinking = this.config.model?.startsWith('gemini') ||
+                this.config.baseUrl?.includes('groq.com') ||
+                this.config.baseUrl?.includes('fireworks.ai')
+            const thinking = shouldSkipThinking ? {} : { thinking: { "type": _thinking ? "enabled" : "disabled" } }
             // console.log('thinking:', thinking)
+            console.log(this.config.baseUrl, this.config.apiKey, this.config.model)
+
+            // Only add reasoning_split for OpenAI API (not compatible providers like Groq, Fireworks)
+            const isOpenAI = this.config.baseUrl?.includes('api.openai.com')
+            const extraBody = isOpenAI ? { extra_body: { "reasoning_split": true } } : {}
+
             const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
                 method: 'POST',
                 headers: {
@@ -106,6 +115,7 @@ export class ChatService {
                     messages: messagesCopy,
                     stream: true,
                     temperature: 0.7,
+                    ...extraBody,
                     ...thinking
                 })
             })
@@ -191,9 +201,13 @@ export class ChatService {
                 })
                 // console.log(systemPrompt)
             }
-            const thinking = this.config.model?.startsWith('gemini') ? {} : { thinking: { "type": "disabled" } }
+            const shouldSkipThinking2 = this.config.model?.startsWith('gemini') ||
+                this.config.baseUrl?.includes('groq.com') ||
+                this.config.baseUrl?.includes('fireworks.ai')
+            const thinking = shouldSkipThinking2 ? {} : { thinking: { "type": "disabled" } }
             // Get tool definitions - use provided tools or fall back to toolRegistry
             const toolDefinitions = tools || toolRegistry.getToolDefinitions()
+            // console.log("use model", this.config.model)
             const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
                 method: 'POST',
                 headers: {
@@ -204,7 +218,7 @@ export class ChatService {
                     model: this.config.model,
                     messages: messagesCopy,
                     stream: true,
-                    temperature: 0.7,
+                    temperature: 0.6,
                     max_tokens: 8000,
                     ...thinking,
                     tools: toolDefinitions.length > 0 ? toolDefinitions : undefined,
@@ -375,13 +389,7 @@ export class ChatService {
         onStatusUpdate?: (messageId: string, toolName: string, status: 'start' | 'processing' | 'end', message: string) => boolean,
         onComplete?: (generatedMessages: ChatMessage[]) => void
     ): AsyncGenerator<ChatResponse & { resources?: Array<{ index: number; url: string; title?: string; source?: string }> }, void, unknown> {
-        // const cleanMessages = messages.map(msg => {
-        //     let t = msg.content.split(/<\[.*?\] start>[\s\S]*?<\/\[.*?\] end>/)
-        //     return {
-        //         role: msg.role as 'user' | 'assistant' | 'system' | 'tool',
-        //         content: t[t.length - 1]
-        //     } as ChatMessage
-        // })
+
         const currentMessages: ChatMessage[] = []
         for (const msg of messages) {
             if (msg.role == 'user' || !msg.originalMessages) {
@@ -390,12 +398,16 @@ export class ChatService {
                     content: msg.content
                 } as ChatMessage)
             } else {
-                currentMessages.push(...(msg.originalMessages || []))
-                let t = msg.content.split(/<\[.*?\] start>[\s\S]*?<\/\[.*?\] end>/)
-                currentMessages.push({
-                    role: msg.role,
-                    content: t[t.length - 1]
-                } as ChatMessage)
+                let t = msg.content.split(/(<\[.*?\] start>[\s\S]*?<\/\[.*?\] end>)/)
+                let o = [...msg.originalMessages]
+                if (t.length === o.length + 1) {
+                    for (let i = 0; i < o.length; i++) {
+                        if (o[i].role === 'tool') continue;
+                        o[i]['content'] = t[i].trim()
+                    }
+                    currentMessages.push(...o)
+                }
+                currentMessages.push({role: msg.role, content: t[t.length - 1]} as ChatMessage)
             }
         }
 

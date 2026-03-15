@@ -33,3 +33,6 @@ yarn.lock
 pnpm-lock.yaml
 
 /src/tools/webPilot/scripts/domains
+
+# Claude session files
+.claude/
