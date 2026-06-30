@@ -1,6 +1,6 @@
 {
     "name": "slimory",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "author": "Slimory",
     "description": "An open-source, free AI desktop assistant for Windows that works in any application.",
     "main": "dist-electron/main/main.js",
@@ -76,7 +76,7 @@
     },
     "build": {
         "appId": "com.evita.slimory",
-        "productName": "Slimory",
+        "productName": "SlimoryLite",
         "directories": {
             "output": "release"
         },

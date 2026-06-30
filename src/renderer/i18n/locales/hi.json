@@ -58,7 +58,7 @@
     },
     "conversation": {
         "noConversations": "अभी तक कोई बातचीत नहीं",
-        "startNewConversation": "Slimory के साथ चैट करने के लिए स्वतंत्र महसूस करें",
+        "startNewConversation": "SlimoryLite के साथ चैट करने के लिए स्वतंत्र महसूस करें",
         "newConversation": "नई बातचीत"
     },
     "tooltip": {
@@ -67,7 +67,7 @@
         "close": "बंद करें"
     },
     "onboarding": {
-        "welcome": "Slimory में आपका स्वागत है",
+        "welcome": "SlimoryLite में आपका स्वागत है",
         "next": "अगला",
         "previous": "पिछला",
         "close": "बंद करें",

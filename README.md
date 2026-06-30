@@ -1,6 +1,6 @@
 <div align="center">
 <br>
-<a href="https://slimory.cc/"><img src="./src/renderer/assets/logo.png" width="128" alt="Slimory" style="vertical-align: middle; flex-shrink: 0;"></a>
+<img src="./src/renderer/assets/logo.png" width="128" alt="SlimoryLite" style="vertical-align: middle; flex-shrink: 0;">
 
 ### AI that works anywhere you do
 
@@ -17,11 +17,11 @@ Select any text in any application and instantly get AI-powered answers
 
 ## Overview
 
-Slimory is a free, open-source AI desktop assistant for Windows that brings powerful AI capabilities directly to your workflow. Select any text in any application—whether it's a PDF, Word document, browser, or even PowerPoint—and instantly get AI-powered explanations, translations, or answers without breaking your flow.
+SlimoryLite is a free, open-source AI desktop assistant for Windows that brings powerful AI capabilities directly to your workflow. Select any text in any application—whether it's a PDF, Word document, browser, or even PowerPoint—and instantly get AI-powered explanations, translations, or answers without breaking your flow.
 
-Beyond text assistance, Slimory features powerful browser automation capabilities that let you control web browsers through natural language commands, making web interactions more efficient and customizable.
+Beyond text assistance, SlimoryLite features powerful browser automation capabilities that let you control web browsers through natural language commands, making web interactions more efficient and customizable.
 
-### Why Slimory?
+### Why SlimoryLite?
 
 - **Universal Text Selection** - Works seamlessly across all Windows applications
 - **Zero Context Switching** - No app switching or copy-pasting required
@@ -33,7 +33,7 @@ Beyond text assistance, Slimory features powerful browser automation capabilitie
 
 Currently only supports Windows, with future support for more platforms.
 
-Download from [slimory.cc](https://slimory.cc/) or [GitHub Releases](https://github.com/slimory/slimory/releases).
+Download from [GitHub Releases](https://github.com/slimory/slimory-lite/releases).
 
 ## Features
 
@@ -55,12 +55,12 @@ Works in:
 
 Press Ctrl+Space to show or hide the chat interface at any time.
 
-- **General Q&A** - Ask Slimory anything, and it will search online to give you accurate answers.
-- **Browser Automation**- Tell Slimory what you want to do, and watch it navigate sites, click buttons, play videos, search, and extract data.
+- **General Q&A** - Ask SlimoryLite anything, and it will search online to give you accurate answers.
+- **Browser Automation**- Tell SlimoryLite what you want to do, and watch it navigate sites, click buttons, play videos, search, and extract data.
 
 ### Text Modification
 
-Slimory can also **modify text** in any editing interface. It is not included in the selection menu by default, but you can add it in the settings panel.
+SlimoryLite can also **modify text** in any editing interface. It is not included in the selection menu by default, but you can add it in the settings panel.
 
 ### Internationalization
 
@@ -78,7 +78,7 @@ Fully localized in 10 languages:
 
 ### Multi-Provider Support
 
-Slimory supports multiple AI providers including OpenAI, Anthropic, DeepSeek, GLM, Moonshot, and Gemini.
+SlimoryLite supports multiple AI providers including OpenAI, Anthropic, DeepSeek, GLM, Moonshot, and Gemini.
 
 ### Privacy
 
@@ -88,9 +88,9 @@ Slimory supports multiple AI providers including OpenAI, Anthropic, DeepSeek, GL
 - **Local processing** - Only API calls to your chosen LLM provider
 
 All data is stored locally:
-- **Conversations**: `%APPDATA%/Roaming/slimory/conversations.json`
-- **Settings**: `%APPDATA%/Roaming/slimory/settings.json`
-- **Scripts**: `%APPDATA%/Roaming/slimory/scripts.json`
+- **Conversations**: `%APPDATA%/Roaming/slimory-lite/conversations.json`
+- **Settings**: `%APPDATA%/Roaming/slimory-lite/settings.json`
+- **Scripts**: `%APPDATA%/Roaming/slimory-lite/scripts.json`
 
 ## Development
 
@@ -146,7 +146,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Third-Party Licenses
 
-Slimory uses several open-source libraries. Key dependencies:
+SlimoryLite uses several open-source libraries. Key dependencies:
 
 - **Electron** - MIT License
 - **React** - MIT License
@@ -166,13 +166,13 @@ Full dependency list available in `package.json`.
 ## Support
 
 - **Documentation**: Check this README and inline code comments
-- **Issues**: [GitHub Issues](https://github.com/slimory/slimory/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/slimory/slimory/discussions)
+- **Issues**: [GitHub Issues](https://github.com/slimory/slimory-lite/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/slimory/slimory-lite/discussions)
 
 ---
 
 <div align="center">
 
-[⭐ Star us on GitHub](https://github.com/slimory/slimory) • [🐛 Report Bug](https://github.com/slimory/slimory/issues) • [💡 Request Feature](https://github.com/slimory/slimory/issues)
+[⭐ Star us on GitHub](https://github.com/slimory/slimory-lite) • [🐛 Report Bug](https://github.com/slimory/slimory-lite/issues) • [💡 Request Feature](https://github.com/slimory/slimory-lite/issues)
 
 </div>

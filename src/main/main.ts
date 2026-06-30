@@ -326,7 +326,7 @@ const createTray = () => {
     
     tray = new Tray(resizedIcon)
     
-    tray.setToolTip('Slimory')
+    tray.setToolTip('SlimoryLite')
 
     updateTrayMenu()
     

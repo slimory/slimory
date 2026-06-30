@@ -3,7 +3,7 @@
 ## Project Structure
 
 ```
-slimory/
+slimory-lite/
 ├── src/
 │   ├── main/              # Electron main process
 │   ├── renderer/          # React renderer process (UI)

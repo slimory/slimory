@@ -58,7 +58,7 @@
     },
     "conversation": {
         "noConversations": "এখনও কোনও কথোপকথন নেই",
-        "startNewConversation": "Slimory এর সাথে চ্যাট করতে নির্দ্বিধায়",
+        "startNewConversation": "SlimoryLite এর সাথে চ্যাট করতে নির্দ্বিধায়",
         "newConversation": "নতুন কথোপকথন"
     },
     "tooltip": {
@@ -67,7 +67,7 @@
         "close": "বন্ধ করুন"
     },
     "onboarding": {
-        "welcome": "Slimory এ স্বাগতম",
+        "welcome": "SlimoryLite এ স্বাগতম",
         "next": "পরবর্তী",
         "previous": "পূর্ববর্তী",
         "close": "বন্ধ করুন",

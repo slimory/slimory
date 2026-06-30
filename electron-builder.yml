@@ -1,5 +1,5 @@
 appId: com.evita.slimory
-productName: Slimory
+productName: SlimoryLite
 
 directories:
   output: release

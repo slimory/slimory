@@ -1,6 +1,6 @@
-# Contributing to Slimory
+# Contributing to SlimoryLite
 
-Thank you for your interest in contributing to Slimory! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to SlimoryLite! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 2. **Clone your fork**:
    ```bash
-   git clone https://github.com/slimory/slimory.git
+   git clone https://github.com/slimory/slimory-lite.git
    cd slimory
    ```
 
@@ -73,7 +73,7 @@ If you need to modify the text modification functionality, you'll need to compil
 ## Project Structure
 
 ```
-slimory-pc/
+slimory-lite/
 ├── src/
 │   ├── main/              # Electron main process
 │   │   ├── main.ts        # Main entry point
@@ -303,7 +303,7 @@ When reporting a bug, please include:
 - **Environment**:
   - OS version
   - Node.js version
-  - Slimory version
+  - SlimoryLite version
 - **Screenshots/Logs**: If applicable
 - **Additional Context**: Any other relevant information
 
@@ -354,8 +354,8 @@ npx electron-rebuild
 
 ## License
 
-By contributing to Slimory, you agree that your contributions will be licensed under the MIT License.
+By contributing to SlimoryLite, you agree that your contributions will be licensed under the MIT License.
 
 ---
 
-Thank you for contributing to Slimory! Your efforts help make this project better for everyone. 🎉
+Thank you for contributing to SlimoryLite! Your efforts help make this project better for everyone. 🎉

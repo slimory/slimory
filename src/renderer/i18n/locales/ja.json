@@ -58,7 +58,7 @@
     },
     "conversation": {
         "noConversations": "まだ会話がありません",
-        "startNewConversation": "Slimoryとチャットしてください",
+        "startNewConversation": "SlimoryLiteとチャットしてください",
         "newConversation": "新しい会話"
     },
     "tooltip": {
@@ -67,7 +67,7 @@
         "close": "閉じる"
     },
     "onboarding": {
-        "welcome": "Slimoryへようこそ",
+        "welcome": "SlimoryLiteへようこそ",
         "next": "次へ",
         "previous": "前へ",
         "close": "閉じる",

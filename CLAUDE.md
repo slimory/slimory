@@ -6,7 +6,7 @@ This file defines how the AI agent operates in this project. Read it on every se
 
 ## Project Context
 
-Slimory is an Electron + React desktop application that provides AI assistance across all Windows applications through text selection. All project knowledge lives in documentation — read docs first, update docs when you make changes.
+SlimoryLite is an Electron + React desktop application that provides AI assistance across all Windows applications through text selection. All project knowledge lives in documentation — read docs first, update docs when you make changes.
 
 **Read on session start** (essential context):
 
@@ -165,7 +165,7 @@ On every new session:
 
 ---
 
-## Slimory-Specific Guidelines
+## SlimoryLite-Specific Guidelines
 
 ### Electron Architecture
 - **Main Process** (`src/main/`): System integration, global shortcuts, IPC handlers

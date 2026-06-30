@@ -58,7 +58,7 @@
     },
     "conversation": {
         "noConversations": "لا توجد محادثات بعد",
-        "startNewConversation": "لا تتردد في الدردشة مع Slimory",
+        "startNewConversation": "لا تتردد في الدردشة مع SlimoryLite",
         "newConversation": "محادثة جديدة"
     },
     "tooltip": {
@@ -67,7 +67,7 @@
         "close": "إغلاق"
     },
     "onboarding": {
-        "welcome": "مرحبًا بك في Slimory",
+        "welcome": "مرحبًا بك في SlimoryLite",
         "next": "التالي",
         "previous": "السابق",
         "close": "إغلاق",

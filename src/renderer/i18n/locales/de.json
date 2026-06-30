@@ -58,7 +58,7 @@
     },
     "conversation": {
         "noConversations": "Noch keine Unterhaltungen",
-        "startNewConversation": "Chatten Sie gerne mit Slimory",
+        "startNewConversation": "Chatten Sie gerne mit SlimoryLite",
         "newConversation": "Neue Unterhaltung"
     },
     "tooltip": {
@@ -67,7 +67,7 @@
         "close": "Schließen"
     },
     "onboarding": {
-        "welcome": "Willkommen bei Slimory",
+        "welcome": "Willkommen bei SlimoryLite",
         "next": "Weiter",
         "previous": "Zurück",
         "close": "Schließen",

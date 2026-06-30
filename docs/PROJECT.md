@@ -1,10 +1,10 @@
-# Slimory Project Overview
+# SlimoryLite Project Overview
 
 ## Project Name
-Slimory
+SlimoryLite
 
 ## Description
-An open-source, free AI desktop assistant for Windows that works in any application. Slimory brings powerful AI capabilities directly to your workflow by allowing you to select any text in any application and instantly get AI-powered explanations, translations, or answers without breaking your flow.
+An open-source, free AI desktop assistant for Windows that works in any application. SlimoryLite brings powerful AI capabilities directly to your workflow by allowing you to select any text in any application and instantly get AI-powered explanations, translations, or answers without breaking your flow.
 
 ## Vision
 To create a universal AI assistant that seamlessly integrates into users' existing workflows, eliminating context switching and making AI assistance accessible anywhere on Windows.
@@ -42,7 +42,7 @@ To create a universal AI assistant that seamlessly integrates into users' existi
 - **Main Process**: Electron main process handling system integration, global shortcuts, and native operations
 - **Renderer Process**: React-based UI for chat interface and settings
 - **Native Modules**: C# executables for Windows UI Automation
-- **Local Storage**: All data stored locally in %APPDATA%/Roaming/slimory/
+- **Local Storage**: All data stored locally in %APPDATA%/Roaming/slimory-lite/
 
 ## Key Features
 1. **Universal Text Selection**: Works across all Windows applications
@@ -59,7 +59,6 @@ To create a universal AI assistant that seamlessly integrates into users' existi
 - Output: `release/` directory
 
 ## Links
-- Website: https://slimory.cc/
-- Repository: https://github.com/slimory/slimory
-- Issues: https://github.com/slimory/slimory/issues
-- Discussions: https://github.com/slimory/slimory/discussions
+- Repository: https://github.com/slimory/slimory-lite
+- Issues: https://github.com/slimory/slimory-lite/issues
+- Discussions: https://github.com/slimory/slimory-lite/discussions

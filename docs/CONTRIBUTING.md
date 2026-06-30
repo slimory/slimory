@@ -1,4 +1,4 @@
-# Contributing to Slimory
+# Contributing to SlimoryLite
 
 ## Development Setup
 

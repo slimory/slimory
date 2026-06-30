@@ -58,7 +58,7 @@
     },
     "conversation": {
         "noConversations": "Aún no hay conversaciones",
-        "startNewConversation": "Siéntete libre de chatear con Slimory",
+        "startNewConversation": "Siéntete libre de chatear con SlimoryLite",
         "newConversation": "Nueva conversación"
     },
     "tooltip": {
@@ -67,7 +67,7 @@
         "close": "Cerrar"
     },
     "onboarding": {
-        "welcome": "Bienvenido a Slimory",
+        "welcome": "Bienvenido a SlimoryLite",
         "next": "Siguiente",
         "previous": "Anterior",
         "close": "Cerrar",
