@@ -591,6 +591,13 @@ const SettingsPanel = () => {
         const result = await window.electronAPI.updateCustomAction(editingCustomActionId, updated)
         if (result.success) {
             setCustomActions(customActions.map(a => a.id === editingCustomActionId ? { ...a, ...updated } : a))
+            // Sync the updated name to menuActions displayName
+            setMenuActions(prev => prev.map(action => {
+                if (action.name === `custom:${editingCustomActionId}`) {
+                    return { ...action, displayName: updated.name }
+                }
+                return action
+            }))
             setCustomActionName('')
             setCustomActionPrompt('')
             setCustomActionCanEdit(false)
@@ -1106,14 +1113,16 @@ const SettingsPanel = () => {
                                                         <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'block', marginBottom: '4px' }}>
                                                             {t('settings.customActionName')}
                                                         </label>
-                                                        <input
-                                                            type="text"
+                                                        <textarea
+                                                            // type="text"
                                                             value={customActionName}
                                                             onChange={e => setCustomActionName(e.target.value)}
+                                                            rows={1}
                                                             placeholder={t('settings.customActionNamePlaceholder')}
                                                             style={{
                                                                 width: '100%', padding: '6px 10px', fontSize: '13px',
                                                                 border: '1px solid #d1d5db', borderRadius: '6px', outline: 'none',
+                                                                resize: 'none', fontFamily: 'inherit',
                                                                 boxSizing: 'border-box'
                                                             }}
                                                         />
