@@ -43,6 +43,7 @@ Select text anywhere in Windows and get instant AI assistance:
 - **Translate** - Convert text between any language pairs
 - **Explain** - Get detailed explanations of complex concepts
 - **Ask** - Ask follow-up questions about selected content
+- **Custom Actions** - Create your own AI commands with personalized prompts
 
 Works in:
 - PDF readers (Adobe, Foxit, browsers)
@@ -60,7 +61,18 @@ Press Ctrl+Space to show or hide the chat interface at any time.
 
 ### Text Modification
 
-SlimoryLite can also **modify text** in any editing interface. It is not included in the selection menu by default, but you can add it in the settings panel.
+SlimoryLite can also **modify selected text** directly in any editing interface. This feature is not included in the selection menu by default, but you can add it in the settings panel.
+
+### Custom Actions
+
+Create personalized AI commands tailored to your workflow:
+
+- **Custom Prompts** - Define your own instructions for the AI (e.g., "Summarize in bullet points", "Translate to formal tone", "Extract key dates")
+- **Custom Icons** - Choose from a library of icons to visually identify your actions
+- **Text Editing** - Enable the "Can Edit" option to allow custom actions to modify the selected text directly in place
+- **Quick Access** - Add your custom actions to the selection menu for instant access
+
+Custom actions appear alongside built-in commands in the text selection menu, giving you full control over how you interact with AI assistance.
 
 ### Internationalization
 
