@@ -30,8 +30,20 @@ export default defineConfig({
                                     return true
                                 }
                                 // Externalize @xenova/transformers and its dependencies
-                                if (id.startsWith('@xenova/transformers') || 
+                                if (id.startsWith('@xenova/transformers') ||
                                     id.startsWith('onnxruntime')) {
+                                    return true
+                                }
+                                // Externalize pi-ai and its provider SDKs (Node.js ESM modules)
+                                if (id.startsWith('@earendil-works/pi-ai') ||
+                                    id.startsWith('@anthropic-ai/') ||
+                                    id.startsWith('@mistralai/') ||
+                                    id.startsWith('@google/') ||
+                                    id.startsWith('openai') ||
+                                    id.startsWith('@opentelemetry/') ||
+                                    id.startsWith('@aws-sdk/') ||
+                                    id === 'typebox' ||
+                                    id.startsWith('partial-json')) {
                                     return true
                                 }
                                 // Externalize any .node files (native modules)

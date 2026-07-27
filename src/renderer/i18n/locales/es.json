@@ -9,8 +9,8 @@
         "placeholder": "Ingrese su pregunta...",
         "initialMessage": "¿Cómo puedo ayudarte con \"{{text}}\"?",
         "send": "Enviar",
-        "thinkingStart": "思考中",
-        "thinkingEnd": "思考終了"
+        "thinkingStart": "Pensando",
+        "thinkingEnd": "Pensamiento terminado"
     },
     "alt": {
         "translate": "Traducir",
@@ -31,6 +31,8 @@
         "model": "Modelo:",
         "modelPlaceholder": "Ingrese el nombre del modelo (opcional)",
         "defaultModelHint": "Modelo predeterminado: {{defaultModel}}",
+        "reasoningEffort": "Esfuerzo de razonamiento:",
+        "customModel": "Personalizado...",
         "wordSelection": "Selección de palabras",
         "wordSelectionDescription": "Controlar si se habilita el menú de selección de palabras",
         "enableWordSelection": "Habilitar selección de palabras",
@@ -54,7 +56,26 @@
         "errorVerify": "Error al verificar la clave de API",
         "errorAtLeastOneAction": "Debe mantenerse al menos una acción",
         "save": "Guardar",
-        "saving": "Guardando..."
+        "saving": "Guardando...",
+        "customActions": "Acciones personalizadas",
+        "customActionsDescription": "Cree acciones personalizadas con sus propios avisos",
+        "addCustomAction": "Añadir acción personalizada",
+        "editCustomAction": "Editar acción personalizada",
+        "deleteCustomAction": "Eliminar acción personalizada",
+        "customActionName": "Nombre de la acción",
+        "customActionNamePlaceholder": "Ingrese el nombre de la acción",
+        "customActionPrompt": "Plantilla de aviso",
+        "customActionPromptPlaceholder": "Ingrese la plantilla de aviso (use {{text}} para el texto seleccionado)",
+        "customActionPromptHint": "Use {{text}} como marcador de posición para el texto seleccionado",
+        "customActionCanEdit": "Habilitar capacidad de edición",
+        "customActionCanEditHint": "Cuando está habilitado, la respuesta de IA reemplazará directamente el texto seleccionado",
+        "customActionIcon": "Icono",
+        "customActionIconSearch": "Buscar iconos...",
+        "noCustomActions": "No se han creado acciones personalizadas",
+        "confirmDeleteCustomAction": "¿Está seguro de que desea eliminar esta acción personalizada?",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "edit": "Editar"
     },
     "conversation": {
         "noConversations": "Aún no hay conversaciones",

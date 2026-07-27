@@ -1,5 +1,8 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { Type } from '@earendil-works/pi-ai'
+import { streamSimple, getModels, clampThinkingLevel } from '@earendil-works/pi-ai'
+import type { Context, ToolCall, ThinkingLevel, ModelThinkingLevel, KnownProvider, Api, Model, Message as PiMessage, Tool as PiTool } from '@earendil-works/pi-ai'
 import { ChatConfig } from '../config/chatConfig'
 import { toolRegistry, executeTool } from '../tools'
 import { PromptLoader } from '../prompts/loader'
@@ -23,6 +26,19 @@ export interface ChatResponse {
     done: boolean
 }
 
+// Map internal provider keys to pi-ai known provider names
+const PI_AI_PROVIDER_MAP: Record<string, KnownProvider> = {
+    'deepseek': 'deepseek',
+    'moonshot': 'moonshotai',
+    'openai': 'openai',
+    'anthropic': 'anthropic',
+    'gemini': 'google',
+    'groq': 'groq',
+    'fireworks': 'fireworks',
+    'minimax': 'minimax',
+    'openrouter': 'openrouter',
+}
+
 export class ChatService {
     private config: ChatConfig
     private promptsDir: string
@@ -30,7 +46,6 @@ export class ChatService {
 
     constructor(config: ChatConfig) {
         this.config = config
-        // Use ES module compatible way to get directory path
         const __filename = fileURLToPath(import.meta.url)
         const __dirname = path.dirname(__filename)
         this.promptsDir = path.join(__dirname, '..', 'prompts')
@@ -68,103 +83,529 @@ export class ChatService {
     }
 
     /**
+     * Check if pi-ai can handle this provider/model combination
+     */
+    private isPiAiSupported(): boolean {
+        const piProvider = PI_AI_PROVIDER_MAP[this.config.provider]
+        if (!piProvider) return false
+        if (!this.config.model) return false
+        return getModels(piProvider).some(m => m.id === this.config.model)
+    }
+
+    /**
+     * Convert internal ChatMessage[] to pi-ai Context
+     */
+    private chatMessagesToContext(
+        messages: ChatMessage[],
+        systemPrompt?: string,
+        tools?: PiTool[]
+    ): Context {
+        const piMessages: PiMessage[] = []
+        let effectiveSystemPrompt = systemPrompt
+
+        for (const msg of messages) {
+            if (msg.role === 'system') {
+                // Use first system message as systemPrompt fallback if not provided explicitly
+                if (!effectiveSystemPrompt) {
+                    effectiveSystemPrompt = msg.content
+                }
+                continue
+            } else if (msg.role === 'user') {
+                piMessages.push({
+                    role: 'user',
+                    content: msg.content,
+                    timestamp: Date.now(),
+                })
+            } else if (msg.role === 'assistant') {
+                const content: Array<{ type: 'text'; text: string } | ToolCall> = []
+                if (msg.content) {
+                    content.push({ type: 'text', text: msg.content })
+                }
+                if (msg.tool_calls) {
+                    for (const tc of msg.tool_calls) {
+                        let args: Record<string, any> = {}
+                        try {
+                            args = JSON.parse(tc.function.arguments)
+                        } catch { /* keep empty object */ }
+                        content.push({
+                            type: 'toolCall',
+                            id: tc.id,
+                            name: tc.function.name,
+                            arguments: args,
+                        })
+                    }
+                }
+                piMessages.push({
+                    role: 'assistant',
+                    content: content.length > 0 ? content : [{ type: 'text', text: '' }],
+                    api: 'openai-completions',
+                    provider: this.config.provider,
+                    model: this.config.model || '',
+                    usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
+                    stopReason: 'stop',
+                    timestamp: Date.now(),
+                })
+            } else if (msg.role === 'tool') {
+                piMessages.push({
+                    role: 'toolResult',
+                    toolCallId: msg.tool_call_id || '',
+                    toolName: '',
+                    content: [{ type: 'text', text: msg.content }],
+                    isError: false,
+                    timestamp: Date.now(),
+                })
+            }
+        }
+
+        return {
+            systemPrompt: effectiveSystemPrompt,
+            messages: piMessages,
+            tools,
+        }
+    }
+
+    /**
+     * Convert toolRegistry definitions to pi-ai Tool[] format
+     */
+    private getPiAiTools(): PiTool[] {
+        const toolDefs = toolRegistry.getToolDefinitions()
+        return toolDefs.map(td => {
+            // Build TypeBox-compatible schema from JSON Schema
+            const props: Record<string, any> = {}
+            if (td.function.parameters?.properties) {
+                for (const [key, prop] of Object.entries(td.function.parameters.properties)) {
+                    const propSchema: Record<string, any> = { type: (prop as any).type }
+                    if ((prop as any).description) propSchema.description = (prop as any).description
+                    if ((prop as any).enum) propSchema.enum = (prop as any).enum
+                    if ((prop as any).default !== undefined) propSchema.default = (prop as any).default
+                    if ((prop as any).items) propSchema.items = (prop as any).items
+                    if ((prop as any).required) propSchema.required = (prop as any).required
+                    props[key] = propSchema
+                }
+            }
+            const required: string[] = td.function.parameters?.required || []
+            const schema = Type.Object(props as any, { additionalProperties: false })
+            // Override required if present
+            if (required.length > 0) {
+                (schema as any).required = required
+            }
+
+            return {
+                name: td.function.name,
+                description: td.function.description,
+                parameters: schema,
+            } as PiTool
+        })
+    }
+
+    /**
+     * Determine the reasoning level from config, clamped to model capabilities
+     */
+    private getReasoningLevel(model: Model<Api>): ThinkingLevel | undefined {
+        const effort = (this.config.reasoningEffort || 'off') as ModelThinkingLevel
+        if (effort === 'off') return undefined
+        const clamped = clampThinkingLevel(model, effort)
+        return clamped !== 'off' ? clamped : undefined
+    }
+
+    private async *generateStreamingWithPiAi(
+        messages: ChatMessage[],
+        systemPrompt?: string
+    ): AsyncGenerator<ChatResponse, void, unknown> {
+        const piProvider = PI_AI_PROVIDER_MAP[this.config.provider]
+        const model = getModels(piProvider).find(m => m.id === (this.config.model || ''))
+        if (!model) {
+            throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
+        }
+
+        // Determine reasoning level from config (ignoring the deprecated thinking flag)
+        const reasoning = this.getReasoningLevel(model)
+
+        const context = this.chatMessagesToContext(messages, systemPrompt)
+
+        const eventStream = streamSimple(model, context, {
+            apiKey: this.config.apiKey,
+            reasoning,
+        })
+
+        for await (const event of eventStream) {
+            switch (event.type) {
+                case 'text_delta':
+                    yield { content: event.delta, done: false }
+                    break
+                case 'done':
+                    yield { content: '', done: true }
+                    return
+                case 'error':
+                    throw new Error(event.error?.errorMessage || 'Stream error')
+            }
+        }
+    }
+
+    /**
+     * Generate streaming response with tool support using pi-ai
+     */
+    private async *generateStreamingWithToolsPiAi(
+        messages: ChatMessage[],
+        systemPrompt?: string,
+        onToolCall?: (toolCalls: Array<{ id: string; name: string; arguments: any }>) => void,
+        tools?: PiTool[],
+        onToolCallDetected?: (toolCallName: string, index: number) => void
+    ): AsyncGenerator<ChatResponse & { finishReason?: string; toolCalls?: any[] }, void, unknown> {
+        const piProvider = PI_AI_PROVIDER_MAP[this.config.provider]
+        const model = getModels(piProvider).find(m => m.id === (this.config.model || ''))
+        if (!model) {
+            throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
+        }
+
+        const piTools = tools || this.getPiAiTools()
+        const context = this.chatMessagesToContext(messages, systemPrompt, piTools)
+
+        // Determine reasoning level from config
+        const reasoning = this.getReasoningLevel(model)
+        const eventStream = streamSimple(model, context, {
+            apiKey: this.config.apiKey,
+            reasoning,
+        } as Record<string, unknown>)
+
+        const toolCallsMap = new Map<number, ToolCall>()
+        let detectedToolNames = new Map<number, string>()
+
+        for await (const event of eventStream) {
+            switch (event.type) {
+                case 'text_delta':
+                    yield { content: event.delta, done: false }
+                    break
+                case 'thinking_delta':
+                    // Optionally yield thinking content; for now skip
+                    break
+                case 'toolcall_start':
+                    // pi-ai provides contentIndex to identify which tool call
+                    break
+                case 'toolcall_delta':
+                    // Accumulate streaming tool call args
+                    {
+                        const toolCall = event.partial.content[event.contentIndex]
+                        if (toolCall && toolCall.type === 'toolCall') {
+                            const existing = toolCallsMap.get(event.contentIndex)
+                            if (!existing && toolCall.name) {
+                                toolCallsMap.set(event.contentIndex, {
+                                    type: 'toolCall',
+                                    id: toolCall.id,
+                                    name: toolCall.name,
+                                    arguments: toolCall.arguments || {},
+                                })
+                                // Notify callback for tool name detection
+                                if (onToolCallDetected) {
+                                    const prev = detectedToolNames.get(event.contentIndex) || ''
+                                    if (toolCall.name !== prev) {
+                                        detectedToolNames.set(event.contentIndex, toolCall.name)
+                                        onToolCallDetected(toolCall.name, event.contentIndex)
+                                    }
+                                }
+                            } else if (existing && toolCall.arguments) {
+                                existing.arguments = toolCall.arguments
+                            }
+                        }
+                    }
+                    break
+                case 'toolcall_end':
+                    // Final validated tool call
+                    {
+                        toolCallsMap.set(event.contentIndex, event.toolCall)
+                        if (onToolCallDetected) {
+                            const prev = detectedToolNames.get(event.contentIndex) || ''
+                            if (event.toolCall.name !== prev) {
+                                detectedToolNames.set(event.contentIndex, event.toolCall.name)
+                                onToolCallDetected(event.toolCall.name, event.contentIndex)
+                            }
+                        }
+                    }
+                    break
+                case 'done':
+                    // Report tool calls if any
+                    const finalizedToolCalls = Array.from(toolCallsMap.values())
+                    if (finalizedToolCalls.length > 0 && onToolCall) {
+                        onToolCall(
+                            finalizedToolCalls.map(tc => ({
+                                id: tc.id,
+                                name: tc.name,
+                                arguments: tc.arguments,
+                            }))
+                        )
+                    }
+                    if (event.reason === 'toolUse' && finalizedToolCalls.length > 0) {
+                        yield { content: '', done: true, finishReason: 'tool_calls' }
+                    } else {
+                        yield { content: '', done: true, finishReason: event.reason }
+                    }
+                    return
+                case 'error':
+                    throw new Error(event.error?.errorMessage || event.reason || 'Stream error')
+            }
+        }
+    }
+
+    /**
+     * Legacy raw fetch fallback for providers not in pi-ai catalog (e.g., GLM)
+     */
+    private async *generateStreamingFallback(
+        messages: ChatMessage[],
+        _promptTemplate?: string,
+        _promptVariables?: Record<string, string | undefined>,
+        _tools?: any[],
+        _toolChoice?: string
+    ): AsyncGenerator<any, void, unknown> {
+        const messagesCopy = [...messages]
+
+        const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.config.apiKey}`
+            },
+            body: JSON.stringify({
+                model: this.config.model,
+                messages: messagesCopy,
+                stream: true,
+                temperature: 0.7,
+                ...(_tools && _tools.length > 0 ? { tools: _tools, tool_choice: _toolChoice || 'auto' } : {}),
+            })
+        })
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} ${await response.text()}`)
+        }
+
+        const reader = response.body?.getReader()
+        if (!reader) {
+            throw new Error('No response body reader available')
+        }
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                buffer += decoder.decode(value, { stream: true })
+                const lines = buffer.split('\n')
+                buffer = lines.pop() || ''
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6)
+                        if (data === '[DONE]') {
+                            yield { content: '', done: true }
+                            return
+                        }
+
+                        try {
+                            const parsed = JSON.parse(data)
+                            const content = parsed.choices?.[0]?.delta?.content
+                            if (content) {
+                                yield { content, done: false }
+                            }
+                        } catch {
+                            continue
+                        }
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock()
+        }
+    }
+
+    /**
+     * Legacy raw fetch fallback with tool support for providers not in pi-ai catalog
+     */
+    private async *generateStreamingWithToolsFallback(
+        messages: ChatMessage[],
+        onToolCall?: (toolCalls: Array<{ id: string; name: string; arguments: any }>) => void,
+        tools?: any[],
+        onToolCallDetected?: (toolCallName: string, index: number) => void
+    ): AsyncGenerator<any, void, unknown> {
+        const messagesCopy = [...messages]
+
+        const toolDefinitions = tools || toolRegistry.getToolDefinitions()
+
+        const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.config.apiKey}`
+            },
+            body: JSON.stringify({
+                model: this.config.model,
+                messages: messagesCopy,
+                stream: true,
+                temperature: 0.6,
+                max_tokens: 8000,
+                tools: toolDefinitions.length > 0 ? toolDefinitions : undefined,
+                tool_choice: toolDefinitions.length > 0 ? 'auto' : undefined,
+            })
+        })
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} ${await response.text()}`)
+        }
+
+        const reader = response.body?.getReader()
+        if (!reader) {
+            throw new Error('No response body reader available')
+        }
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+        const toolCalls = new Map<number, any>()
+        let finishReason: string | null = null
+        const detectedToolNames = new Map<number, string>()
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                buffer += decoder.decode(value, { stream: true })
+                const lines = buffer.split('\n')
+                buffer = lines.pop() || ''
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6)
+                        if (data === '[DONE]') {
+                            if (toolCalls.size > 0 && (finishReason === 'tool_calls' || finishReason === null) && onToolCall) {
+                                const arr = Array.from(toolCalls.values())
+                                    .filter((tc: any) => tc.function?.name)
+                                    .map((tc: any) => {
+                                        try {
+                                            return {
+                                                id: tc.id || '',
+                                                name: tc.function.name,
+                                                arguments: tc.function.arguments ? JSON.parse(tc.function.arguments) : {}
+                                            }
+                                        } catch { return null }
+                                    })
+                                    .filter((tc): tc is { id: string; name: string; arguments: any } => tc !== null)
+                                if (arr.length > 0) onToolCall(arr)
+                            }
+                            yield { content: '', done: true, finishReason: finishReason || undefined }
+                            return
+                        }
+
+                        try {
+                            const parsed = JSON.parse(data)
+                            const choice = parsed.choices?.[0]
+
+                            if (choice?.delta?.tool_calls) {
+                                for (const tcd of choice.delta.tool_calls) {
+                                    const idx = tcd.index
+                                    if (!toolCalls.has(idx)) {
+                                        toolCalls.set(idx, {
+                                            id: tcd.id || '',
+                                            type: 'function',
+                                            function: { name: '', arguments: '' }
+                                        })
+                                    }
+                                    const tc = toolCalls.get(idx)!
+                                    if (tcd.id) tc.id = tcd.id
+                                    if (tcd.function?.name) {
+                                        tc.function.name += tcd.function.name
+                                        if (onToolCallDetected) {
+                                            const cur = tc.function.name
+                                            const prev = detectedToolNames.get(idx) || ''
+                                            if (cur !== prev && cur.length > 0) {
+                                                detectedToolNames.set(idx, cur)
+                                                onToolCallDetected(cur, idx)
+                                            }
+                                        }
+                                    }
+                                    if (tcd.function?.arguments) {
+                                        tc.function.arguments += tcd.function.arguments
+                                    }
+                                }
+                            }
+
+                            if (choice?.finish_reason) {
+                                finishReason = choice.finish_reason
+                                if (finishReason === 'tool_calls' && toolCalls.size > 0 && onToolCall) {
+                                    const arr = Array.from(toolCalls.values())
+                                        .filter((tc: any) => tc.function?.name)
+                                        .map((tc: any) => {
+                                            try {
+                                                return {
+                                                    id: tc.id || '',
+                                                    name: tc.function.name,
+                                                    arguments: tc.function.arguments ? JSON.parse(tc.function.arguments) : {}
+                                                }
+                                            } catch { return null }
+                                        })
+                                        .filter((tc): tc is { id: string; name: string; arguments: any } => tc !== null)
+                                    if (arr.length > 0) onToolCall(arr)
+                                }
+                            }
+
+                            const content = choice?.delta?.content
+                            if (content) {
+                                yield { content, done: false }
+                            }
+                        } catch { continue }
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock()
+        }
+    }
+
+    /**
      * Generate streaming response for a chat conversation
      */
     async *generateStreamingResponse(
         messages: ChatMessage[],
         promptTemplate?: string,
-        promptVariables?: Record<string, string | undefined>,
-        _thinking: boolean = false
+        promptVariables?: Record<string, string | undefined>
     ): AsyncGenerator<ChatResponse, void, unknown> {
         try {
-            // Create a copy of messages to avoid mutating the original array
             const messagesCopy = [...messages]
+            let systemPrompt: string | undefined
+
             // Add system prompt if template is provided
             if (promptTemplate && promptVariables) {
-                const systemPrompt = this.loadPrompt(promptTemplate, promptVariables)
-                //console.log('System prompt:', systemPrompt)
+                systemPrompt = this.loadPrompt(promptTemplate, promptVariables)
                 messagesCopy.unshift({
                     role: 'system',
                     content: systemPrompt
                 })
             }
 
-            // console.log(messagesCopy)
+            // console.log('sysprompt', systemPrompt)
 
-            // console.log('thinking:', thinking)
-
-            const shouldSkipThinking = this.config.model?.startsWith('gemini') ||
-                this.config.baseUrl?.includes('groq.com') ||
-                this.config.baseUrl?.includes('fireworks.ai')
-            const thinking = shouldSkipThinking ? {} : { thinking: { "type": _thinking ? "enabled" : "disabled" } }
-            // console.log('thinking:', thinking)
-            console.log(this.config.baseUrl, this.config.apiKey, this.config.model)
-
-            // Only add reasoning_split for OpenAI API (not compatible providers like Groq, Fireworks)
-            const isOpenAI = this.config.baseUrl?.includes('api.openai.com')
-            const extraBody = isOpenAI ? { extra_body: { "reasoning_split": true } } : {}
-
-            const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.config.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: this.config.model,
-                    messages: messagesCopy,
-                    stream: true,
-                    temperature: 0.7,
-                    ...extraBody,
-                    ...thinking
-                })
-            })
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} ${await response.text()}`)
-            }
-
-            const reader = response.body?.getReader()
-            if (!reader) {
-                throw new Error('No response body reader available')
-            }
-
-            const decoder = new TextDecoder()
-            let buffer = ''
-
-            try {
-                while (true) {
-                    const { done, value } = await reader.read()
-                    if (done) break
-
-                    buffer += decoder.decode(value, { stream: true })
-                    const lines = buffer.split('\n')
-                    buffer = lines.pop() || ''
-
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = line.slice(6)
-                            if (data === '[DONE]') {
-                                yield { content: '', done: true }
-                                return
-                            }
-
-                            try {
-                                const parsed = JSON.parse(data)
-                                // console.log('Parsed:', parsed.choices?.[0]?.delta)
-                                const content = parsed.choices?.[0]?.delta?.content
-                                if (content) {
-                                    yield { content, done: false }
-                                }
-                            } catch (e) {
-                                // Skip invalid JSON lines
-                                continue
-                            }
-                        }
+            // Use pi-ai if supported, otherwise fallback
+            if (this.isPiAiSupported()) {
+                try {
+                    for await (const chunk of this.generateStreamingWithPiAi(
+                        messagesCopy,
+                        systemPrompt
+                    )) {
+                        yield chunk
                     }
+                    return
+                } catch (error) {
+                    console.warn('pi-ai streaming failed, falling back to raw fetch:', error)
                 }
-            } finally {
-                reader.releaseLock()
+            }
+
+            // Fallback to raw fetch
+            for await (const chunk of this.generateStreamingFallback(
+                messagesCopy,
+                promptTemplate,
+                promptVariables
+            )) {
+                yield chunk
             }
         } catch (error) {
             console.error('Chat service error:', error)
@@ -191,186 +632,43 @@ export class ChatService {
         onToolCallDetected?: (toolCallName: string, index: number) => void
     ): AsyncGenerator<ChatResponse & { finishReason?: string; toolCalls?: any[] }, void, unknown> {
         try {
-            // Add system prompt if template is provided
             const messagesCopy = [...messages]
+            let systemPrompt: string | undefined
+
             if (promptTemplate && promptVariables) {
-                const systemPrompt = this.loadPrompt(promptTemplate, promptVariables)
+                systemPrompt = this.loadPrompt(promptTemplate, promptVariables)
                 messagesCopy.unshift({
                     role: 'system',
                     content: systemPrompt
                 })
-                // console.log(systemPrompt)
-            }
-            const shouldSkipThinking2 = this.config.model?.startsWith('gemini') ||
-                this.config.baseUrl?.includes('groq.com') ||
-                this.config.baseUrl?.includes('fireworks.ai')
-            const thinking = shouldSkipThinking2 ? {} : { thinking: { "type": "disabled" } }
-            // Get tool definitions - use provided tools or fall back to toolRegistry
-            const toolDefinitions = tools || toolRegistry.getToolDefinitions()
-            // console.log("use model", this.config.model)
-            const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.config.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: this.config.model,
-                    messages: messagesCopy,
-                    stream: true,
-                    temperature: 0.6,
-                    max_tokens: 8000,
-                    ...thinking,
-                    tools: toolDefinitions.length > 0 ? toolDefinitions : undefined,
-                    tool_choice: toolDefinitions.length > 0 ? 'auto' : undefined
-                })
-            })
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} ${await response.text()}`)
             }
 
-            const reader = response.body?.getReader()
-            if (!reader) {
-                throw new Error('No response body reader available')
-            }
-
-            const decoder = new TextDecoder()
-            let buffer = ''
-            let toolCalls: Map<number, any> = new Map()
-            let finishReason: string | null = null
-            let detectedToolNames: Map<number, string> = new Map() // Track detected tool names to avoid duplicate calls
-
-            try {
-                while (true) {
-                    const { done, value } = await reader.read()
-                    if (done) break
-
-                    buffer += decoder.decode(value, { stream: true })
-                    const lines = buffer.split('\n')
-                    buffer = lines.pop() || ''
-
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = line.slice(6)
-                            if (data === '[DONE]') {
-                                // Check if we have tool calls to report (even if finish_reason wasn't set yet)
-                                if (toolCalls.size > 0 && (finishReason === 'tool_calls' || finishReason === null) && onToolCall) {
-                                    const toolCallsArray = Array.from(toolCalls.values())
-                                        .filter(tc => tc.function?.name && tc.function.name.length > 0)
-                                        .map(tc => {
-                                            try {
-                                                return {
-                                                    id: tc.id || '',
-                                                    name: tc.function.name,
-                                                    arguments: tc.function.arguments ? JSON.parse(tc.function.arguments) : {}
-                                                }
-                                            } catch (e) {
-                                                console.error('Error parsing tool call arguments:', e)
-                                                return null
-                                            }
-                                        })
-                                        .filter((tc): tc is { id: string; name: string; arguments: any } => tc !== null)
-                                    if (toolCallsArray.length > 0) {
-                                        onToolCall(toolCallsArray)
-                                    }
-                                    yield { content: '', done: true, finishReason: finishReason || undefined }
-                                    return
-                                }
-                                yield { content: '', done: true, finishReason: finishReason || undefined }
-                                return
-                            }
-
-                            try {
-                                const parsed = JSON.parse(data)
-                                const choice = parsed.choices?.[0]
-                                
-                                // Check for tool calls in delta
-                                if (choice?.delta?.tool_calls) {
-                                    // console.log('Tool calls in delta:', choice.delta.tool_calls)
-                                    for (const toolCallDelta of choice.delta.tool_calls) {
-                                        const index = toolCallDelta.index
-                                        if (!toolCalls.has(index)) {
-                                            toolCalls.set(index, {
-                                                id: toolCallDelta.id || '',
-                                                type: 'function',
-                                                function: {
-                                                    name: '',
-                                                    arguments: ''
-                                                }
-                                            })
-                                        }
-                                        const toolCall = toolCalls.get(index)!
-                                        if (toolCallDelta.id) {
-                                            toolCall.id = toolCallDelta.id
-                                        }
-                                        if (toolCallDelta.function?.name) {
-                                            toolCall.function.name += toolCallDelta.function.name
-                                            
-                                            // Call onToolCallDetected when tool name is detected or updated
-                                            if (onToolCallDetected) {
-                                                const currentName = toolCall.function.name
-                                                const previousName = detectedToolNames.get(index) || ''
-                                                // Only call if name has changed (new detection or update)
-                                                if (currentName !== previousName && currentName.length > 0) {
-                                                    detectedToolNames.set(index, currentName)
-                                                    onToolCallDetected(currentName, index)
-                                                }
-                                            }
-                                        }
-                                        if (toolCallDelta.function?.arguments) {
-                                            toolCall.function.arguments += toolCallDelta.function.arguments
-                                        }
-                                    }
-                                }
-
-                                // Check finish reason
-                                if (choice?.finish_reason) {
-                                    finishReason = choice.finish_reason
-                                    
-                                    // If finish_reason is tool_calls, we need to report it
-                                    if (finishReason === 'tool_calls' && toolCalls.size > 0 && onToolCall) {
-                                        const toolCallsArray = Array.from(toolCalls.values())
-                                            .filter(tc => tc.function?.name && tc.function.name.length > 0)
-                                            .map(tc => {
-                                                try {
-                                                    return {
-                                                        id: tc.id || '',
-                                                        name: tc.function.name,
-                                                        arguments: tc.function.arguments ? JSON.parse(tc.function.arguments) : {}
-                                                    }
-                                                } catch (e) {
-                                                    console.error('Error parsing tool call arguments:', e)
-                                                    return null
-                                                }
-                                            })
-                                            .filter((tc): tc is { id: string; name: string; arguments: any } => tc !== null)
-                                        if (toolCallsArray.length > 0) {
-                                            onToolCall(toolCallsArray)
-                                        }
-                                    }
-                                    // token usage
-                                    const tokenUsage = parsed.usage
-                                    console.log('Token usage:', tokenUsage)
-                                }
-
-                                // Yield content
-                                const content = choice?.delta?.content
-                                // if (content) {
-                                //     console.log('Content in delta:', content)
-                                // }
-                                if (content) {
-                                    yield { content, done: false }
-                                }
-                            } catch (e) {
-                                // Skip invalid JSON lines
-                                continue
-                            }
-                        }
+            // Use pi-ai if supported
+            if (this.isPiAiSupported()) {
+                try {
+                    for await (const chunk of this.generateStreamingWithToolsPiAi(
+                        messagesCopy,
+                        systemPrompt,
+                        onToolCall,
+                        undefined,
+                        onToolCallDetected
+                    )) {
+                        yield chunk
                     }
+                    return
+                } catch (error) {
+                    console.warn('pi-ai streaming with tools failed, falling back to raw fetch:', error)
                 }
-            } finally {
-                reader.releaseLock()
+            }
+
+            // Fallback
+            for await (const chunk of this.generateStreamingWithToolsFallback(
+                messagesCopy,
+                onToolCall,
+                tools,
+                onToolCallDetected
+            )) {
+                yield chunk
             }
         } catch (error) {
             console.error('Chat service error:', error)
@@ -392,28 +690,28 @@ export class ChatService {
 
         const currentMessages: ChatMessage[] = []
         for (const msg of messages) {
-            if (msg.role == 'user' || !msg.originalMessages) {
+            if (msg.role === 'user' || !msg.originalMessages) {
                 currentMessages.push({
                     role: msg.role,
                     content: msg.content
                 } as ChatMessage)
             } else {
-                let t = msg.content.split(/(<\[.*?\] start>[\s\S]*?<\/\[.*?\] end>)/)
-                let o = [...msg.originalMessages]
+                const t = msg.content.split(/(<\[.*?\] start>[\s\S]*?<\/\[.*?\] end>)/)
+                const o = [...msg.originalMessages]
                 if (t.length === o.length + 1) {
                     for (let i = 0; i < o.length; i++) {
-                        if (o[i].role === 'tool') continue;
+                        if (o[i].role === 'tool') continue
                         o[i]['content'] = t[i].trim()
                     }
                     currentMessages.push(...o)
                 }
-                currentMessages.push({role: msg.role, content: t[t.length - 1]} as ChatMessage)
+                currentMessages.push({ role: msg.role, content: t[t.length - 1] } as ChatMessage)
             }
         }
 
-        // Get current date information (once for the entire conversation)
+        // Get current date information
         const now = new Date()
-        const currentDate = now.toISOString().split('T')[0] // YYYY-MM-DD
+        const currentDate = now.toISOString().split('T')[0]
         const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()]
         const weekNumber = this.getWeekNumber(now)
         const year = now.getFullYear().toString()
@@ -422,30 +720,24 @@ export class ChatService {
         const start = currentMessages.length
         const messagesForTool: Map<string, ChatMessage[]> = new Map()
 
-        let maxIterations = 20 // Prevent infinite loops
+        let maxIterations = 20
         let iteration = 0
-        let allResources: Array<{ index: number; url: string; title?: string; source?: string }> = [] // 收集所有 resources
+        let allResources: Array<{ index: number; url: string; title?: string; source?: string }> = []
         let shouldBreak = false
         let shouldStop = false
 
         console.log('currentMessages', currentMessages)
 
         while (iteration < maxIterations) {
-            if (shouldStop) {
-                // console.log('shouldStop1', shouldStop)
-                break
-            }
+            if (shouldStop) break
             iteration++
-            
+
             let toolCallsToExecute: Array<{ id: string; name: string; arguments: any }> = []
 
-            // Callback for tool calls
             const handleToolCall = (toolCalls: Array<{ id: string; name: string; arguments: any }>) => {
                 toolCallsToExecute = toolCalls
             }
 
-            // Generate response (may include tool calls)
-            let hasContent = false
             let finishReason: string | null = null
 
             for await (const chunk of this.generateStreamingResponseWithTools(
@@ -461,29 +753,24 @@ export class ChatService {
                     monthName
                 },
                 handleToolCall,
-                undefined // Use default tools from toolRegistry
+                undefined
             )) {
-                hasContent = hasContent || !!chunk.content
                 if (chunk.finishReason) {
                     finishReason = chunk.finishReason
                 }
-                // 在每次 yield 时都带上当前的 resources
-                yield { 
-                    ...chunk, 
+                yield {
+                    ...chunk,
                     resources: allResources.length > 0 ? allResources : undefined
                 }
             }
 
-            // console.log('Tool calls to execute:', toolCallsToExecute)
             console.log('Finish reason:', finishReason)
 
-            // If no tool calls or finish_reason is 'stop', we're done
             if (toolCallsToExecute.length === 0 || finishReason === 'stop') {
                 shouldBreak = true
                 break
             }
 
-            // Execute all tool calls
             const toolResults: Array<{ tool_call_id: string; role: 'tool'; content: string }> = []
             const assistantToolCalls: Array<{
                 id: string
@@ -495,18 +782,16 @@ export class ChatService {
             }> = []
 
             for (const toolCall of toolCallsToExecute) {
-                if (shouldStop) {
-                    // console.log('shouldStop2', shouldStop)
-                    break
-                }
+                if (shouldStop) break
                 console.log('Tool call:', toolCall)
-                const wrappedOnStatusUpdate = onStatusUpdate 
+
+                const wrappedOnStatusUpdate = onStatusUpdate
                     ? (status: 'start' | 'processing' | 'end', message: string) => {
-                        // console.log('wrappedOnStatusUpdate', status, message)
                         shouldStop = onStatusUpdate(toolCall.id, toolCall.name, status, message)
                         return shouldStop
                     }
                     : undefined
+
                 if (!messagesForTool.has(toolCall.name)) {
                     messagesForTool.set(toolCall.name, [])
                     let currentToolId = ''
@@ -517,9 +802,7 @@ export class ChatService {
                                 const existTool = msg.originalMessages[index].tool_calls?.find((tool: any) => tool.function.name === toolCall.name)
                                 if (msg.originalMessages[index].role === 'assistant' && existTool) {
                                     let content = ''
-                                    try {
-                                        content = JSON.parse(existTool?.function.arguments || '{}').instruction || ''
-                                    } catch {}
+                                    try { content = JSON.parse(existTool?.function.arguments || '{}').instruction || '' } catch { }
                                     messagesForTool.get(toolCall.name)?.push({
                                         role: 'user',
                                         content: content
@@ -539,17 +822,14 @@ export class ChatService {
 
                 console.log('start tool execute')
                 const toolResult = await executeTool(toolCall.name, toolCall.arguments || {}, wrappedOnStatusUpdate, currentLangCode, messagesForTool.get(toolCall.name) || [], conversationId)
-                // console.log('Tool result:', toolResult)
-                // if (onToolComplete) {
-                    // onToolComplete(toolCall.id, toolCall.name, JSON.stringify(toolResult))
-                // }
+
                 const formatToolResult = (toolName: string, result: any): { content: string; resources?: Array<{ index: number; url: string; title?: string; source?: string }> } => {
                     if (toolName === 'web_search' && result.success && result.data?.results) {
                         const results = result.data.results
                         const resources: Array<{ index: number; url: string; title?: string; source?: string }> = []
-                        
+
                         let formattedContent = `Web search results for "${result.data.query}":\n\n`
-                        
+
                         results.forEach((item: any, idx: number) => {
                             const resourceIndex = allResources.length + idx + 1
                             resources.push({
@@ -558,7 +838,7 @@ export class ChatService {
                                 title: item.title || item.pageTitle,
                                 source: item.source || ''
                             })
-                            
+
                             formattedContent += `[${resourceIndex}] ${item.title || item.pageTitle || 'Untitled'}\n`
                             formattedContent += `URL: ${item.url}\n`
                             if (item.source) {
@@ -572,14 +852,14 @@ export class ChatService {
                             }
                             formattedContent += '\n'
                         })
-                        
+
                         return { content: formattedContent, resources }
                     } else if (toolName === 'fetch_url_content' && result.success && result.data?.results) {
                         const results = result.data.results
                         const resources: Array<{ index: number; url: string; title?: string; source?: string }> = []
-                        
+
                         let formattedContent = `Fetched content from ${result.data.successful}/${result.data.total} URLs:\n\n`
-                        
+
                         results.forEach((item: any) => {
                             if (item.hasContent) {
                                 const resourceIndex = allResources.length + resources.length + 1
@@ -588,7 +868,7 @@ export class ChatService {
                                     url: item.url,
                                     title: item.title
                                 })
-                                
+
                                 formattedContent += `[${resourceIndex}] ${item.title || 'Untitled'}\n`
                                 formattedContent += `URL: ${item.url}\n`
                                 if (item.content) {
@@ -603,7 +883,7 @@ export class ChatService {
                                 formattedContent += '\n'
                             }
                         })
-                        
+
                         return { content: formattedContent, resources }
                     } else {
                         return { content: JSON.stringify(result) }
@@ -611,7 +891,7 @@ export class ChatService {
                 }
 
                 const formattedResult = formatToolResult(toolCall.name, toolResult)
-                
+
                 if (formattedResult.resources) {
                     allResources.push(...formattedResult.resources)
                 }
@@ -632,7 +912,6 @@ export class ChatService {
                     content: formattedResult.content
                 })
 
-                // Store tool call for assistant message
                 assistantToolCalls.push({
                     id: toolCall.id,
                     type: 'function',
@@ -643,7 +922,6 @@ export class ChatService {
                 })
             }
 
-            // Add assistant message with tool calls
             if (assistantToolCalls.length > 0) {
                 currentMessages.push({
                     role: 'assistant',
@@ -652,7 +930,6 @@ export class ChatService {
                 })
             }
 
-            // Add tool result messages
             for (const toolResult of toolResults) {
                 currentMessages.push({
                     role: 'tool',
@@ -660,16 +937,11 @@ export class ChatService {
                     tool_call_id: toolResult.tool_call_id
                 })
             }
-
-            // Continue loop to get final response
         }
 
-        // If we reached max iterations without normal completion, generate a summary response
         if (iteration >= maxIterations && !shouldBreak) {
             console.log('Reached max iterations, generating summary response...')
-            
-            // Use a dedicated summary prompt that doesn't include tool instructions
-            // Generate final summary response based on currentMessages without tools
+
             for await (const chunk of this.generateStreamingResponse(
                 currentMessages,
                 'summarize',
@@ -681,8 +953,7 @@ export class ChatService {
                     year,
                     month,
                     monthName
-                },
-                false // No thinking mode
+                }
             )) {
                 yield { ...chunk, resources: allResources.length > 0 ? allResources : undefined }
             }
@@ -691,25 +962,27 @@ export class ChatService {
         onComplete?.(currentMessages.slice(start).map(msg => {
             if (msg.role === 'tool') {
                 try {
-                    let content = JSON.parse(msg.content)
-                    content.data.messages = content.data.messages.map((msg: any) => {
-                        if (msg.role === 'tool') {
-                            let d = JSON.parse(msg.content)
+                    const content = JSON.parse(msg.content)
+                    content.data.messages = content.data.messages.map((m: any) => {
+                        if (m.role === 'tool') {
+                            const d = JSON.parse(m.content)
                             if (d.html) {
-                                return {...msg, content: JSON.stringify({
-                                    'success': d.success,
-                                    'title': d.title,
-                                    'url': d.url,
-                                    'content': '...'
-                                })}
+                                return {
+                                    ...m, content: JSON.stringify({
+                                        'success': d.success,
+                                        'title': d.title,
+                                        'url': d.url,
+                                        'content': '...'
+                                    })
+                                }
                             } else {
-                                return msg
+                                return m
                             }
                         } else {
-                            return msg
+                            return m
                         }
                     })
-                    return {...msg, content: JSON.stringify(content)}
+                    return { ...msg, content: JSON.stringify(content) }
                 } catch {
                     return msg
                 }

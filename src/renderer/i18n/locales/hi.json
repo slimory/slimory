@@ -9,8 +9,8 @@
         "placeholder": "अपना प्रश्न दर्ज करें...",
         "initialMessage": "मैं आपकी \"{{text}}\" के साथ कैसे मदद कर सकता हूं?",
         "send": "भेजें",
-        "thinkingStart": "思考中",
-        "thinkingEnd": "思考終了"
+        "thinkingStart": "सोचना शुरू",
+        "thinkingEnd": "सोचना समाप्त"
     },
     "alt": {
         "translate": "अनुवाद",
@@ -31,6 +31,8 @@
         "model": "मॉडल:",
         "modelPlaceholder": "मॉडल का नाम दर्ज करें (वैकल्पिक)",
         "defaultModelHint": "डिफ़ॉल्ट मॉडल: {{defaultModel}}",
+        "reasoningEffort": "तर्क प्रयास:",
+        "customModel": "कस्टम...",
         "wordSelection": "शब्द चयन",
         "wordSelectionDescription": "नियंत्रित करें कि शब्द चयन मेनू सक्षम करना है या नहीं",
         "enableWordSelection": "शब्द चयन सक्षम करें",
@@ -54,7 +56,26 @@
         "errorVerify": "API कुंजी सत्यापित करने में त्रुटि",
         "errorAtLeastOneAction": "कम से कम एक एक्शन रखना होगा",
         "save": "सहेजें",
-        "saving": "सहेजा जा रहा है..."
+        "saving": "सहेजा जा रहा है...",
+        "customActions": "कस्टम क्रियाएँ",
+        "customActionsDescription": "अपने स्वयं के प्रॉम्प्ट के साथ कस्टम क्रियाएँ बनाएं",
+        "addCustomAction": "कस्टम क्रिया जोड़ें",
+        "editCustomAction": "कस्टम क्रिया संपादित करें",
+        "deleteCustomAction": "कस्टम क्रिया हटाएं",
+        "customActionName": "क्रिया का नाम",
+        "customActionNamePlaceholder": "क्रिया का नाम दर्ज करें",
+        "customActionPrompt": "प्रॉम्प्ट टेम्पलेट",
+        "customActionPromptPlaceholder": "प्रॉम्प्ट टेम्पलेट दर्ज करें (चयनित पाठ के लिए {{text}} का उपयोग करें)",
+        "customActionPromptHint": "चयनित पाठ के लिए प्लेसहोल्डर के रूप में {{text}} का उपयोग करें",
+        "customActionCanEdit": "संपादन क्षमता सक्षम करें",
+        "customActionCanEditHint": "सक्षम होने पर, AI उत्तर सीधे चयनित पाठ को बदल देगा",
+        "customActionIcon": "आइकन",
+        "customActionIconSearch": "आइकन खोजें...",
+        "noCustomActions": "कोई कस्टम क्रिया नहीं बनाई गई",
+        "confirmDeleteCustomAction": "क्या आप वाकई इस कस्टम क्रिया को हटाना चाहते हैं?",
+        "cancel": "रद्द करें",
+        "delete": "हटाएं",
+        "edit": "संपादित करें"
     },
     "conversation": {
         "noConversations": "अभी तक कोई बातचीत नहीं",

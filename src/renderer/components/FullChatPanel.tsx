@@ -224,7 +224,7 @@ const FullChatPanel = () => {
         const messagesContainer = messagesContainerRef.current
         if (!messagesContainer) return
 
-        let timeoutId: NodeJS.Timeout | null = null
+        let timeoutId: ReturnType<typeof setTimeout> | null = null
 
         const handleScroll = () => {
             const { scrollTop, scrollHeight, clientHeight } = messagesContainer
@@ -954,6 +954,17 @@ const FullChatPanel = () => {
                 <div className="message assistant">
                     <div className="message-content error">
                         ⚠️ {streamingState.error}
+                    </div>
+                </div>
+            )
+        }
+
+        if (streamingState.isStreaming && !streamingState.content) {
+            // Show cursor during thinking phase (before any text/tool content arrives)
+            return (
+                <div className="message assistant">
+                    <div className="message-content">
+                        <span className="cursor">|</span>
                     </div>
                 </div>
             )

@@ -9,8 +9,8 @@
         "placeholder": "أدخل سؤالك...",
         "initialMessage": "كيف يمكنني مساعدتك في \"{{text}}\"؟",
         "send": "إرسال",
-        "thinkingStart": "思考中",
-        "thinkingEnd": "思考終了"
+        "thinkingStart": "بدء التفكير",
+        "thinkingEnd": "انتهاء التفكير"
     },
     "alt": {
         "translate": "ترجمة",
@@ -31,6 +31,8 @@
         "model": "النموذج:",
         "modelPlaceholder": "أدخل اسم النموذج (اختياري)",
         "defaultModelHint": "النموذج الافتراضي: {{defaultModel}}",
+        "reasoningEffort": "مستوى الاستدلال:",
+        "customModel": "مخصص...",
         "wordSelection": "تحديد الكلمات",
         "wordSelectionDescription": "التحكم في تفعيل قائمة تحديد الكلمات",
         "enableWordSelection": "تفعيل تحديد الكلمات",
@@ -54,7 +56,26 @@
         "errorVerify": "خطأ في التحقق من مفتاح API",
         "errorAtLeastOneAction": "يجب الاحتفاظ بعمل واحد على الأقل",
         "save": "حفظ",
-        "saving": "جارٍ الحفظ..."
+        "saving": "جارٍ الحفظ...",
+        "customActions": "إجراءات مخصصة",
+        "customActionsDescription": "إنشاء إجراءات مخصصة مع مطالباتك الخاصة",
+        "addCustomAction": "إضافة إجراء مخصص",
+        "editCustomAction": "تعديل إجراء مخصص",
+        "deleteCustomAction": "حذف إجراء مخصص",
+        "customActionName": "اسم الإجراء",
+        "customActionNamePlaceholder": "أدخل اسم الإجراء",
+        "customActionPrompt": "قالب المطالبة",
+        "customActionPromptPlaceholder": "أدخل قالب المطالبة (استخدم {{text}} للنص المحدد)",
+        "customActionPromptHint": "استخدم {{text}} كعنصر نائب للنص المحدد",
+        "customActionCanEdit": "تمكين قدرة التعديل",
+        "customActionCanEditHint": "عند التمكين، سيحل رد الذكاء الاصطناعي محل النص المحدد مباشرة",
+        "customActionIcon": "أيقونة",
+        "customActionIconSearch": "بحث عن أيقونات...",
+        "noCustomActions": "لا توجد إجراءات مخصصة",
+        "confirmDeleteCustomAction": "هل أنت متأكد من حذف هذا الإجراء المخصص؟",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "edit": "تعديل"
     },
     "conversation": {
         "noConversations": "لا توجد محادثات بعد",

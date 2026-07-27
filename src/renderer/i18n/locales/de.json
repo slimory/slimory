@@ -9,8 +9,8 @@
         "placeholder": "Geben Sie Ihre Frage ein...",
         "initialMessage": "Wie kann ich Ihnen bei \"{{text}}\" helfen?",
         "send": "Senden",
-        "thinkingStart": "思考中",
-        "thinkingEnd": "思考終了"
+        "thinkingStart": "Denken",
+        "thinkingEnd": "Denken beendet"
     },
     "alt": {
         "translate": "Übersetzen",
@@ -31,6 +31,8 @@
         "model": "Modell:",
         "modelPlaceholder": "Modellname eingeben (optional)",
         "defaultModelHint": "Standardmodell: {{defaultModel}}",
+        "reasoningEffort": "Argumentationsaufwand:",
+        "customModel": "Benutzerdefiniert...",
         "wordSelection": "Wortauswahl",
         "wordSelectionDescription": "Steuern, ob das Wortauswahlmenü aktiviert werden soll",
         "enableWordSelection": "Wortauswahl aktivieren",
@@ -54,7 +56,26 @@
         "errorVerify": "Fehler beim Überprüfen des API-Schlüssels",
         "errorAtLeastOneAction": "Mindestens eine Aktion muss beibehalten werden",
         "save": "Speichern",
-        "saving": "Speichern..."
+        "saving": "Speichern...",
+        "customActions": "Benutzerdefinierte Aktionen",
+        "customActionsDescription": "Erstellen Sie benutzerdefinierte Aktionen mit eigenen Eingabeaufforderungen",
+        "addCustomAction": "Benutzerdefinierte Aktion hinzufügen",
+        "editCustomAction": "Benutzerdefinierte Aktion bearbeiten",
+        "deleteCustomAction": "Benutzerdefinierte Aktion löschen",
+        "customActionName": "Aktionsname",
+        "customActionNamePlaceholder": "Aktionsnamen eingeben",
+        "customActionPrompt": "Eingabeaufforderungsvorlage",
+        "customActionPromptPlaceholder": "Eingabeaufforderungsvorlage eingeben ({{text}} für ausgewählten Text verwenden)",
+        "customActionPromptHint": "Verwenden Sie {{text}} als Platzhalter für den ausgewählten Text",
+        "customActionCanEdit": "Bearbeitungsfunktion aktivieren",
+        "customActionCanEditHint": "Wenn aktiviert, ersetzt die KI-Antwort den ausgewählten Text direkt",
+        "customActionIcon": "Symbol",
+        "customActionIconSearch": "Symbole suchen...",
+        "noCustomActions": "Keine benutzerdefinierten Aktionen erstellt",
+        "confirmDeleteCustomAction": "Sind Sie sicher, dass Sie diese benutzerdefinierte Aktion löschen möchten?",
+        "cancel": "Abbrechen",
+        "delete": "Löschen",
+        "edit": "Bearbeiten"
     },
     "conversation": {
         "noConversations": "Noch keine Unterhaltungen",

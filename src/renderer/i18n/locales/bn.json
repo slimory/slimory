@@ -9,8 +9,8 @@
         "placeholder": "আপনার প্রশ্ন লিখুন...",
         "initialMessage": "\"{{text}}\" এর সাথে আমি কীভাবে আপনাকে সাহায্য করতে পারি?",
         "send": "পাঠান",
-        "thinkingStart": "思考中",
-        "thinkingEnd": "思考終了"
+        "thinkingStart": "চিন্তা শুরু",
+        "thinkingEnd": "চিন্তা শেষ"
     },
     "alt": {
         "translate": "অনুবাদ",
@@ -31,6 +31,8 @@
         "model": "মডেল:",
         "modelPlaceholder": "মডেলের নাম লিখুন (ঐচ্ছিক)",
         "defaultModelHint": "ডিফল্ট মডেল: {{defaultModel}}",
+        "reasoningEffort": "যুক্তি প্রচেষ্টা:",
+        "customModel": "কাস্টম...",
         "wordSelection": "শব্দ নির্বাচন",
         "wordSelectionDescription": "নিয়ন্ত্রণ করুন যে শব্দ নির্বাচন মেনু সক্ষম করা হবে কিনা",
         "enableWordSelection": "শব্দ নির্বাচন সক্ষম করুন",
@@ -54,7 +56,26 @@
         "errorVerify": "API কী যাচাই করতে ত্রুটি",
         "errorAtLeastOneAction": "অন্তত একটি অ্যাকশন রাখতে হবে",
         "save": "সংরক্ষণ করুন",
-        "saving": "সংরক্ষণ করা হচ্ছে..."
+        "saving": "সংরক্ষণ করা হচ্ছে...",
+        "customActions": "কাস্টম অ্যাকশন",
+        "customActionsDescription": "আপনার নিজস্ব প্রম্পট দিয়ে কাস্টম অ্যাকশন তৈরি করুন",
+        "addCustomAction": "কাস্টম অ্যাকশন যোগ করুন",
+        "editCustomAction": "কাস্টম অ্যাকশন সম্পাদনা করুন",
+        "deleteCustomAction": "কাস্টম অ্যাকশন মুছুন",
+        "customActionName": "অ্যাকশনের নাম",
+        "customActionNamePlaceholder": "অ্যাকশনের নাম লিখুন",
+        "customActionPrompt": "প্রম্পট টেমপ্লেট",
+        "customActionPromptPlaceholder": "প্রম্পট টেমপ্লেট লিখুন (নির্বাচিত পাঠ্যের জন্য {{text}} ব্যবহার করুন)",
+        "customActionPromptHint": "নির্বাচিত পাঠ্যের জন্য {{text}} প্লেসহোল্ডার হিসেবে ব্যবহার করুন",
+        "customActionCanEdit": "সম্পাদনা ক্ষমতা সক্ষম করুন",
+        "customActionCanEditHint": "সক্ষম করা হলে, AI উত্তর সরাসরি নির্বাচিত পাঠ্য প্রতিস্থাপন করবে",
+        "customActionIcon": "আইকন",
+        "customActionIconSearch": "আইকন অনুসন্ধান করুন...",
+        "noCustomActions": "কোনো কাস্টম অ্যাকশন তৈরি করা হয়নি",
+        "confirmDeleteCustomAction": "আপনি কি নিশ্চিতভাবে এই কাস্টম অ্যাকশনটি মুছতে চান?",
+        "cancel": "বাতিল",
+        "delete": "মুছুন",
+        "edit": "সম্পাদনা"
     },
     "conversation": {
         "noConversations": "এখনও কোনও কথোপকথন নেই",

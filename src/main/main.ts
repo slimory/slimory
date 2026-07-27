@@ -10,6 +10,7 @@ import { uIOhook } from 'uiohook-napi'
 import { screen } from 'electron'
 import { ChatService, ChatMessage } from '../services/chatService'
 import { chatConfig } from '../config/chatConfig'
+import { getModels, type KnownProvider } from '@earendil-works/pi-ai'
 import { desktopCapturer } from 'electron'
 import { ConversationStorage, StoredMessage } from '../services/conversationStorage'
 import { SettingsStorage } from '../services/settingsStorage'
@@ -95,11 +96,13 @@ app.whenReady().then(async () => {
     
     // Load settings and initialize chat service
     const savedSettings = settingsStorage.loadSettings()
-    
+
     const initialConfig = savedSettings ? {
+        provider: savedSettings.provider,
         baseUrl: savedSettings.baseUrl,
         apiKey: savedSettings.apiKey,
-        model: savedSettings.model
+        model: savedSettings.model,
+        reasoningEffort: savedSettings.reasoningEffort || 'off'
     } : chatConfig
     
     // Initialize chat service
@@ -1015,8 +1018,7 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                 {
                     selectedText: selectedText,
                     targetLanguage: currentLanguageName
-                },
-                false
+                }
             )
         } else if (command == 'ask') {
             streamingResponse = chatService.generateStreamingResponse(
@@ -1026,8 +1028,7 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                     selectedText: selectedText,
                     fullText: textInfo?.fullText,
                     currentLanguage: currentLanguageName
-                },
-                false
+                }
             )
         } else if (command == 'modify') {
             streamingResponse = chatService.generateStreamingResponse(
@@ -1037,8 +1038,7 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                     selectedText: selectedText,
                     fullText: textInfo?.fullText,
                     userRequirements: messages[messages.length - 1].content
-                },
-                false
+                }
             )
         } else if (command == 'explain') {
             streamingResponse = chatService.generateStreamingResponse(
@@ -1048,8 +1048,7 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                     selectedText: selectedText,
                     fullText: textInfo?.fullText,
                     currentLanguage: currentLanguageName
-                },
-                false
+                }
             )
         } else if (command.startsWith('custom:')) {
             // Handle custom action
@@ -1058,7 +1057,8 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
             const customAction = customActions.find((a: any) => a.id === customActionId)
             if (customAction) {
                 // Build the prompt by replacing {{text}} with selected text
-                const prompt = customAction.prompt.replace(/\{\{text\}\}/g, selectedText)
+                const prompt = customAction.prompt.replace(/\{\{text\}\}/g, ` ${selectedText} `)
+                // console.log('custom prompt', prompt)
                 // Custom action: prompt is already composed in the message content
                 streamingResponse = chatService.generateStreamingResponse(
                     [{
@@ -1066,8 +1066,7 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                         content: prompt
                     }, ...messages],
                     undefined,
-                    {},
-                    false
+                    {}
                 )
             }
         } else if (command == 'chat') {
@@ -1491,6 +1490,7 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
         // Get user-defined custom model (from param or storage), fallback to default model
         const customModel = (model && model.trim()) ? model : providerConfig.model
         const modelToUse = customModel || providerConfig.model
+        const reasoningEffort = settingsStorage.getProviderReasoningEffort(provider) || 'off'
         console.log('model to use', modelToUse)
 
         // Update language and wordSelectionEnabled if needed
@@ -1500,6 +1500,7 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
                 apiKey: apiKey,
                 baseUrl: providerConfig.baseUrl,
                 model: modelToUse,
+                reasoningEffort: reasoningEffort,
                 language: existingSettings.language || currentLanguage || 'zh',
                 wordSelectionEnabled: existingSettings.wordSelectionEnabled !== false
             }
@@ -1510,9 +1511,11 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
         settingsStorage.setCurrentProvider(provider)
         hasSettings = true
         chatService.updateConfig({
+            provider: provider,
             baseUrl: providerConfig.baseUrl,
             apiKey: apiKey,
-            model: modelToUse
+            model: modelToUse,
+            reasoningEffort: reasoningEffort
         })
 
         // Update tray menu after settings are saved
@@ -1537,6 +1540,7 @@ ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string
 
         // Create a temporary chat service instance for verification
         const tempChatService = new ChatService({
+            provider: provider,
             baseUrl: providerConfig.baseUrl,
             apiKey: apiKey,
             model: verifyModel
@@ -1599,6 +1603,7 @@ ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string
                 const providerConfigForUpdate = settingsStorage.getProviderConfig(provider)
                 if (providerConfigForUpdate) {
                     chatService.updateConfig({
+                        provider: provider,
                         baseUrl: providerConfigForUpdate.baseUrl,
                         apiKey: apiKey,
                         model: verifyModel
@@ -1910,6 +1915,81 @@ ipcMain.handle('get-provider-model', async (_event, provider: string) => {
     }
 })
 
+// Map internal provider keys to pi-ai known provider names (same as in chatService.ts)
+const PI_AI_PROVIDER_MAP_MAIN: Record<string, string> = {
+    'deepseek': 'deepseek',
+    'moonshot': 'moonshotai',
+    'openai': 'openai',
+    'anthropic': 'anthropic',
+    'gemini': 'google',
+    'groq': 'groq',
+    'fireworks': 'fireworks',
+    'minimax': 'minimax',
+    'openrouter': 'openrouter',
+}
+
+ipcMain.handle('get-provider-models', async (_event, provider: string) => {
+    try {
+        const piProvider = (PI_AI_PROVIDER_MAP_MAIN[provider] || provider) as KnownProvider
+        const models = getModels(piProvider)
+        if (models.length > 0) {
+            const modelList = models.map(m => ({ id: m.id, name: m.name || m.id }))
+            return { success: true, models: modelList }
+        }
+        // Return default model from provider config if pi-ai catalog has no models
+        const providerConfig = settingsStorage.getProviderConfig(provider)
+        if (providerConfig?.model) {
+            return { success: true, models: [{ id: providerConfig.model, name: providerConfig.model }] }
+        }
+        return { success: true, models: [] }
+    } catch (error) {
+        console.error('Error getting provider models:', error)
+        // Fallback: return default model from provider config
+        const providerConfig = settingsStorage.getProviderConfig(provider)
+        const fallbackModels = providerConfig?.model ? [{ id: providerConfig.model, name: providerConfig.model }] : []
+        return { success: true, models: fallbackModels }
+    }
+})
+
+ipcMain.handle('get-provider-reasoning-effort', async (_event, provider: string) => {
+    try {
+        const effort = settingsStorage.getProviderReasoningEffort(provider)
+        return { success: true, effort }
+    } catch (error) {
+        console.error('Error getting provider reasoning effort:', error)
+        return { success: false, effort: 'off', error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('save-provider-reasoning-effort', async (_event, provider: string, effort: string) => {
+    try {
+        const saved = settingsStorage.saveProviderReasoningEffort(provider, effort)
+        if (!saved) {
+            return { success: false, error: 'Failed to save reasoning effort' }
+        }
+        // Update chatService if this is the current provider
+        const currentProvider = settingsStorage.getCurrentProvider()
+        if (currentProvider === provider) {
+            const providerConfig = settingsStorage.getProviderConfig(provider)
+            const apiKey = settingsStorage.getProviderApiKey(provider)
+            const model = settingsStorage.getProviderModel(provider) || providerConfig?.model || ''
+            if (providerConfig && apiKey) {
+                chatService.updateConfig({
+                    provider: provider,
+                    baseUrl: providerConfig.baseUrl,
+                    apiKey: apiKey,
+                    model: model,
+                    reasoningEffort: effort
+                })
+            }
+        }
+        return { success: true }
+    } catch (error) {
+        console.error('Error saving provider reasoning effort:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
 ipcMain.handle('set-current-provider', async (_event, provider: string) => {
     try {
         // Check if provider has a verified API key
@@ -1927,6 +2007,7 @@ ipcMain.handle('set-current-provider', async (_event, provider: string) => {
         // Get user-defined custom model, fallback to default model
         const customModel = settingsStorage.getProviderModel(provider)
         const modelToUse = customModel || providerConfig.model
+        const reasoningEffort = settingsStorage.getProviderReasoningEffort(provider)
 
         // Set as current provider
         const setResult = settingsStorage.setCurrentProvider(provider)
@@ -1935,9 +2016,11 @@ ipcMain.handle('set-current-provider', async (_event, provider: string) => {
         }
         // Update chat service configuration with custom model if available
         chatService.updateConfig({
+            provider: provider,
             baseUrl: providerConfig.baseUrl,
             apiKey: apiKey,
-            model: modelToUse
+            model: modelToUse,
+            reasoningEffort: reasoningEffort
         })
 
         return { success: true }

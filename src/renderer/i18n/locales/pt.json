@@ -9,8 +9,8 @@
         "placeholder": "Digite sua pergunta...",
         "initialMessage": "Como posso ajudá-lo com \"{{text}}\"?",
         "send": "Enviar",
-        "thinkingStart": "思考中",
-        "thinkingEnd": "思考終了"
+        "thinkingStart": "Pensando",
+        "thinkingEnd": "Pensamento concluído"
     },
     "alt": {
         "translate": "Traduzir",
@@ -31,6 +31,8 @@
         "model": "Modelo:",
         "modelPlaceholder": "Digite o nome do modelo (opcional)",
         "defaultModelHint": "Modelo padrão: {{defaultModel}}",
+        "reasoningEffort": "Esforço de raciocínio:",
+        "customModel": "Personalizado...",
         "wordSelection": "Seleção de palavras",
         "wordSelectionDescription": "Controlar se o menu de seleção de palavras deve ser ativado",
         "enableWordSelection": "Ativar seleção de palavras",
@@ -54,7 +56,26 @@
         "errorVerify": "Erro ao verificar a chave da API",
         "errorAtLeastOneAction": "Pelo menos uma ação deve ser mantida",
         "save": "Salvar",
-        "saving": "Salvando..."
+        "saving": "Salvando...",
+        "customActions": "Ações personalizadas",
+        "customActionsDescription": "Crie ações personalizadas com seus próprios prompts",
+        "addCustomAction": "Adicionar ação personalizada",
+        "editCustomAction": "Editar ação personalizada",
+        "deleteCustomAction": "Excluir ação personalizada",
+        "customActionName": "Nome da ação",
+        "customActionNamePlaceholder": "Digite o nome da ação",
+        "customActionPrompt": "Modelo de prompt",
+        "customActionPromptPlaceholder": "Digite o modelo de prompt (use {{text}} para o texto selecionado)",
+        "customActionPromptHint": "Use {{text}} como espaço reservado para o texto selecionado",
+        "customActionCanEdit": "Habilitar capacidade de edição",
+        "customActionCanEditHint": "Quando ativado, a resposta da IA substituirá diretamente o texto selecionado",
+        "customActionIcon": "Ícone",
+        "customActionIconSearch": "Pesquisar ícones...",
+        "noCustomActions": "Nenhuma ação personalizada criada",
+        "confirmDeleteCustomAction": "Tem certeza de que deseja excluir esta ação personalizada?",
+        "cancel": "Cancelar",
+        "delete": "Excluir",
+        "edit": "Editar"
     },
     "conversation": {
         "noConversations": "Ainda não há conversas",

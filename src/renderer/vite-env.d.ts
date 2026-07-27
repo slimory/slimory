@@ -58,6 +58,9 @@ interface Window {
         getProviderModel: (provider: string) => Promise<{ success: boolean; model: string | null; error?: string }>
         getProviderApiKey: (provider: string) => Promise<{ success: boolean; apiKey: string | null; error?: string }>
         setCurrentProvider: (provider: string) => Promise<{ success: boolean; error?: string }>
+        getProviderReasoningEffort: (provider: string) => Promise<{ success: boolean; effort: string; error?: string }>
+        saveProviderReasoningEffort: (provider: string, effort: string) => Promise<{ success: boolean; error?: string }>
+        getProviderModels: (provider: string) => Promise<{ success: boolean; models: Array<{ id: string; name: string }>; error?: string }>
         saveWordSelectionEnabled: (enabled: boolean) => Promise<{ success: boolean; error?: string }>
         saveLanguage: (language: string) => Promise<{ success: boolean; error?: string }>
         getAvailableApps: () => Promise<{ success: boolean; apps: Array<{ name: string; displayName: string }>; error?: string }>

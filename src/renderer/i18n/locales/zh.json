@@ -32,6 +32,8 @@
         "model": "模型:",
         "modelPlaceholder": "请输入模型名称（可选）",
         "defaultModelHint": "默认模型为 {{defaultModel}}",
+        "reasoningEffort": "推理级别:",
+        "customModel": "自定义...",
         "wordSelection": "划词功能",
         "wordSelectionDescription": "控制是否启用划词弹出菜单",
         "enableWordSelection": "启用划词功能",

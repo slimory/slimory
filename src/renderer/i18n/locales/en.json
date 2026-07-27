@@ -31,6 +31,8 @@
         "model": "Model:",
         "modelPlaceholder": "Enter model name (optional)",
         "defaultModelHint": "Default model: {{defaultModel}}",
+        "reasoningEffort": "Reasoning Effort:",
+        "customModel": "Custom...",
         "wordSelection": "Word Selection",
         "wordSelectionDescription": "Control whether to enable word selection menu",
         "enableWordSelection": "Enable word selection",

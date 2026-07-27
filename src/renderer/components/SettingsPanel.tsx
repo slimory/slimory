@@ -26,13 +26,23 @@ const languages = [
     { code: 'bn', name: 'বাংলা' }
 ]
 
+const reasoningLevels = [
+    { value: 'off', label: 'None' },
+    { value: 'minimal', label: 'Minimal' },
+    { value: 'low', label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high', label: 'High' },
+    { value: 'xhigh', label: 'X-High' },
+    { value: 'max', label: 'Max' },
+]
+
 const SettingsPanel = () => {
     const { t } = useTranslation()
     const [selectedLanguage, setSelectedLanguage] = useState<string>('zh')
     const [selectedProvider, setSelectedProvider] = useState<string>('deepseek')
     const [apiKey, setApiKey] = useState<string>('')
     const [model, setModel] = useState<string>('')
-    const [defaultModel, setDefaultModel] = useState<string>('')
+    const [reasoningEffort, setReasoningEffort] = useState<string>('off')
     const [wordSelectionEnabled, setWordSelectionEnabled] = useState<boolean>(true)
     const [isVerifying, setIsVerifying] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
@@ -43,6 +53,12 @@ const SettingsPanel = () => {
     const [disabledApps, setDisabledApps] = useState<Array<{ name: string; displayName: string }>>([])
     const [menuActions, setMenuActions] = useState<Array<{ name: string; displayName: string }>>([])
     const [menuActionsError, setMenuActionsError] = useState<string | null>(null)
+    const [reasoningDropdownOpen, setReasoningDropdownOpen] = useState(false)
+    const reasoningDropdownRef = useRef<HTMLDivElement>(null)
+    const [availableModels, setAvailableModels] = useState<Array<{ id: string; name: string }>>([])
+    const [modelDropdownOpen, setModelDropdownOpen] = useState(false)
+    const modelDropdownRef = useRef<HTMLDivElement>(null)
+    const modelDropdownButtonRef = useRef<HTMLButtonElement>(null)
 
     // Custom actions state
     const [customActions, setCustomActions] = useState<Array<{ id: string; name: string; prompt: string; icon?: string; canEdit?: boolean }>>([])
@@ -52,7 +68,7 @@ const SettingsPanel = () => {
     const [customActionPrompt, setCustomActionPrompt] = useState('')
     const [customActionCanEdit, setCustomActionCanEdit] = useState(false)
     const [customActionIcon, setCustomActionIcon] = useState<string>('Type')
-    
+
     // Available menu actions - use useMemo to update when language changes
     const availableMenuActions: Array<{ name: string; displayName: string }> = useMemo(() => [
         { name: 'explain', displayName: t('menu.explain') },
@@ -99,15 +115,41 @@ const SettingsPanel = () => {
                     // Load model for current provider
                     const provider = providersResult.providers?.find((p: Provider) => p.provider === currentProvider)
                     const defaultModelValue = provider?.model || ''
-                    setDefaultModel(defaultModelValue)
+
+                    // Load available models first
+                    const modelsResult = await window.electronAPI.getProviderModels(currentProvider)
+                    if (modelsResult.success) {
+                        setAvailableModels(modelsResult.models || [])
+                    }
 
                     const modelResult = await window.electronAPI.getProviderModel(currentProvider)
+                    const models = modelsResult.success ? (modelsResult.models || []) : []
+                    const configDefault = defaultModelValue
                     if (modelResult.success && modelResult.model) {
-                        // User has custom model, set it to model input
-                        setModel(modelResult.model)
+                        const savedModel = modelResult.model
+                        if (models.some((m: any) => m.id === savedModel)) {
+                            setModel(savedModel)
+                        } else if (configDefault && models.some((m: any) => m.id === configDefault)) {
+                            setModel(configDefault)
+                        } else if (models.length > 0) {
+                            setModel(models[0].id)
+                        } else {
+                            setModel('')
+                        }
                     } else {
-                        // No custom model, leave model empty
-                        setModel('')
+                        // No saved model, resolve from PROVIDER_CONFIGS default or first available
+                        if (configDefault && models.some((m: any) => m.id === configDefault)) {
+                            setModel(configDefault)
+                        } else if (models.length > 0) {
+                            setModel(models[0].id)
+                        } else {
+                            setModel('')
+                        }
+                    }
+                    // Load reasoning effort
+                    const reasoningResult = await window.electronAPI.getProviderReasoningEffort(currentProvider)
+                    if (reasoningResult.success) {
+                        setReasoningEffort(reasoningResult.effort || 'off')
                     }
                     setWordSelectionEnabled(allSettingsResult.settings?.wordSelectionEnabled !== false)
                     const language = allSettingsResult.settings?.language || 'zh'
@@ -249,6 +291,8 @@ const SettingsPanel = () => {
                 setIsVerifying(false)
                 return
             }
+            // Also save reasoning effort
+            await window.electronAPI.saveProviderReasoningEffort(selectedProvider, reasoningEffort)
 
             setSuccess(t('settings.verifiedSuccess'))
 
@@ -313,15 +357,41 @@ const SettingsPanel = () => {
                 // Load model for the selected provider
                 const providerInfo = availableProviders.find(p => p.provider === provider)
                 const defaultModelValue = providerInfo?.model || ''
-                setDefaultModel(defaultModelValue)
+
+                // Load available models for this provider first
+                const modelsResult = await window.electronAPI.getProviderModels(provider)
+                if (modelsResult.success) {
+                    setAvailableModels(modelsResult.models || [])
+                }
 
                 const modelResult = await window.electronAPI.getProviderModel(provider)
+                const models = modelsResult.success ? (modelsResult.models || []) : []
+                const configDefault = defaultModelValue
                 if (modelResult.success && modelResult.model) {
-                    // User has custom model, set it to model input
-                    setModel(modelResult.model)
+                    const savedModel = modelResult.model
+                    if (models.some((m: any) => m.id === savedModel)) {
+                        setModel(savedModel)
+                    } else if (configDefault && models.some((m: any) => m.id === configDefault)) {
+                        setModel(configDefault)
+                    } else if (models.length > 0) {
+                        setModel(models[0].id)
+                    } else {
+                        setModel('')
+                    }
                 } else {
-                    // No custom model, leave model empty
-                    setModel('')
+                    // No saved model, resolve from PROVIDER_CONFIGS default or first available
+                    if (configDefault && models.some((m: any) => m.id === configDefault)) {
+                        setModel(configDefault)
+                    } else if (models.length > 0) {
+                        setModel(models[0].id)
+                    } else {
+                        setModel('')
+                    }
+                }
+                // Load reasoning effort
+                const reasoningResult = await window.electronAPI.getProviderReasoningEffort(provider)
+                if (reasoningResult.success) {
+                    setReasoningEffort(reasoningResult.effort || 'off')
                 }
             } catch (error) {
                 console.error('Error loading provider API key:', error)
@@ -356,7 +426,7 @@ const SettingsPanel = () => {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
-                languageDropdownRef.current && 
+                languageDropdownRef.current &&
                 !languageDropdownRef.current.contains(event.target as Node) &&
                 languageDropdownButtonRef.current &&
                 !languageDropdownButtonRef.current.contains(event.target as Node)
@@ -373,6 +443,48 @@ const SettingsPanel = () => {
             document.removeEventListener('mousedown', handleClickOutside)
         }
     }, [isLanguageDropdownOpen])
+
+    // Close reasoning dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                reasoningDropdownRef.current &&
+                !reasoningDropdownRef.current.contains(event.target as Node)
+            ) {
+                setReasoningDropdownOpen(false)
+            }
+        }
+
+        if (reasoningDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [reasoningDropdownOpen])
+
+    // Close model dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                modelDropdownRef.current &&
+                !modelDropdownRef.current.contains(event.target as Node) &&
+                modelDropdownButtonRef.current &&
+                !modelDropdownButtonRef.current.contains(event.target as Node)
+            ) {
+                setModelDropdownOpen(false)
+            }
+        }
+
+        if (modelDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [modelDropdownOpen])
 
     const handleAddDisabledApp = async (app: string) => {
         const result = await window.electronAPI.addDisabledApp(app)
@@ -462,6 +574,14 @@ const SettingsPanel = () => {
             setCustomActionCanEdit(false)
             setCustomActionIcon('Type')
             setIsAddingCustomAction(false)
+
+            // Auto-add the new custom action to menu actions
+            const customActionEntry = `custom:${id}`
+            if (!menuActions.some(item => item.name === customActionEntry)) {
+                const newActions = [...menuActions, { name: customActionEntry, displayName: newAction.name }]
+                setMenuActions(newActions)
+                await window.electronAPI.saveMenuActions(newActions.map(a => a.name))
+            }
         }
     }
 
@@ -483,6 +603,9 @@ const SettingsPanel = () => {
         const result = await window.electronAPI.deleteCustomAction(id)
         if (result.success) {
             setCustomActions(customActions.filter(a => a.id !== id))
+            // Also remove from menuActions so it doesn't appear as a ghost entry
+            const deletedActionName = `custom:${id}`
+            setMenuActions(prev => prev.filter(a => a.name !== deletedActionName))
         }
     }
 
@@ -638,7 +761,7 @@ const SettingsPanel = () => {
                                 
                                 <div className="api-key-form">
                                     <div className="form-group">
-                                        <label htmlFor="provider-select">
+                                        <label>
                                             {t('settings.provider')}
                                         </label>
                                         <div className="provider-dropdown" style={{ position: 'relative' }}>
@@ -713,32 +836,6 @@ const SettingsPanel = () => {
                                         </div>
                                     </div>
 
-                                    {/* Model Configuration */}
-                                    <div className="form-group">
-                                        <label htmlFor="model-input">{t('settings.model') || 'Model'}</label>
-                                        <input
-                                            id="model-input"
-                                            type="text"
-                                            value={model}
-                                            onChange={(e) => setModel(e.target.value)}
-                                            // placeholder={defaultModel ? t('settings.modelPlaceholder', { defaultModel }) : ''}
-                                            placeholder={defaultModel ? t('settings.defaultModelHint', { defaultModel }) : ''}
-                                            className="onboarding-input"
-                                            disabled={isVerifying}
-                                            style={{ flex: 1 }}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !isVerifying && apiKey.trim()) {
-                                                    handleVerifyApiKey()
-                                                }
-                                            }}
-                                        />
-                                        {/* {defaultModel && (
-                                            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                                                {t('settings.defaultModelHint', { defaultModel })}
-                                            </p>
-                                        )} */}
-                                    </div>
-
                                     {/* Error Message Display */}
                                     {error && (
                                         <div style={{
@@ -770,6 +867,106 @@ const SettingsPanel = () => {
                                             </p>
                                         </div>
                                     )}
+
+                                    {/* Model Configuration */}
+                                    <div className="form-group">
+                                        <label>{t('settings.model') || 'Model'}</label>
+                                        <div style={{ position: 'relative', marginTop: '8px' }}>
+                                            <button
+                                                ref={modelDropdownButtonRef}
+                                                id="model-select"
+                                                className="provider-dropdown-toggle"
+                                                onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                                                disabled={isVerifying}
+                                            >
+                                                <span className="provider-dropdown-text">
+                                                    {model ? (availableModels.find(m => m.id === model)?.name || model) : (t('settings.modelPlaceholder') || 'Select model')}
+                                                </span>
+                                                <svg
+                                                    className="provider-dropdown-arrow"
+                                                    width="12"
+                                                    height="12"
+                                                    viewBox="0 0 12 12"
+                                                    fill="none"
+                                                >
+                                                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                </svg>
+                                            </button>
+                                            {modelDropdownOpen && (
+                                                <div
+                                                    ref={modelDropdownRef}
+                                                    className="provider-dropdown-menu"
+                                                >
+                                                    {availableModels.map(m => (
+                                                        <div
+                                                            key={m.id}
+                                                            className={`provider-item ${model === m.id ? 'selected' : ''}`}
+                                                            onClick={() => { setModel(m.id); setModelDropdownOpen(false) }}
+                                                        >
+                                                            <div className="provider-item-name">
+                                                                {m.name || m.id}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Reasoning Effort Configuration */}
+                                    <div className="form-group">
+                                        <label>{t('settings.reasoningEffort') || 'Reasoning Effort'}</label>
+                                        <div style={{ position: 'relative', marginTop: '8px' }}>
+                                            <button
+                                                id="reasoning-select"
+                                                className="provider-dropdown-toggle"
+                                                onClick={() => setReasoningDropdownOpen(!reasoningDropdownOpen)}
+                                                disabled={isVerifying}
+                                            >
+                                                <span className="provider-dropdown-text">
+                                                    {reasoningLevels.find(r => r.value === reasoningEffort)?.label || 'None'}
+                                                </span>
+                                                <svg
+                                                    className="provider-dropdown-arrow"
+                                                    width="12"
+                                                    height="12"
+                                                    viewBox="0 0 12 12"
+                                                    fill="none"
+                                                >
+                                                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                </svg>
+                                            </button>
+                                            {reasoningDropdownOpen && (
+                                                <div
+                                                    ref={reasoningDropdownRef}
+                                                    className="provider-dropdown-menu"
+                                                >
+                                                    {reasoningLevels.map(level => (
+                                                        <div
+                                                            key={level.value}
+                                                            className={`provider-item ${reasoningEffort === level.value ? 'selected' : ''}`}
+                                                            onClick={async () => {
+                                                                setReasoningEffort(level.value)
+                                                                setReasoningDropdownOpen(false)
+                                                                // Auto-save reasoning effort for current provider
+                                                                if (window.electronAPI && selectedProvider) {
+                                                                    try {
+                                                                        await window.electronAPI.saveProviderReasoningEffort(selectedProvider, level.value)
+                                                                    } catch (error) {
+                                                                        console.error('Error saving reasoning effort:', error)
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+                                                            <div className="provider-item-name">
+                                                                {level.label}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

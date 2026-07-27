@@ -9,8 +9,8 @@
         "placeholder": "Entrez votre question...",
         "initialMessage": "Comment puis-je vous aider avec \"{{text}}\" ?",
         "send": "Envoyer",
-        "thinkingStart": "思考中",
-        "thinkingEnd": "思考終了"
+        "thinkingStart": "Réflexion en cours",
+        "thinkingEnd": "Réflexion terminée"
     },
     "alt": {
         "translate": "Traduire",
@@ -31,6 +31,8 @@
         "model": "Modèle :",
         "modelPlaceholder": "Entrez le nom du modèle (optionnel)",
         "defaultModelHint": "Modèle par défaut : {{defaultModel}}",
+        "reasoningEffort": "Effort de raisonnement :",
+        "customModel": "Personnalisé...",
         "wordSelection": "Sélection de mots",
         "wordSelectionDescription": "Contrôler si le menu de sélection de mots doit être activé",
         "enableWordSelection": "Activer la sélection de mots",
@@ -54,7 +56,26 @@
         "errorVerify": "Erreur lors de la vérification de la clé API",
         "errorAtLeastOneAction": "Au moins une action doit être conservée",
         "save": "Enregistrer",
-        "saving": "Enregistrement..."
+        "saving": "Enregistrement...",
+        "customActions": "Actions personnalisées",
+        "customActionsDescription": "Créez des actions personnalisées avec vos propres invites",
+        "addCustomAction": "Ajouter une action personnalisée",
+        "editCustomAction": "Modifier l'action personnalisée",
+        "deleteCustomAction": "Supprimer l'action personnalisée",
+        "customActionName": "Nom de l'action",
+        "customActionNamePlaceholder": "Entrez le nom de l'action",
+        "customActionPrompt": "Modèle d'invite",
+        "customActionPromptPlaceholder": "Entrez le modèle d'invite (utilisez {{text}} pour le texte sélectionné)",
+        "customActionPromptHint": "Utilisez {{text}} comme espace réservé pour le texte sélectionné",
+        "customActionCanEdit": "Activer la capacité de modification",
+        "customActionCanEditHint": "Lorsqu'elle est activée, la réponse de l'IA remplacera directement le texte sélectionné",
+        "customActionIcon": "Icône",
+        "customActionIconSearch": "Rechercher des icônes...",
+        "noCustomActions": "Aucune action personnalisée créée",
+        "confirmDeleteCustomAction": "Êtes-vous sûr de vouloir supprimer cette action personnalisée ?",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier"
     },
     "conversation": {
         "noConversations": "Aucune conversation pour le moment",

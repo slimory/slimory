@@ -22,6 +22,7 @@ export interface Settings {
     baseUrl: string
     model: string
     customModel?: string
+    reasoningEffort?: string
     language?: string
     wordSelectionEnabled?: boolean
 }
@@ -31,7 +32,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     'deepseek': {
         provider: 'Deepseek',
         baseUrl: 'https://api.deepseek.com',
-        model: 'deepseek-chat'
+        model: 'deepseek-v4-pro'
     },
     'glm': {
         provider: 'GLM',
@@ -46,7 +47,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     'openai': {
         provider: 'Openai',
         baseUrl: 'https://api.openai.com/v1',
-        model: 'gpt-3.5-turbo'
+        model: 'gpt-4-turbo'
     },
     'anthropic': {
         provider: 'Anthropic',
@@ -204,6 +205,7 @@ export class SettingsStorage {
                     allSettings.providers[settings.provider] = {
                         apiKey: encryptedKey.toString('base64'),
                         model: settings.model,
+                        reasoningEffort: settings.reasoningEffort || 'off',
                         encrypted: true
                     }
                 } else {
@@ -212,6 +214,7 @@ export class SettingsStorage {
                     allSettings.providers[settings.provider] = {
                         apiKey: settings.apiKey,
                         model: settings.model,
+                        reasoningEffort: settings.reasoningEffort || 'off',
                         encrypted: false
                     }
                 }
@@ -271,6 +274,47 @@ export class SettingsStorage {
         } catch (error) {
             console.error('Error getting provider model:', error)
             return null
+        }
+    }
+
+    /**
+     * Get reasoning effort for a specific provider
+     */
+    getProviderReasoningEffort(provider: string): string {
+        try {
+            const allSettings = this.loadAllSettings()
+
+            if (!allSettings.providers || !allSettings.providers[provider]) {
+                return 'off'
+            }
+
+            return allSettings.providers[provider].reasoningEffort || 'off'
+        } catch (error) {
+            console.error('Error getting provider reasoning effort:', error)
+            return 'off'
+        }
+    }
+
+    /**
+     * Save reasoning effort for a specific provider
+     */
+    saveProviderReasoningEffort(provider: string, effort: string): boolean {
+        try {
+            const allSettings = this.loadAllSettings()
+
+            if (!allSettings.providers) {
+                allSettings.providers = {}
+            }
+
+            if (!allSettings.providers[provider]) {
+                allSettings.providers[provider] = {}
+            }
+
+            allSettings.providers[provider].reasoningEffort = effort
+            return this.saveAllSettings(allSettings)
+        } catch (error) {
+            console.error('Error saving provider reasoning effort:', error)
+            return false
         }
     }
 
@@ -345,6 +389,7 @@ export class SettingsStorage {
 
             const apiKey = currentProvider? this.getProviderApiKey(currentProvider) || '' : ''
             const customModel = currentProvider? this.getProviderModel(currentProvider) : ''
+            const reasoningEffort = currentProvider? this.getProviderReasoningEffort(currentProvider) : 'off'
 
             return {
                 provider: currentProvider,
@@ -352,6 +397,7 @@ export class SettingsStorage {
                 baseUrl: providerConfig?.baseUrl || '',
                 model: customModel || providerConfig?.model || '',
                 customModel: customModel || undefined,
+                reasoningEffort: reasoningEffort,
                 language: allSettings.language || 'zh',
                 wordSelectionEnabled: allSettings.wordSelectionEnabled !== false
             }
