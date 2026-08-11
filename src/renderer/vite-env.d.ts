@@ -62,6 +62,8 @@ interface Window {
         saveProviderReasoningEffort: (provider: string, effort: string) => Promise<{ success: boolean; error?: string }>
         getProviderModels: (provider: string) => Promise<{ success: boolean; models: Array<{ id: string; name: string }>; error?: string }>
         saveWordSelectionEnabled: (enabled: boolean) => Promise<{ success: boolean; error?: string }>
+        saveRequireCtrlForMenu: (requireCtrl: boolean) => Promise<{ success: boolean; error?: string }>
+        getRequireCtrlForMenu: () => Promise<{ success: boolean; requireCtrl: boolean; error?: string }>
         saveLanguage: (language: string) => Promise<{ success: boolean; error?: string }>
         getAvailableApps: () => Promise<{ success: boolean; apps: Array<{ name: string; displayName: string }>; error?: string }>
         getDisabledApps: () => Promise<{ success: boolean; apps: Array<{ name: string; displayName: string }>; error?: string }>

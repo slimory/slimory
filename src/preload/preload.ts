@@ -131,6 +131,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveProviderReasoningEffort: (provider: string, effort: string) => ipcRenderer.invoke('save-provider-reasoning-effort', provider, effort),
     getProviderModels: (provider: string) => ipcRenderer.invoke('get-provider-models', provider),
     saveWordSelectionEnabled: (enabled: boolean) => ipcRenderer.invoke('save-word-selection-enabled', enabled),
+    saveRequireCtrlForMenu: (requireCtrl: boolean) => ipcRenderer.invoke('save-require-ctrl-for-menu', requireCtrl),
+    getRequireCtrlForMenu: () => ipcRenderer.invoke('get-require-ctrl-for-menu'),
     saveLanguage: (language: string) => ipcRenderer.invoke('save-language', language),
     getAvailableApps: () => ipcRenderer.invoke('get-available-apps'),
     getDisabledApps: () => ipcRenderer.invoke('get-disabled-apps'),

@@ -25,6 +25,7 @@ export interface Settings {
     reasoningEffort?: string
     language?: string
     wordSelectionEnabled?: boolean
+    requireCtrlForMenu?: boolean
 }
 
 // Provider configurations
@@ -109,6 +110,7 @@ export class SettingsStorage {
                     currentProvider: '',
                     language: 'zh',
                     wordSelectionEnabled: true,
+                    requireCtrlForMenu: false,
                     providers: {},
                     menuActions: ['explain', 'translate', 'ask'],
                     customActions: []
@@ -124,6 +126,7 @@ export class SettingsStorage {
                     currentProvider: saved.provider,
                     language: saved.language || 'zh',
                     wordSelectionEnabled: saved.wordSelectionEnabled !== undefined ? saved.wordSelectionEnabled : true,
+                    requireCtrlForMenu: saved.requireCtrlForMenu !== undefined ? saved.requireCtrlForMenu : false,
                     providers: {},
                     availableApps: saved.availableApps || [],
                     disabledApps: saved.disabledApps || [],
@@ -145,6 +148,7 @@ export class SettingsStorage {
                 currentProvider: saved.currentProvider || saved.provider || '',
                 language: saved.language || 'zh',
                 wordSelectionEnabled: saved.wordSelectionEnabled !== undefined ? saved.wordSelectionEnabled : true,
+                requireCtrlForMenu: saved.requireCtrlForMenu !== undefined ? saved.requireCtrlForMenu : false,
                 providers: saved.providers || {},
                 availableApps: saved.availableApps || [],
                 disabledApps: saved.disabledApps || [],
@@ -157,6 +161,7 @@ export class SettingsStorage {
                 currentProvider: '',
                 language: 'zh',
                 wordSelectionEnabled: true,
+                requireCtrlForMenu: false,
                 providers: {},
                 availableApps: [],
                 disabledApps: [],
@@ -188,10 +193,11 @@ export class SettingsStorage {
             
             // Update current provider
             allSettings.currentProvider = settings.provider
-            
-            // Update language and wordSelectionEnabled
+
+            // Update language, wordSelectionEnabled, and requireCtrlForMenu
             allSettings.language = settings.language || allSettings.language || 'zh'
             allSettings.wordSelectionEnabled = settings.wordSelectionEnabled !== undefined ? settings.wordSelectionEnabled : allSettings.wordSelectionEnabled !== false
+            allSettings.requireCtrlForMenu = settings.requireCtrlForMenu !== undefined ? settings.requireCtrlForMenu : allSettings.requireCtrlForMenu !== undefined ? allSettings.requireCtrlForMenu : false
 
             // Save API key for the provider
             if (settings.apiKey) {
@@ -399,7 +405,8 @@ export class SettingsStorage {
                 customModel: customModel || undefined,
                 reasoningEffort: reasoningEffort,
                 language: allSettings.language || 'zh',
-                wordSelectionEnabled: allSettings.wordSelectionEnabled !== false
+                wordSelectionEnabled: allSettings.wordSelectionEnabled !== false,
+                requireCtrlForMenu: allSettings.requireCtrlForMenu !== undefined ? allSettings.requireCtrlForMenu : false
             }
         } catch (error) {
             console.error('Error loading settings:', error)
@@ -646,6 +653,28 @@ export class SettingsStorage {
             return this.saveAllSettings(allSettings)
         } catch (error) {
             console.error('Error deleting custom action:', error)
+            return false
+        }
+    }
+
+    /**
+     * Get requireCtrlForMenu setting
+     */
+    getRequireCtrlForMenu(): boolean {
+        const allSettings = this.loadAllSettings()
+        return allSettings.requireCtrlForMenu !== undefined ? allSettings.requireCtrlForMenu : false
+    }
+
+    /**
+     * Save requireCtrlForMenu setting
+     */
+    saveRequireCtrlForMenu(requireCtrl: boolean): boolean {
+        try {
+            const allSettings = this.loadAllSettings()
+            allSettings.requireCtrlForMenu = requireCtrl
+            return this.saveAllSettings(allSettings)
+        } catch (error) {
+            console.error('Error saving requireCtrlForMenu setting:', error)
             return false
         }
     }

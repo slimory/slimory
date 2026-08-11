@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Model configuration in API settings - users can customize the model used for AI conversations
 - OpenRouter provider support
 - Model verification using tool calling capability
+- Optional Ctrl key requirement for menu popup - users can now configure the menu to only appear when holding Ctrl during text selection, reducing accidental triggers
 
 ### Changed
 - `saveSettings` IPC now accepts optional model parameter

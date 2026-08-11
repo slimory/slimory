@@ -10,6 +10,7 @@ let activeWindow = ""
 let selectionCallback: ((text: string, downX: number, downY: number, upX: number, upY: number) => void) | null = null
 let getDisabledAppsCallback: (() => string[]) | null = null
 let addAvailableAppCallback: ((app: string, displayName?: string) => void) | null = null
+let getRequireCtrlForMenuCallback: (() => boolean) | null = null
 
 const dataStore = {
     mouseUpX: 0,
@@ -19,6 +20,8 @@ const dataStore = {
     isForbidden: false,
     activeWindow: "",
     currentText: "",
+    ctrlKeyOnMouseDown: false,
+    ctrlKeyOnMouseUp: false,
     lastSelectedTextInfo: {
         text: "",
         mouseDownX: 0,
@@ -46,7 +49,8 @@ function shouldIgnore(selectedText: string) {
 export function startTextMonitor(
     callback: (text: string, downX: number, downY: number, upX: number, upY: number) => void,
     getDisabledApps?: () => string[],
-    addAvailableApp?: (app: string, displayName?: string) => void
+    addAvailableApp?: (app: string, displayName?: string) => void,
+    getRequireCtrlForMenu?: () => boolean
 ): void {
     if (isMonitoring) return
 
@@ -54,6 +58,7 @@ export function startTextMonitor(
     selectionCallback = callback
     getDisabledAppsCallback = getDisabledApps || null
     addAvailableAppCallback = addAvailableApp || null
+    getRequireCtrlForMenuCallback = getRequireCtrlForMenu || null
 
     const uiohook = uIOhook as any
 
@@ -62,20 +67,23 @@ export function startTextMonitor(
         dataStore.mouseDownX = event.x
         dataStore.mouseDownY = event.y
         dataStore.currentText = ""
+        dataStore.ctrlKeyOnMouseDown = event.ctrlKey === true
     })
 
     uiohook.on('mouseup', async (event: any) => {
         if (!isEnabled) return
-        
+
         dataStore.mouseUpX = event.x
         dataStore.mouseUpY = event.y
+        dataStore.ctrlKeyOnMouseUp = event.ctrlKey === true
+
         const deltaX = Math.abs(event.x - dataStore.mouseDownX)
         const deltaY = Math.abs(event.y - dataStore.mouseDownY)
         const info = getActiveWindowInfo()
         activeWindow = info?.processExeName || ''
         console.log('active window:', info)
         const appDisplayName = info?.appDisplayName || ''
-        
+
         // Check if app is disabled
         const disabledApps = getDisabledAppsCallback ? getDisabledAppsCallback() : []
         const normalizedActiveWindow = activeWindow.toLowerCase().trim()
@@ -86,25 +94,35 @@ export function startTextMonitor(
             const selectedText = await captureSelectedText(activeWindow)
             if (selectedText && selectionCallback) {
                 console.log('selectedText:', selectedText)
-                const scaleFactor = screen.getPrimaryDisplay().scaleFactor
-                const cursorPosition = { x: dataStore.mouseUpX, y: dataStore.mouseUpY }
-                if (shouldIgnore(selectedText)) return
-                dataStore.lastSelectedTextInfo.text = selectedText
-                dataStore.lastSelectedTextInfo.mouseDownX = dataStore.mouseDownX
-                dataStore.lastSelectedTextInfo.mouseDownY = dataStore.mouseDownY
-                dataStore.lastSelectedTextInfo.mouseUpX = dataStore.mouseUpX
-                dataStore.lastSelectedTextInfo.mouseUpY = dataStore.mouseUpY
-                dataStore.currentText = selectedText
-                selectionCallback(
-                    selectedText,
-                    dataStore.mouseDownX / scaleFactor,
-                    dataStore.mouseDownY / scaleFactor,
-                    cursorPosition.x / scaleFactor,
-                    cursorPosition.y / scaleFactor
-                )
-                // Add to available apps if not exists
-                if (addAvailableAppCallback && activeWindow.toLowerCase().trim()) {
-                    addAvailableAppCallback(activeWindow, appDisplayName)
+
+                // Check if Ctrl key is required for menu
+                const requireCtrlForMenu = getRequireCtrlForMenuCallback ? getRequireCtrlForMenuCallback() : false
+                const ctrlWasHeld = dataStore.ctrlKeyOnMouseDown && dataStore.ctrlKeyOnMouseUp
+
+                // Only show menu if: setting is disabled OR Ctrl was held during selection
+                if (!requireCtrlForMenu || ctrlWasHeld) {
+                    const scaleFactor = screen.getPrimaryDisplay().scaleFactor
+                    const cursorPosition = { x: dataStore.mouseUpX, y: dataStore.mouseUpY }
+                    if (shouldIgnore(selectedText)) return
+                    dataStore.lastSelectedTextInfo.text = selectedText
+                    dataStore.lastSelectedTextInfo.mouseDownX = dataStore.mouseDownX
+                    dataStore.lastSelectedTextInfo.mouseDownY = dataStore.mouseDownY
+                    dataStore.lastSelectedTextInfo.mouseUpX = dataStore.mouseUpX
+                    dataStore.lastSelectedTextInfo.mouseUpY = dataStore.mouseUpY
+                    dataStore.currentText = selectedText
+                    selectionCallback(
+                        selectedText,
+                        dataStore.mouseDownX / scaleFactor,
+                        dataStore.mouseDownY / scaleFactor,
+                        cursorPosition.x / scaleFactor,
+                        cursorPosition.y / scaleFactor
+                    )
+                    // Add to available apps if not exists
+                    if (addAvailableAppCallback && activeWindow.toLowerCase().trim()) {
+                        addAvailableAppCallback(activeWindow, appDisplayName)
+                    }
+                } else {
+                    console.log('Menu not shown: Ctrl key was not held during selection')
                 }
             }
         }

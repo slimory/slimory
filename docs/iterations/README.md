@@ -1,12 +1,13 @@
 # Iteration Management
 
 ## Current Iteration
-**[Iteration 1: Custom Actions & More Providers](./iter-1/)** — ✅ Completed
+**[Iteration 2: Ctrl Key Modifier for Menu Popup](./iter-2/)** — ✅ Completed
 
 ## Overview
 
 | Iteration | Name | Status | Tasks | Completed | Started | Ended |
 |-----------|------|--------|-------|-----------|---------|-------|
+| 2 | Ctrl Key Modifier for Menu Popup | ✅ Completed | 6 | 5 | 2026-08-11 | 2026-08-11 |
 | 1 | Custom Actions & More Providers | ✅ Completed | 7 | 7 | 2026-03-11 | 2026-03-11 |
 
 ## Workflow

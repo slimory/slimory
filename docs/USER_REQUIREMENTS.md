@@ -41,6 +41,7 @@
 - [x] Quick access via keyboard shortcuts (Ctrl+Space for chat) (v0.1.0)
 - [x] Selection menu appearing near selected text (v0.1.0)
 - [x] Settings panel for customization (v0.1.0)
+- [x] Optional Ctrl key requirement for menu popup (reduce accidental triggers) (iter-2)
 
 ## Performance
 - [ ] Fast text selection detection

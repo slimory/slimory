@@ -44,6 +44,7 @@ const SettingsPanel = () => {
     const [model, setModel] = useState<string>('')
     const [reasoningEffort, setReasoningEffort] = useState<string>('off')
     const [wordSelectionEnabled, setWordSelectionEnabled] = useState<boolean>(true)
+    const [requireCtrlForMenu, setRequireCtrlForMenu] = useState<boolean>(false)
     const [isVerifying, setIsVerifying] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
@@ -156,7 +157,13 @@ const SettingsPanel = () => {
                     setSelectedLanguage(language)
                     i18n.changeLanguage(language)
                 }
-                
+
+                // Load requireCtrlForMenu setting
+                const requireCtrlResult = await window.electronAPI.getRequireCtrlForMenu()
+                if (requireCtrlResult.success) {
+                    setRequireCtrlForMenu(requireCtrlResult.requireCtrl)
+                }
+
                 // Load available apps and disabled apps
                 const availableAppsResult = await window.electronAPI.getAvailableApps()
                 if (availableAppsResult.success) {
@@ -313,6 +320,18 @@ const SettingsPanel = () => {
             await window.electronAPI.saveWordSelectionEnabled(enabled)
         } catch (error) {
             console.error('Error saving word selection setting:', error)
+            setError(t('settings.errorSaveFailed'))
+            setTimeout(() => setError(null), 2000)
+        }
+    }
+
+    const handleRequireCtrlForMenuChange = async (requireCtrl: boolean) => {
+        setRequireCtrlForMenu(requireCtrl)
+        // Auto save requireCtrlForMenu setting
+        try {
+            await window.electronAPI.saveRequireCtrlForMenu(requireCtrl)
+        } catch (error) {
+            console.error('Error saving requireCtrlForMenu setting:', error)
             setError(t('settings.errorSaveFailed'))
             setTimeout(() => setError(null), 2000)
         }
@@ -1043,15 +1062,148 @@ const SettingsPanel = () => {
                                         }}>
                                         </div>
                                     </button>
-                                    <span style={{ 
-                                        flex: 1, 
-                                        fontSize: '14px', 
+                                    <span style={{
+                                        flex: 1,
+                                        fontSize: '14px',
                                         color: '#121e20'
                                     }}>
                                         {wordSelectionEnabled ? t('settings.wordSelectionEnabled') : t('settings.wordSelectionDisabled')}
                                     </span>
                                 </div>
-                                
+
+                                {/* When to Show Menu - only visible when word selection is enabled */}
+                                {wordSelectionEnabled && (
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '12px',
+                                        padding: '16px',
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: '8px',
+                                        marginTop: '16px'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '13px',
+                                            fontWeight: '600',
+                                            color: '#374151',
+                                            marginBottom: '4px'
+                                        }}>
+                                            {t('settings.whenToShowMenu')}
+                                        </div>
+                                        <div style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '8px'
+                                        }}>
+                                            {/* Option 1: Show on text selection */}
+                                            <label style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                cursor: 'pointer',
+                                                padding: '8px',
+                                                borderRadius: '6px',
+                                                transition: 'background-color 0.2s ease'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#e5e7eb'
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'transparent'
+                                            }}
+                                            onClick={() => {
+                                                if (requireCtrlForMenu) {
+                                                    handleRequireCtrlForMenuChange(!requireCtrlForMenu)
+                                                }
+                                            }}>
+                                                {/* Custom radio button */}
+                                                <div style={{
+                                                    position: 'relative',
+                                                    width: '16px',
+                                                    height: '16px',
+                                                    borderRadius: '50%',
+                                                    border: `2px solid ${!requireCtrlForMenu ? '#5bd18e' : '#d1d5db'}`,
+                                                    backgroundColor: '#ffffff',
+                                                    transition: 'all 0.2s ease',
+                                                    flexShrink: 0,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    {!requireCtrlForMenu && (
+                                                        <div style={{
+                                                            width: '8px',
+                                                            height: '8px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: '#5bd18e',
+                                                            transition: 'all 0.2s ease'
+                                                        }} />
+                                                    )}
+                                                </div>
+                                                <span style={{
+                                                    fontSize: '14px',
+                                                    color: '#121e20'
+                                                }}>
+                                                    {t('settings.showOnTextSelection')}
+                                                </span>
+                                            </label>
+
+                                            {/* Option 2: Show on Ctrl + text selection */}
+                                            <label style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                cursor: 'pointer',
+                                                padding: '8px',
+                                                borderRadius: '6px',
+                                                transition: 'background-color 0.2s ease'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#e5e7eb'
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'transparent'
+                                            }}
+                                            onClick={() => {
+                                                if (!requireCtrlForMenu) {
+                                                    handleRequireCtrlForMenuChange(!requireCtrlForMenu)
+                                                }
+                                            }}>
+                                                {/* Custom radio button */}
+                                                <div style={{
+                                                    position: 'relative',
+                                                    width: '16px',
+                                                    height: '16px',
+                                                    borderRadius: '50%',
+                                                    border: `2px solid ${requireCtrlForMenu ? '#5bd18e' : '#d1d5db'}`,
+                                                    backgroundColor: '#ffffff',
+                                                    transition: 'all 0.2s ease',
+                                                    flexShrink: 0,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    {requireCtrlForMenu && (
+                                                        <div style={{
+                                                            width: '8px',
+                                                            height: '8px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: '#5bd18e',
+                                                            transition: 'all 0.2s ease'
+                                                        }} />
+                                                    )}
+                                                </div>
+                                                <span style={{
+                                                    fontSize: '14px',
+                                                    color: '#121e20'
+                                                }}>
+                                                    {t('settings.showOnCtrlPlusTextSelection')}
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Custom Menu Actions */}
                                 <TagListSelector
                                     title={t('settings.customMenuActions')}

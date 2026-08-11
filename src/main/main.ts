@@ -148,7 +148,7 @@ app.whenReady().then(async () => {
         console.log('⚠️ uIOhook already running (normal in dev mode)')
     }
 
-    // Start monitoring 
+    // Start monitoring
     // selection
     startTextMonitor(
         async (selectedText: string, downX: number, downY: number, upX: number, upY: number) => {
@@ -168,6 +168,10 @@ app.whenReady().then(async () => {
         (app: string, displayName?: string) => {
             // Add available app callback
             settingsStorage.addAvailableApp(app, displayName)
+        },
+        () => {
+            // Get requireCtrlForMenu callback
+            return settingsStorage.getRequireCtrlForMenu()
         }
     )
     
@@ -1743,27 +1747,50 @@ ipcMain.handle('save-word-selection-enabled', async (_event, enabled: boolean) =
         if (!currentSettings) {
             return { success: false, error: 'No existing settings found' }
         }
-        
+
         const currentLanguage = getCurrentLanguage()
-        
+
         const updatedSettings = {
             ...currentSettings,
             wordSelectionEnabled: enabled,
             language: currentSettings.language || currentLanguage || 'zh'
         }
-        
+
         const saved = settingsStorage.saveSettings(updatedSettings)
         if (!saved) {
             return { success: false, error: 'Failed to save settings' }
         }
-        
+
         // Apply the setting immediately
         setTextMonitorEnabled(enabled)
-        
+
         return { success: true }
     } catch (error) {
         console.error('Error saving word selection setting:', error)
         return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('save-require-ctrl-for-menu', async (_event, requireCtrl: boolean) => {
+    try {
+        const saved = settingsStorage.saveRequireCtrlForMenu(requireCtrl)
+        if (!saved) {
+            return { success: false, error: 'Failed to save setting' }
+        }
+        return { success: true }
+    } catch (error) {
+        console.error('Error saving requireCtrlForMenu setting:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('get-require-ctrl-for-menu', async () => {
+    try {
+        const requireCtrl = settingsStorage.getRequireCtrlForMenu()
+        return { success: true, requireCtrl }
+    } catch (error) {
+        console.error('Error getting requireCtrlForMenu setting:', error)
+        return { success: false, requireCtrl: false, error: error instanceof Error ? error.message : String(error) }
     }
 })
 
