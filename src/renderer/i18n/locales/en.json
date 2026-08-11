@@ -41,6 +41,7 @@
         "whenToShowMenu": "When to Show Menu",
         "showOnTextSelection": "Text Selection",
         "showOnCtrlPlusTextSelection": "Ctrl + Text Selection",
+        "autoCopyGenerated": "Auto Copy Generated Text",
         "customMenuActions": "Custom Word Selection Menu",
         "noMenuActions": "No menu functions selected",
         "availableMenuActionsTitle": "Available actions:",
@@ -119,6 +120,9 @@
     },
     "common": {
         "gotIt": "Got it"
+    },
+    "toast": {
+        "copied": "Copied"
     },
     "tray": {
         "chat": "Chat           ",

@@ -65,7 +65,7 @@ const MessagePanel = forwardRef<HTMLDivElement, MessagePanelProps>(({ messageDat
     useEffect(() => {
         if (ref && typeof ref === 'object' && ref.current) {
             const element = ref.current
-            let timeoutId: NodeJS.Timeout | null = null
+            let timeoutId: ReturnType<typeof setTimeout> | null = null
             
             const throttledHandleScroll = () => {
                 if (timeoutId) return // Skip if already scheduled

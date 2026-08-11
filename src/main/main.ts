@@ -1156,11 +1156,36 @@ ipcMain.handle('generate-chat-response', async (_event, selectedText: string, me
                 } else if ((command == 'translate' || command == 'explain' || command == 'ask' || command == 'modify' || command.startsWith('custom:')) &&
                     messageWindow && !messageWindow.isDestroyed() && messageWindow.isVisible()) {
                     messageWindow.webContents.send('chat-response-chunk', { ...chunk, sessionId: conversationId })
+                } else if (chatWindow && !chatWindow.isDestroyed() && chatWindow.isVisible()) {
+                    chatWindow.webContents.send('chat-response-chunk', { ...chunk, sessionId: conversationId })
                 }
             }
         }
-        
+
         const streamingState = streamingStates.get(conversationId)
+
+        // Auto-copy generated text if enabled (for translate, explain, and custom actions)
+        const shouldAutoCopy = (command === 'translate' || command === 'explain' || command.startsWith('custom:')) && assistantContent
+        if (shouldAutoCopy) {
+            const autoCopyEnabled = settingsStorage.getAutoCopyGenerated()
+            if (autoCopyEnabled && assistantContent) {
+                try {
+                    // Remove thinking tags from content before copying
+                    const cleanContent = assistantContent.replace(/<think>.*?<\/think>[\r\n]{1,2}/gs, '').trim()
+                    const { clipboard } = await import('electron')
+                    clipboard.writeText(cleanContent)
+                    console.log('Auto-copied generated text to clipboard')
+
+                    // Show "Copied" toast in message window
+                    if (messageWindow && !messageWindow.isDestroyed() && messageWindow.isVisible()) {
+                        messageWindow.webContents.send('show-toast', t('toast.copied'))
+                    }
+                } catch (error) {
+                    console.error('Error auto-copying text:', error)
+                }
+            }
+        }
+
         // Check if this is a custom action with canEdit
         let isCustomCanEdit = false
         if (command.startsWith('custom:') && assistantContent) {
@@ -1791,6 +1816,29 @@ ipcMain.handle('get-require-ctrl-for-menu', async () => {
     } catch (error) {
         console.error('Error getting requireCtrlForMenu setting:', error)
         return { success: false, requireCtrl: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('get-auto-copy-generated', async () => {
+    try {
+        const autoCopy = settingsStorage.getAutoCopyGenerated()
+        return { success: true, autoCopy }
+    } catch (error) {
+        console.error('Error getting autoCopyGenerated setting:', error)
+        return { success: false, autoCopy: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('save-auto-copy-generated', async (_event, autoCopy: boolean) => {
+    try {
+        const saved = settingsStorage.saveAutoCopyGenerated(autoCopy)
+        if (!saved) {
+            return { success: false, error: 'Failed to save autoCopyGenerated setting' }
+        }
+        return { success: true }
+    } catch (error) {
+        console.error('Error saving autoCopyGenerated setting:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
 })
 

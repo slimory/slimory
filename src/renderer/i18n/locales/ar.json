@@ -41,6 +41,7 @@
         "whenToShowMenu": "متى تظهر القائمة",
         "showOnTextSelection": "تحديد النص",
         "showOnCtrlPlusTextSelection": "Ctrl + تحديد النص",
+        "autoCopyGenerated": "نسخ النص المولد تلقائيًا",
         "customMenuActions": "قائمة تحديد الكلمات المخصصة",
         "noMenuActions": "لم يتم اختيار أي وظيفة قائمة",
         "availableMenuActionsTitle": "الإجراءات المتاحة:",
@@ -119,6 +120,9 @@
     },
     "common": {
         "gotIt": "فهمت"
+    },
+    "toast": {
+        "copied": "تم النسخ"
     },
     "tray": {
         "chat": "دردشة           ",

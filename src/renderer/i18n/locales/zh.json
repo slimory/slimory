@@ -42,6 +42,7 @@
         "whenToShowMenu": "何时显示菜单",
         "showOnTextSelection": "选中文本",
         "showOnCtrlPlusTextSelection": "Ctrl + 选中文本",
+        "autoCopyGenerated": "自动复制生成文本",
         "customMenuActions": "自定义划词菜单",
         "noMenuActions": "未选择任何菜单功能",
         "availableMenuActionsTitle": "可用操作:",
@@ -120,6 +121,9 @@
     },
     "common": {
         "gotIt": "我知道了"
+    },
+    "toast": {
+        "copied": "已复制"
     },
     "tray": {
         "chat": "聊天           ",

@@ -41,6 +41,7 @@
         "whenToShowMenu": "メニュー表示タイミング",
         "showOnTextSelection": "テキスト選択時",
         "showOnCtrlPlusTextSelection": "Ctrl + テキスト選択時",
+        "autoCopyGenerated": "生成テキストを自動コピー",
         "customMenuActions": "カスタム単語選択メニュー",
         "noMenuActions": "メニュー機能が選択されていません",
         "availableMenuActionsTitle": "利用可能なアクション:",
@@ -119,6 +120,9 @@
     },
     "common": {
         "gotIt": "わかりました"
+    },
+    "toast": {
+        "copied": "コピーしました"
     },
     "tray": {
         "chat": "チャット           ",

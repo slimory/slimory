@@ -26,6 +26,7 @@ interface Window {
         // Message window APIs
         onShowMessage: (callback: (event: any, messages: { role: 'user' | 'assistant'; content: string }[], selectedText: string, isNewSession: boolean, command: string, direction: string, sessionId?: string) => void) => void
         onHideMessage: (callback: (event: any) => void) => void
+        onShowToast: (callback: (event: any, message: string) => void) => void
         onHideFullChatWindow: (callback: () => void) => void
         closeMessageWindow: () => void
         openMessageWindow: (messages: { role: 'user' | 'assistant'; content: string }[], selectedText: string, command: string) => void
@@ -64,6 +65,8 @@ interface Window {
         saveWordSelectionEnabled: (enabled: boolean) => Promise<{ success: boolean; error?: string }>
         saveRequireCtrlForMenu: (requireCtrl: boolean) => Promise<{ success: boolean; error?: string }>
         getRequireCtrlForMenu: () => Promise<{ success: boolean; requireCtrl: boolean; error?: string }>
+        getAutoCopyGenerated: () => Promise<{ success: boolean; autoCopy: boolean; error?: string }>
+        saveAutoCopyGenerated: (autoCopy: boolean) => Promise<{ success: boolean; error?: string }>
         saveLanguage: (language: string) => Promise<{ success: boolean; error?: string }>
         getAvailableApps: () => Promise<{ success: boolean; apps: Array<{ name: string; displayName: string }>; error?: string }>
         getDisabledApps: () => Promise<{ success: boolean; apps: Array<{ name: string; displayName: string }>; error?: string }>

@@ -42,6 +42,7 @@
 - [x] Selection menu appearing near selected text (v0.1.0)
 - [x] Settings panel for customization (v0.1.0)
 - [x] Optional Ctrl key requirement for menu popup (reduce accidental triggers) (iter-2)
+- [x] Auto-copy generated text to clipboard with visual confirmation (iter-3)
 
 ## Performance
 - [ ] Fast text selection detection

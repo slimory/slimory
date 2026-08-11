@@ -41,6 +41,7 @@
         "whenToShowMenu": "মেনু কখন দেখাবে",
         "showOnTextSelection": "টেক্সট নির্বাচন",
         "showOnCtrlPlusTextSelection": "Ctrl + টেক্সট নির্বাচন",
+        "autoCopyGenerated": "উত্পন্ন পাঠ্য স্বয়ংক্রিয়ভাবে কপি করুন",
         "customMenuActions": "কাস্টম শব্দ নির্বাচন মেনু",
         "noMenuActions": "কোন মেনু ফাংশন নির্বাচন করা হয়নি",
         "availableMenuActionsTitle": "উপলব্ধ অ্যাকশন:",
@@ -119,6 +120,9 @@
     },
     "common": {
         "gotIt": "বুঝেছি"
+    },
+    "toast": {
+        "copied": "কপি হয়েছে"
     },
     "tray": {
         "chat": "চ্যাট           ",

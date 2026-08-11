@@ -41,6 +41,7 @@
         "whenToShowMenu": "मेनू कब दिखाएं",
         "showOnTextSelection": "टेक्स्ट चयन",
         "showOnCtrlPlusTextSelection": "Ctrl + टेक्स्ट चयन",
+        "autoCopyGenerated": "उत्पन्न पाठ को स्वचालित रूप से कॉपी करें",
         "customMenuActions": "कस्टम शब्द चयन मेनू",
         "noMenuActions": "कोई मेनू फ़ंक्शन चयनित नहीं है",
         "availableMenuActionsTitle": "उपलब्ध क्रियाएँ:",
@@ -119,6 +120,9 @@
     },
     "common": {
         "gotIt": "समझ गया"
+    },
+    "toast": {
+        "copied": "कॉपी हो गया"
     },
     "tray": {
         "chat": "चैट           ",

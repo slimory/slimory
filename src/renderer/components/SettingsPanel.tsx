@@ -45,6 +45,7 @@ const SettingsPanel = () => {
     const [reasoningEffort, setReasoningEffort] = useState<string>('off')
     const [wordSelectionEnabled, setWordSelectionEnabled] = useState<boolean>(true)
     const [requireCtrlForMenu, setRequireCtrlForMenu] = useState<boolean>(false)
+    const [autoCopyGenerated, setAutoCopyGenerated] = useState<boolean>(false)
     const [isVerifying, setIsVerifying] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
@@ -162,6 +163,12 @@ const SettingsPanel = () => {
                 const requireCtrlResult = await window.electronAPI.getRequireCtrlForMenu()
                 if (requireCtrlResult.success) {
                     setRequireCtrlForMenu(requireCtrlResult.requireCtrl)
+                }
+
+                // Load autoCopyGenerated setting
+                const autoCopyResult = await window.electronAPI.getAutoCopyGenerated()
+                if (autoCopyResult.success) {
+                    setAutoCopyGenerated(autoCopyResult.autoCopy)
                 }
 
                 // Load available apps and disabled apps
@@ -332,6 +339,18 @@ const SettingsPanel = () => {
             await window.electronAPI.saveRequireCtrlForMenu(requireCtrl)
         } catch (error) {
             console.error('Error saving requireCtrlForMenu setting:', error)
+            setError(t('settings.errorSaveFailed'))
+            setTimeout(() => setError(null), 2000)
+        }
+    }
+
+    const handleAutoCopyGeneratedChange = async (autoCopy: boolean) => {
+        setAutoCopyGenerated(autoCopy)
+        // Auto save autoCopyGenerated setting
+        try {
+            await window.electronAPI.saveAutoCopyGenerated(autoCopy)
+        } catch (error) {
+            console.error('Error saving autoCopyGenerated setting:', error)
             setError(t('settings.errorSaveFailed'))
             setTimeout(() => setError(null), 2000)
         }
@@ -1073,27 +1092,21 @@ const SettingsPanel = () => {
 
                                 {/* When to Show Menu - only visible when word selection is enabled */}
                                 {wordSelectionEnabled && (
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '12px',
-                                        padding: '16px',
-                                        backgroundColor: '#f8f9fa',
-                                        borderRadius: '8px',
-                                        marginTop: '16px'
-                                    }}>
+                                    <div style={{ marginTop: '16px' }}>
                                         <div style={{
-                                            fontSize: '13px',
-                                            fontWeight: '600',
-                                            color: '#374151',
-                                            marginBottom: '4px'
+                                            fontSize: '14px',
+                                            color: '#121e20',
+                                            marginBottom: '8px'
                                         }}>
                                             {t('settings.whenToShowMenu')}
                                         </div>
                                         <div style={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: '8px'
+                                            gap: '8px',
+                                            padding: '16px',
+                                            backgroundColor: '#f8f9fa',
+                                            borderRadius: '8px'
                                         }}>
                                             {/* Option 1: Show on text selection */}
                                             <label style={{
@@ -1204,6 +1217,47 @@ const SettingsPanel = () => {
                                     </div>
                                 )}
 
+                                {/* Auto Copy Generated Text - only visible when word selection is enabled */}
+                                {wordSelectionEnabled && (
+                                    <div style={{ marginBottom: '0px', marginTop: '16px' }}>
+                                        <label style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            cursor: 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: 500,
+                                            color: '#374151',
+                                            padding: '0px',
+                                            borderRadius: '6px',
+                                            transition: 'background-color 0.2s ease'
+                                        }}
+                                        onClick={() => handleAutoCopyGeneratedChange(!autoCopyGenerated)}>
+                                            {/* Custom checkbox */}
+                                            <div style={{
+                                                position: 'relative',
+                                                width: '16px',
+                                                height: '16px',
+                                                borderRadius: '4px',
+                                                border: `2px solid ${autoCopyGenerated ? '#5bd18e' : '#d1d5db'}`,
+                                                backgroundColor: autoCopyGenerated ? '#5bd18e' : '#ffffff',
+                                                transition: 'all 0.2s ease',
+                                                flexShrink: 0,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                {autoCopyGenerated && (
+                                                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            {t('settings.autoCopyGenerated')}
+                                        </label>
+                                    </div>
+                                )}
+
                                 {/* Custom Menu Actions */}
                                 <TagListSelector
                                     title={t('settings.customMenuActions')}
@@ -1300,13 +1354,28 @@ const SettingsPanel = () => {
                                                         />
                                                     </div>
                                                     <div style={{ marginBottom: '8px' }}>
-                                                        <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={customActionCanEdit}
-                                                                onChange={e => setCustomActionCanEdit(e.target.checked)}
-                                                                style={{ marginRight: '6px', cursor: 'pointer' }}
-                                                            />
+                                                        <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}
+                                                        onClick={() => setCustomActionCanEdit(!customActionCanEdit)}>
+                                                            {/* Custom checkbox */}
+                                                            <div style={{
+                                                                position: 'relative',
+                                                                width: '16px',
+                                                                height: '16px',
+                                                                borderRadius: '4px',
+                                                                border: `2px solid ${customActionCanEdit ? '#5bd18e' : '#d1d5db'}`,
+                                                                backgroundColor: customActionCanEdit ? '#5bd18e' : '#ffffff',
+                                                                transition: 'all 0.2s ease',
+                                                                flexShrink: 0,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center'
+                                                            }}>
+                                                                {customActionCanEdit && (
+                                                                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                                    </svg>
+                                                                )}
+                                                            </div>
                                                             {t('settings.customActionCanEdit')}
                                                         </label>
                                                         <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0 0px' }}>
@@ -1407,13 +1476,28 @@ const SettingsPanel = () => {
                                                 />
                                             </div>
                                             <div style={{ marginBottom: '8px' }}>
-                                                <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={customActionCanEdit}
-                                                        onChange={e => setCustomActionCanEdit(e.target.checked)}
-                                                        style={{ marginRight: '6px', cursor: 'pointer' }}
-                                                    />
+                                                <label style={{ fontSize: '13px', fontWeight: 500, color: '#374151', display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}
+                                                onClick={() => setCustomActionCanEdit(!customActionCanEdit)}>
+                                                    {/* Custom checkbox */}
+                                                    <div style={{
+                                                        position: 'relative',
+                                                        width: '16px',
+                                                        height: '16px',
+                                                        borderRadius: '4px',
+                                                        border: `2px solid ${customActionCanEdit ? '#5bd18e' : '#d1d5db'}`,
+                                                        backgroundColor: customActionCanEdit ? '#5bd18e' : '#ffffff',
+                                                        transition: 'all 0.2s ease',
+                                                        flexShrink: 0,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        {customActionCanEdit && (
+                                                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                            </svg>
+                                                        )}
+                                                    </div>
                                                     {t('settings.customActionCanEdit')}
                                                 </label>
                                                 <p style={{ fontSize: '11px', color: '#9ca3af', margin: '4px 0 0 0px' }}>

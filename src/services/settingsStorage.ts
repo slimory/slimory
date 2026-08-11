@@ -26,6 +26,7 @@ export interface Settings {
     language?: string
     wordSelectionEnabled?: boolean
     requireCtrlForMenu?: boolean
+    autoCopyGenerated?: boolean
 }
 
 // Provider configurations
@@ -127,6 +128,7 @@ export class SettingsStorage {
                     language: saved.language || 'zh',
                     wordSelectionEnabled: saved.wordSelectionEnabled !== undefined ? saved.wordSelectionEnabled : true,
                     requireCtrlForMenu: saved.requireCtrlForMenu !== undefined ? saved.requireCtrlForMenu : false,
+                    autoCopyGenerated: saved.autoCopyGenerated !== undefined ? saved.autoCopyGenerated : false,
                     providers: {},
                     availableApps: saved.availableApps || [],
                     disabledApps: saved.disabledApps || [],
@@ -149,6 +151,7 @@ export class SettingsStorage {
                 language: saved.language || 'zh',
                 wordSelectionEnabled: saved.wordSelectionEnabled !== undefined ? saved.wordSelectionEnabled : true,
                 requireCtrlForMenu: saved.requireCtrlForMenu !== undefined ? saved.requireCtrlForMenu : false,
+                autoCopyGenerated: saved.autoCopyGenerated !== undefined ? saved.autoCopyGenerated : false,
                 providers: saved.providers || {},
                 availableApps: saved.availableApps || [],
                 disabledApps: saved.disabledApps || [],
@@ -162,6 +165,7 @@ export class SettingsStorage {
                 language: 'zh',
                 wordSelectionEnabled: true,
                 requireCtrlForMenu: false,
+                autoCopyGenerated: false,
                 providers: {},
                 availableApps: [],
                 disabledApps: [],
@@ -194,10 +198,11 @@ export class SettingsStorage {
             // Update current provider
             allSettings.currentProvider = settings.provider
 
-            // Update language, wordSelectionEnabled, and requireCtrlForMenu
+            // Update language, wordSelectionEnabled, requireCtrlForMenu, and autoCopyGenerated
             allSettings.language = settings.language || allSettings.language || 'zh'
             allSettings.wordSelectionEnabled = settings.wordSelectionEnabled !== undefined ? settings.wordSelectionEnabled : allSettings.wordSelectionEnabled !== false
             allSettings.requireCtrlForMenu = settings.requireCtrlForMenu !== undefined ? settings.requireCtrlForMenu : allSettings.requireCtrlForMenu !== undefined ? allSettings.requireCtrlForMenu : false
+            allSettings.autoCopyGenerated = settings.autoCopyGenerated !== undefined ? settings.autoCopyGenerated : allSettings.autoCopyGenerated !== undefined ? allSettings.autoCopyGenerated : false
 
             // Save API key for the provider
             if (settings.apiKey) {
@@ -406,7 +411,8 @@ export class SettingsStorage {
                 reasoningEffort: reasoningEffort,
                 language: allSettings.language || 'zh',
                 wordSelectionEnabled: allSettings.wordSelectionEnabled !== false,
-                requireCtrlForMenu: allSettings.requireCtrlForMenu !== undefined ? allSettings.requireCtrlForMenu : false
+                requireCtrlForMenu: allSettings.requireCtrlForMenu !== undefined ? allSettings.requireCtrlForMenu : false,
+                autoCopyGenerated: allSettings.autoCopyGenerated !== undefined ? allSettings.autoCopyGenerated : false
             }
         } catch (error) {
             console.error('Error loading settings:', error)
@@ -675,6 +681,28 @@ export class SettingsStorage {
             return this.saveAllSettings(allSettings)
         } catch (error) {
             console.error('Error saving requireCtrlForMenu setting:', error)
+            return false
+        }
+    }
+
+    /**
+     * Get autoCopyGenerated setting
+     */
+    getAutoCopyGenerated(): boolean {
+        const allSettings = this.loadAllSettings()
+        return allSettings.autoCopyGenerated !== undefined ? allSettings.autoCopyGenerated : false
+    }
+
+    /**
+     * Save autoCopyGenerated setting
+     */
+    saveAutoCopyGenerated(autoCopy: boolean): boolean {
+        try {
+            const allSettings = this.loadAllSettings()
+            allSettings.autoCopyGenerated = autoCopy
+            return this.saveAllSettings(allSettings)
+        } catch (error) {
+            console.error('Error saving autoCopyGenerated setting:', error)
             return false
         }
     }

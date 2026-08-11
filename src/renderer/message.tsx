@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createRoot } from 'react-dom/client'
 import MessagePanel from './components/MessagePanel'
 import './components/MessagePanel.css'
@@ -41,6 +41,36 @@ const MessageApp = () => {
     const [command, setCommand] = useState('')
     const messagePanelRef = useRef<HTMLDivElement>(null)
     const currentSessionIdRef = useRef<string>('')
+    const [toastMessage, setToastMessage] = useState<string>('')
+    const [showToast, setShowToast] = useState(false)
+    const [panelCenterX, setPanelCenterX] = useState(0)
+    const [toastTop, setToastTop] = useState(0)
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    // Compute toast position: prefer below the message-panel (outside); fall back to the bottom
+    // of the panel (inside) when there is not enough room below within the message window.
+    const updateToastPosition = useCallback(() => {
+        const panel = messagePanelRef.current
+        if (!panel) return
+        const rect = panel.getBoundingClientRect()
+
+        // Center horizontally relative to the actual message-panel width
+        setPanelCenterX(rect.left + rect.width / 2)
+
+        const TOAST_HEIGHT = 34
+        const GAP = 8
+        const BOTTOM_MARGIN = 28
+        const windowHeight = window.innerHeight
+
+        // Preferred: below the panel (outside), leaving a small gap
+        const preferredTop = rect.bottom + GAP
+        if (preferredTop + TOAST_HEIGHT <= windowHeight - BOTTOM_MARGIN) {
+            setToastTop(preferredTop)
+        } else {
+            // Fallback: inside bottom of the panel when it fills the window
+            setToastTop(windowHeight - TOAST_HEIGHT - BOTTOM_MARGIN)
+        }
+    }, [])
 
     useEffect(() => {
         // Listen for message data from main process
@@ -135,6 +165,29 @@ const MessageApp = () => {
                 content: ''
             })
             setDirectionState({ direction: '' })
+            // Hide toast as well
+            setShowToast(false)
+            setToastMessage('')
+            if (toastTimerRef.current) {
+                clearTimeout(toastTimerRef.current)
+                toastTimerRef.current = null
+            }
+        }
+
+        // Listen for toast messages
+        const handleShowToast = (_event: any, message: string) => {
+            // Recompute position in case the panel size changed before the toast appeared
+            updateToastPosition()
+            setToastMessage(message)
+            setShowToast(true)
+            // Clear any existing timer before starting a new one
+            if (toastTimerRef.current) {
+                clearTimeout(toastTimerRef.current)
+            }
+            // Auto-hide toast after 2 seconds
+            toastTimerRef.current = setTimeout(() => {
+                setShowToast(false)
+            }, 2000)
         }
 
         // Register IPC listeners
@@ -143,22 +196,32 @@ const MessageApp = () => {
             window.electronAPI.onChatResponseChunk(handleChatResponseChunk)
             window.electronAPI.onChatResponseError(handleChatResponseError)
             window.electronAPI.onHideMessage(handleHideMessage)
+            window.electronAPI.onShowToast(handleShowToast)
         }
-    }, [])
 
-    // Monitor panel width vs screen width for overflow detection
+        return () => {
+            if (toastTimerRef.current) {
+                clearTimeout(toastTimerRef.current)
+            }
+        }
+    }, [updateToastPosition])
+
+    // Monitor panel width vs screen width for overflow detection, and track panel center for toast positioning
     useEffect(() => {
         const panel = messagePanelRef.current
         if (!panel) return
 
         const checkWidth = () => {
             const panelRect = panel.getBoundingClientRect()
-            
+
+            // Update toast position (center X + top) relative to the actual message-panel size
+            updateToastPosition()
+
             // Get desktop screen dimensions
             const desktopScreenWidth = window.screen.width
-            
+
             const exceedsScreenWidth = window.screenX + panelRect.left + panelRect.width - desktopScreenWidth
-            
+
             if (exceedsScreenWidth > 0) {
                 // Adjust message window position by moving it left by the exceeded amount
                 if (window.electronAPI && 'adjustMessageWindowPosition' in window.electronAPI) {
@@ -182,20 +245,34 @@ const MessageApp = () => {
             resizeObserver.disconnect()
             window.removeEventListener('resize', checkWidth)
         }
-    }, [streamingState.content, messagesData?.messages])
+    }, [streamingState.content, messagesData?.messages, updateToastPosition])
 
     if (!messagesData) {
         return <div></div>
     }
 
-    return <div style={{ display: isHidden ? 'none' : 'block', width: '100vw', height: '100vh', background: 'transparent' }}>
-        <MessagePanel 
-            messageData={messagesData.messages[messagesData.messages.length - 1]}
-            streamingState={streamingState}
-            directionState={directionState}
-            ref={messagePanelRef}
-        />
-    </div>
+    return (
+        <div style={{ display: isHidden ? 'none' : 'block', width: '100vw', height: '100vh', background: 'transparent' }}>
+            <MessagePanel
+                messageData={messagesData.messages[messagesData.messages.length - 1]}
+                streamingState={streamingState}
+                directionState={directionState}
+                ref={messagePanelRef}
+            />
+            {/* Toast notification - shown below the message-panel (or inside its bottom when the panel fills the window) */}
+            {showToast && (
+                <div
+                    className="toast-notification"
+                    style={{
+                        top: toastTop,
+                        left: panelCenterX,
+                    }}
+                >
+                    {toastMessage}
+                </div>
+            )}
+        </div>
+    )
 }
 
 createRoot(document.getElementById('root')!).render(

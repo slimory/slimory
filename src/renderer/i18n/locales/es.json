@@ -41,6 +41,7 @@
         "whenToShowMenu": "Cuándo mostrar el menú",
         "showOnTextSelection": "Selección de texto",
         "showOnCtrlPlusTextSelection": "Ctrl + Selección de texto",
+        "autoCopyGenerated": "Copiar automáticamente el texto generado",
         "customMenuActions": "Menú de selección de palabras personalizado",
         "noMenuActions": "No se ha seleccionado ninguna función de menú",
         "availableMenuActionsTitle": "Acciones disponibles:",
@@ -119,6 +120,9 @@
     },
     "common": {
         "gotIt": "Entendido"
+    },
+    "toast": {
+        "copied": "Copiado"
     },
     "tray": {
         "chat": "Chat           ",

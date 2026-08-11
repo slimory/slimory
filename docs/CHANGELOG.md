@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Auto-copy generated text to clipboard — new setting (checkbox) in the Settings panel; when enabled and word selection is on, translation/explanation/custom-action results are copied to the clipboard on completion
+- "Copied" toast notification in the message window — shown below the message panel and centered on its actual width; when the panel fills the window, the toast falls back to the panel's inner bottom so it never draws outside the window
 - Custom action icon picker with 90+ lucide-react icons
 - Icon selection and display for custom actions in settings and menu
 - Model configuration in API settings - users can customize the model used for AI conversations
@@ -18,10 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `saveSettings` IPC now accepts optional model parameter
 - API key verification uses `generateStreamingResponseWithTools` to verify model supports tools
+- Settings panel: auto-copy checkbox is hidden when word selection is disabled (it depends on the selection flow)
 
 ### Fixed
 - Model configuration now correctly persists and loads after app restart
 - Fixed default model display in settings panel
+- Fixed TypeScript error `Cannot find namespace 'NodeJS'` in `MessagePanel.tsx` by using `ReturnType<typeof setTimeout>` for the scroll-throttle timer
 
 ### Removed
 

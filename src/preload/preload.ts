@@ -47,6 +47,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onHideMessage: (callback: (event: any) => void) => {
         ipcRenderer.on('hide-message', callback)
     },
+    onShowToast: (callback: (event: any, message: string) => void) => {
+        ipcRenderer.on('show-toast', callback)
+    },
     onHideFullChatWindow: (callback: () => void) => {
         ipcRenderer.on('hide-full-chat-window', callback)
     },
@@ -133,6 +136,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveWordSelectionEnabled: (enabled: boolean) => ipcRenderer.invoke('save-word-selection-enabled', enabled),
     saveRequireCtrlForMenu: (requireCtrl: boolean) => ipcRenderer.invoke('save-require-ctrl-for-menu', requireCtrl),
     getRequireCtrlForMenu: () => ipcRenderer.invoke('get-require-ctrl-for-menu'),
+    getAutoCopyGenerated: () => ipcRenderer.invoke('get-auto-copy-generated'),
+    saveAutoCopyGenerated: (autoCopy: boolean) => ipcRenderer.invoke('save-auto-copy-generated', autoCopy),
     saveLanguage: (language: string) => ipcRenderer.invoke('save-language', language),
     getAvailableApps: () => ipcRenderer.invoke('get-available-apps'),
     getDisabledApps: () => ipcRenderer.invoke('get-disabled-apps'),
