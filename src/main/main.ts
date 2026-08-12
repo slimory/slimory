@@ -1989,6 +1989,44 @@ const PI_AI_PROVIDER_MAP_MAIN: Record<string, string> = {
     'openrouter': 'openrouter',
 }
 
+// Display order + labels for the provider dropdown. Providers not listed here
+// are appended at the end of the list with their pi-ai catalog name.
+const PROVIDER_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: 'openai', label: 'OpenAI' },
+    { value: 'anthropic', label: 'Anthropic' },
+    { value: 'google', label: 'Google' },
+    { value: 'deepseek', label: 'DeepSeek' },
+    { value: 'zai', label: 'Z.AI' },
+    { value: 'zai-coding-cn', label: 'Z.AI (China) / 智谱国内' },
+    { value: 'minimax', label: 'MiniMax' },
+    { value: 'minimax-cn', label: 'MiniMax (China)' },
+    { value: 'moonshotai', label: 'Moonshot AI' },
+    { value: 'moonshotai-cn', label: 'Moonshot AI (China)' },
+    { value: 'mistral', label: 'Mistral' },
+    { value: 'groq', label: 'Groq' },
+    { value: 'xai', label: 'xAI' },
+    { value: 'openrouter', label: 'OpenRouter' },
+    { value: 'cerebras', label: 'Cerebras' },
+    { value: 'amazon-bedrock', label: 'Amazon Bedrock' },
+    { value: 'google-vertex', label: 'Vertex AI (Google)' },
+    { value: 'azure-openai-responses', label: 'Azure OpenAI' },
+    { value: 'openai-codex', label: 'OpenAI Codex' },
+    { value: 'github-copilot', label: 'GitHub Copilot' },
+    { value: 'vercel-ai-gateway', label: 'Vercel AI Gateway' },
+    { value: 'huggingface', label: 'HuggingFace' },
+    { value: 'fireworks', label: 'Fireworks' },
+    { value: 'together', label: 'Together AI' },
+    { value: 'opencode', label: 'OpenCode Zen' },
+    { value: 'opencode-go', label: 'OpenCode Go' },
+    { value: 'kimi-coding', label: 'Kimi For Coding' },
+    { value: 'cloudflare-workers-ai', label: 'Cloudflare Workers AI' },
+    { value: 'cloudflare-ai-gateway', label: 'Cloudflare AI Gateway' },
+    { value: 'xiaomi', label: 'Xiaomi MiMo' },
+    { value: 'xiaomi-token-plan-cn', label: 'Xiaomi MiMo (China)' },
+    { value: 'xiaomi-token-plan-ams', label: 'Xiaomi MiMo (Amsterdam)' },
+    { value: 'xiaomi-token-plan-sgp', label: 'Xiaomi MiMo (Singapore)' },
+]
+
 // Cached pi-ai builtin provider metadata (id → name/baseUrl), used by
 // get-available-providers and to feed baseUrl into the chat service.
 // Only static-catalog providers are included (dynamic ones like "radius"
@@ -1998,13 +2036,31 @@ let piProviderMetaCache: Array<{ provider: string; providerName: string; baseUrl
 function getPiProviderMetaList(): Array<{ provider: string; providerName: string; baseUrl: string }> {
     if (!piProviderMetaCache) {
         const staticIds = new Set<string>(getBuiltinModelsCatalogIds())
-        piProviderMetaCache = builtinProviders()
-            .filter(p => staticIds.has(p.id))
-            .map(p => ({
-                provider: p.id,
-                providerName: p.name || p.id,
-                baseUrl: p.baseUrl || ''
-            }))
+        const byId = new Map<string, { name: string; baseUrl: string }>()
+        for (const p of builtinProviders()) {
+            if (staticIds.has(p.id)) {
+                byId.set(p.id, { name: p.name || p.id, baseUrl: p.baseUrl || '' })
+            }
+        }
+
+        // Listed providers first, in the defined order and with the defined labels
+        const listed: Array<{ provider: string; providerName: string; baseUrl: string }> = []
+        for (const opt of PROVIDER_OPTIONS) {
+            const meta = byId.get(opt.value)
+            if (meta) {
+                listed.push({ provider: opt.value, providerName: opt.label, baseUrl: meta.baseUrl })
+            }
+        }
+
+        // Any remaining pi-ai catalog providers appended with their pi-ai name
+        const unlisted: Array<{ provider: string; providerName: string; baseUrl: string }> = []
+        for (const [id, meta] of byId) {
+            if (!PROVIDER_OPTIONS.some(o => o.value === id)) {
+                unlisted.push({ provider: id, providerName: meta.name, baseUrl: meta.baseUrl })
+            }
+        }
+
+        piProviderMetaCache = [...listed, ...unlisted]
     }
     return piProviderMetaCache
 }

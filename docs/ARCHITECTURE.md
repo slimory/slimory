@@ -84,6 +84,8 @@ All data persisted locally in `%APPDATA%/Roaming/slimory/`:
 
 The provider list, display name, base URL, and models are loaded from the pi-ai builtin catalog (`@earendil-works/pi-ai/providers/all`), which ships ~39 static providers (DeepSeek, Anthropic, OpenAI, Google/Gemini, Moonshot, Groq, Fireworks, MiniMax, OpenRouter, Z.AI Coding CN / GLM, Mistral, X.AI, NVIDIA, etc.). The app's provider key IS the pi-ai catalog id.
 
+The dropdown's display order and labels are defined by `PROVIDER_OPTIONS` in `src/main/main.ts` (curated, e.g. `zai-coding-cn` → "Z.AI (China) / 智谱国内"). Any catalog provider not in that list is appended at the end with its pi-ai name.
+
 `PROVIDER_CONFIGS` in `src/services/settingsStorage.ts` is used **only** to pick a preferred default model per provider (and a legacy baseUrl fallback for the raw-fetch path). Providers without an entry default to the first model in the pi-ai catalog.
 
 Provider keys persisted before this change were migrated automatically on load:

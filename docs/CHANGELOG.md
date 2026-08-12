@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Upgraded `@earendil-works/pi-ai` from 0.74.2 to 0.84.1 — streaming/type imports moved to the `@earendil-works/pi-ai/compat` compatibility entrypoint and catalog reads (`getModels` → non-deprecated `getBuiltinModels`) moved to `@earendil-works/pi-ai/providers/all`; provider type tightened from `KnownProvider` to `BuiltinProvider`. Requires Node >= 22.19 at runtime (Electron 39.2.6 bundles 22.21.1)
 - The provider list in Settings / onboarding is now loaded from the pi-ai builtin catalog (39 providers) instead of a hand-maintained list — provider name, base URL, and models all come from pi-ai; `PROVIDER_CONFIGS` now only supplies a preferred default model per provider
+- Provider dropdown has a curated display order and labels (`PROVIDER_OPTIONS` in `main.ts`); any catalog provider not in that list is appended at the end
 - Provider identity switched to pi-ai catalog ids (e.g. `glm`→`zai-coding-cn`, `moonshot`→`moonshotai`, `gemini`→`google`); previously saved settings are migrated automatically on load
 - `saveSettings` IPC now accepts optional model parameter
 - API key verification uses `generateStreamingResponseWithTools` to verify model supports tools
