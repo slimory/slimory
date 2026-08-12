@@ -48,7 +48,7 @@ To create a universal AI assistant that seamlessly integrates into users' existi
 1. **Universal Text Selection**: Works across all Windows applications
 2. **Chat Interface**: General Q&A with web search and browser automation
 3. **Text Modification**: AI-powered text editing in any editable field
-4. **Multi-Provider Support**: OpenAI, Anthropic, DeepSeek, GLM, Moonshot, Gemini, Groq, Fireworks, MiniMax, OpenRouter
+4. **Multi-Provider Support**: 39+ providers from the pi-ai catalog (OpenAI, Anthropic, DeepSeek, GLM/Z.AI Coding CN, Moonshot, Gemini, Groq, Fireworks, MiniMax, OpenRouter, Mistral, X.AI, NVIDIA, and more)
 5. **Custom Model Configuration**: Users can customize the model for each provider (must support tool calling)
 6. **Privacy-First**: No cloud sync, encrypted API keys, zero telemetry
 7. **Internationalization**: 10 languages supported

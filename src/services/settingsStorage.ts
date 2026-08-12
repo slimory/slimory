@@ -29,19 +29,24 @@ export interface Settings {
     autoCopyGenerated?: boolean
 }
 
-// Provider configurations
+// Provider default-model overrides, keyed by pi-ai builtin provider id.
+// The provider LIST and its name/baseUrl now come from the pi-ai catalog
+// (see `get-available-providers` in src/main/main.ts). This map is used ONLY
+// to pick a preferred default model per provider; `model` must exist in the
+// pi-ai catalog for the provider, otherwise the first catalog model is used.
+// `provider`/`baseUrl` are kept as legacy fallbacks for the raw-fetch path.
 export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     'deepseek': {
         provider: 'Deepseek',
         baseUrl: 'https://api.deepseek.com',
         model: 'deepseek-v4-pro'
     },
-    'glm': {
+    'zai-coding-cn': {
         provider: 'GLM',
-        baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-        model: 'glm-4.6'
+        baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
+        model: 'glm-5.2'
     },
-    'moonshot': {
+    'moonshotai': {
         provider: 'Moonshot',
         baseUrl: 'https://api.moonshot.cn/v1',
         model: 'kimi-k2.5'
@@ -56,7 +61,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
         baseUrl: 'https://api.anthropic.com/v1',
         model: 'claude-sonnet-4-5-20250929'
     },
-    'gemini': {
+    'google': {
         provider: 'Gemini',
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
         model: 'gemini-2.5-flash'
@@ -69,18 +74,27 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     'fireworks': {
         provider: 'Fireworks AI',
         baseUrl: 'https://api.fireworks.ai/inference/v1',
-        model: 'accounts/fireworks/models/llama-v3p1-70b-instruct'
+        model: 'accounts/fireworks/models/deepseek-v4-pro'
     },
     'minimax': {
         provider: 'Minimax',
         baseUrl: 'https://api.minimaxi.com/v1',
-        model: 'MiniMax-M2.5'
+        model: 'MiniMax-M2.7'
     },
     'openrouter': {
         provider: 'OpenRouter',
         baseUrl: 'https://openrouter.ai/api/v1',
         model: 'deepseek/deepseek-chat'
     }
+}
+
+// Legacy app-level provider keys → pi-ai builtin catalog ids.
+// Provider identity switched to pi-ai ids, so settings persisted under the old
+// keys (moonshot/gemini/glm) are migrated once on load.
+const LEGACY_PROVIDER_KEY_MAP: Record<string, string> = {
+    'moonshot': 'moonshotai',
+    'gemini': 'google',
+    'glm': 'zai-coding-cn'
 }
 
 export class SettingsStorage {
@@ -142,11 +156,11 @@ export class SettingsStorage {
                         encrypted: saved.encrypted || false
                     }
                 }
-                
-                return migrated
+
+                return this.migrateLegacyProviderKeys(migrated)
             }
 
-            return {
+            const allSettings = {
                 currentProvider: saved.currentProvider || saved.provider || '',
                 language: saved.language || 'zh',
                 wordSelectionEnabled: saved.wordSelectionEnabled !== undefined ? saved.wordSelectionEnabled : true,
@@ -158,6 +172,7 @@ export class SettingsStorage {
                 menuActions: saved.menuActions || ['explain', 'translate', 'ask'],
                 customActions: saved.customActions || []
             }
+            return this.migrateLegacyProviderKeys(allSettings)
         } catch (error) {
             console.error('Error loading all settings:', error)
             return {
@@ -173,6 +188,25 @@ export class SettingsStorage {
                 customActions: []
             }
         }
+    }
+
+    /**
+     * Migrate provider keys persisted under legacy app-level names to the
+     * pi-ai builtin catalog ids (moonshot→moonshotai, gemini→google, glm→zai-coding-cn).
+     */
+    private migrateLegacyProviderKeys(allSettings: any): any {
+        if (allSettings.currentProvider && LEGACY_PROVIDER_KEY_MAP[allSettings.currentProvider]) {
+            allSettings.currentProvider = LEGACY_PROVIDER_KEY_MAP[allSettings.currentProvider]
+        }
+        if (allSettings.providers && typeof allSettings.providers === 'object') {
+            for (const key of Object.keys(allSettings.providers)) {
+                if (LEGACY_PROVIDER_KEY_MAP[key]) {
+                    allSettings.providers[LEGACY_PROVIDER_KEY_MAP[key]] = allSettings.providers[key]
+                    delete allSettings.providers[key]
+                }
+            }
+        }
+        return allSettings
     }
 
     /**
@@ -439,8 +473,11 @@ export class SettingsStorage {
     /**
      * Get provider configuration
      */
-    getProviderConfig(provider: string): ProviderConfig | null {
-        return PROVIDER_CONFIGS[provider] || null
+    getProviderConfig(provider: string): ProviderConfig {
+        // PROVIDER_CONFIGS is only the default-model source now; the provider list
+        // and its name/baseUrl come from the pi-ai catalog (see main.ts). Unknown
+        // pi-ai providers get an empty config so the app can still save/verify them.
+        return PROVIDER_CONFIGS[provider] || { provider, baseUrl: '', model: '' }
     }
 
     /**

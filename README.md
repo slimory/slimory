@@ -90,7 +90,7 @@ Fully localized in 10 languages:
 
 ### Multi-Provider Support
 
-SlimoryLite supports multiple AI providers including OpenAI, Anthropic, DeepSeek, GLM, Moonshot, and Gemini.
+SlimoryLite supports 39+ AI providers from the pi-ai catalog — including OpenAI, Anthropic, DeepSeek, GLM (Z.AI Coding CN), Moonshot, Gemini, Groq, Fireworks, MiniMax, and OpenRouter.
 
 ### Privacy
 

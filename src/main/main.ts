@@ -10,7 +10,7 @@ import { uIOhook } from 'uiohook-napi'
 import { screen } from 'electron'
 import { ChatService, ChatMessage } from '../services/chatService'
 import { chatConfig } from '../config/chatConfig'
-import { getModels, type KnownProvider } from '@earendil-works/pi-ai'
+import { getBuiltinModels, getBuiltinProviders, builtinProviders, type BuiltinProvider } from '@earendil-works/pi-ai/providers/all'
 import { desktopCapturer } from 'electron'
 import { ConversationStorage, StoredMessage } from '../services/conversationStorage'
 import { SettingsStorage } from '../services/settingsStorage'
@@ -1502,11 +1502,6 @@ ipcMain.handle('open-external-url', async (_event, url: string) => {
 
 ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string, model?: string) => {
     try {
-        const providerConfig = settingsStorage.getProviderConfig(provider)
-        if (!providerConfig) {
-            return { success: false, error: 'Invalid provider' }
-        }
-
         // Save API key for this provider
         const saved = settingsStorage.saveProviderApiKey(provider, apiKey)
         if (!saved) {
@@ -1516,9 +1511,9 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
         // Load existing settings to preserve language and wordSelectionEnabled
         const existingSettings = settingsStorage.loadSettings()
         const currentLanguage = getCurrentLanguage()
-        // Get user-defined custom model (from param or storage), fallback to default model
-        const customModel = (model && model.trim()) ? model : providerConfig.model
-        const modelToUse = customModel || providerConfig.model
+        // Get user-defined custom model (from param), fallback to default model
+        const customModel = (model && model.trim()) ? model : ''
+        const modelToUse = customModel || getProviderDefaultModel(provider)
         const reasoningEffort = settingsStorage.getProviderReasoningEffort(provider) || 'off'
         console.log('model to use', modelToUse)
 
@@ -1527,7 +1522,7 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
             const settings = {
                 provider: provider,
                 apiKey: apiKey,
-                baseUrl: providerConfig.baseUrl,
+                baseUrl: getProviderBaseUrl(provider),
                 model: modelToUse,
                 reasoningEffort: reasoningEffort,
                 language: existingSettings.language || currentLanguage || 'zh',
@@ -1541,7 +1536,7 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
         hasSettings = true
         chatService.updateConfig({
             provider: provider,
-            baseUrl: providerConfig.baseUrl,
+            baseUrl: getProviderBaseUrl(provider),
             apiKey: apiKey,
             model: modelToUse,
             reasoningEffort: reasoningEffort
@@ -1559,18 +1554,13 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
 
 ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string, model?: string) => {
     try {
-        const providerConfig = settingsStorage.getProviderConfig(provider)
-        if (!providerConfig) {
-            return { success: false, error: 'Invalid provider' }
-        }
-
         // Use custom model if provided, otherwise use default model
-        const verifyModel = model && model.trim() ? model : providerConfig.model
+        const verifyModel = (model && model.trim()) ? model : getProviderDefaultModel(provider)
 
         // Create a temporary chat service instance for verification
         const tempChatService = new ChatService({
             provider: provider,
-            baseUrl: providerConfig.baseUrl,
+            baseUrl: getProviderBaseUrl(provider),
             apiKey: apiKey,
             model: verifyModel
         })
@@ -1628,16 +1618,12 @@ ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string
             // Only update if this is the current provider or if no provider is set yet
             const currentProvider = settingsStorage.getCurrentProvider()
             if (!currentProvider || currentProvider === provider) {
-                // Get the provider config for baseUrl
-                const providerConfigForUpdate = settingsStorage.getProviderConfig(provider)
-                if (providerConfigForUpdate) {
-                    chatService.updateConfig({
-                        provider: provider,
-                        baseUrl: providerConfigForUpdate.baseUrl,
-                        apiKey: apiKey,
-                        model: verifyModel
-                    })
-                }
+                chatService.updateConfig({
+                    provider: provider,
+                    baseUrl: getProviderBaseUrl(provider),
+                    apiKey: apiKey,
+                    model: verifyModel
+                })
             }
             return { success: true }
         } else {
@@ -1651,16 +1637,14 @@ ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string
 
 ipcMain.handle('get-available-providers', () => {
     try {
-        const providers = settingsStorage.getAvailableProviders()
-        const providerConfigs = providers.map(provider => {
-            const config = settingsStorage.getProviderConfig(provider)
-            return {
-                provider: provider,
-                providerName: config?.provider || '',
-                baseUrl: config?.baseUrl || '',
-                model: config?.model || ''
-            }
-        })
+        // Provider list and display metadata come from the pi-ai builtin catalog.
+        // PROVIDER_CONFIGS only supplies a preferred default model per provider.
+        const providerConfigs = getPiProviderMetaList().map(meta => ({
+            provider: meta.provider,
+            providerName: meta.providerName,
+            baseUrl: meta.baseUrl,
+            model: getProviderDefaultModel(meta.provider)
+        }))
         return { success: true, providers: providerConfigs }
     } catch (error) {
         console.error('Error getting providers:', error)
@@ -1990,9 +1974,11 @@ ipcMain.handle('get-provider-model', async (_event, provider: string) => {
     }
 })
 
-// Map internal provider keys to pi-ai known provider names (same as in chatService.ts)
+// Map legacy internal provider keys to pi-ai builtin catalog names (same as in chatService.ts).
+// Newer settings persist pi-ai ids directly, so the fallback `|| provider` handles those.
 const PI_AI_PROVIDER_MAP_MAIN: Record<string, string> = {
     'deepseek': 'deepseek',
+    'glm': 'zai-coding-cn',
     'moonshot': 'moonshotai',
     'openai': 'openai',
     'anthropic': 'anthropic',
@@ -2003,10 +1989,61 @@ const PI_AI_PROVIDER_MAP_MAIN: Record<string, string> = {
     'openrouter': 'openrouter',
 }
 
+// Cached pi-ai builtin provider metadata (id → name/baseUrl), used by
+// get-available-providers and to feed baseUrl into the chat service.
+// Only static-catalog providers are included (dynamic ones like "radius"
+// have no model list to configure against).
+let piProviderMetaCache: Array<{ provider: string; providerName: string; baseUrl: string }> | null = null
+
+function getPiProviderMetaList(): Array<{ provider: string; providerName: string; baseUrl: string }> {
+    if (!piProviderMetaCache) {
+        const staticIds = new Set<string>(getBuiltinModelsCatalogIds())
+        piProviderMetaCache = builtinProviders()
+            .filter(p => staticIds.has(p.id))
+            .map(p => ({
+                provider: p.id,
+                providerName: p.name || p.id,
+                baseUrl: p.baseUrl || ''
+            }))
+    }
+    return piProviderMetaCache
+}
+
+// pi-ai builtin catalog provider ids (static catalog only, excludes dynamic providers)
+let piBuiltinCatalogIds: Set<string> | null = null
+
+function getBuiltinModelsCatalogIds(): Set<string> {
+    if (!piBuiltinCatalogIds) {
+        piBuiltinCatalogIds = new Set<string>(getBuiltinProviders())
+    }
+    return piBuiltinCatalogIds
+}
+
+/**
+ * Resolve the OpenAI-compatible baseUrl for a provider from the pi-ai catalog,
+ * falling back to PROVIDER_CONFIGS (only used by the raw-fetch fallback path).
+ */
+function getProviderBaseUrl(provider: string): string {
+    const meta = getPiProviderMetaList().find(m => m.provider === provider)
+    if (meta?.baseUrl) return meta.baseUrl
+    return settingsStorage.getProviderConfig(provider)?.baseUrl || ''
+}
+
+/**
+ * Resolve the default model for a provider: PROVIDER_CONFIGS override if present,
+ * otherwise the first model in the pi-ai catalog.
+ */
+function getProviderDefaultModel(provider: string): string {
+    const config = settingsStorage.getProviderConfig(provider)
+    if (config?.model) return config.model
+    const piProvider = (PI_AI_PROVIDER_MAP_MAIN[provider] || provider) as BuiltinProvider
+    return getBuiltinModels(piProvider)[0]?.id || ''
+}
+
 ipcMain.handle('get-provider-models', async (_event, provider: string) => {
     try {
-        const piProvider = (PI_AI_PROVIDER_MAP_MAIN[provider] || provider) as KnownProvider
-        const models = getModels(piProvider)
+        const piProvider = (PI_AI_PROVIDER_MAP_MAIN[provider] || provider) as BuiltinProvider
+        const models = getBuiltinModels(piProvider)
         if (models.length > 0) {
             const modelList = models.map(m => ({ id: m.id, name: m.name || m.id }))
             return { success: true, models: modelList }
@@ -2045,13 +2082,12 @@ ipcMain.handle('save-provider-reasoning-effort', async (_event, provider: string
         // Update chatService if this is the current provider
         const currentProvider = settingsStorage.getCurrentProvider()
         if (currentProvider === provider) {
-            const providerConfig = settingsStorage.getProviderConfig(provider)
             const apiKey = settingsStorage.getProviderApiKey(provider)
-            const model = settingsStorage.getProviderModel(provider) || providerConfig?.model || ''
-            if (providerConfig && apiKey) {
+            const model = settingsStorage.getProviderModel(provider) || getProviderDefaultModel(provider) || ''
+            if (apiKey) {
                 chatService.updateConfig({
                     provider: provider,
-                    baseUrl: providerConfig.baseUrl,
+                    baseUrl: getProviderBaseUrl(provider),
                     apiKey: apiKey,
                     model: model,
                     reasoningEffort: effort
@@ -2073,15 +2109,9 @@ ipcMain.handle('set-current-provider', async (_event, provider: string) => {
             return { success: false, error: 'Provider does not have a verified API key' }
         }
 
-        // Get provider config
-        const providerConfig = settingsStorage.getProviderConfig(provider)
-        if (!providerConfig) {
-            return { success: false, error: 'Invalid provider' }
-        }
-
         // Get user-defined custom model, fallback to default model
         const customModel = settingsStorage.getProviderModel(provider)
-        const modelToUse = customModel || providerConfig.model
+        const modelToUse = customModel || getProviderDefaultModel(provider)
         const reasoningEffort = settingsStorage.getProviderReasoningEffort(provider)
 
         // Set as current provider
@@ -2092,7 +2122,7 @@ ipcMain.handle('set-current-provider', async (_event, provider: string) => {
         // Update chat service configuration with custom model if available
         chatService.updateConfig({
             provider: provider,
-            baseUrl: providerConfig.baseUrl,
+            baseUrl: getProviderBaseUrl(provider),
             apiKey: apiKey,
             model: modelToUse,
             reasoningEffort: reasoningEffort

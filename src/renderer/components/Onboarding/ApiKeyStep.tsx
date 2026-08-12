@@ -4,6 +4,7 @@ import '../OnboardingPanel.css'
 
 interface Provider {
     provider: string
+    providerName: string
     baseUrl: string
     model: string
 }
@@ -47,10 +48,12 @@ const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
                 if (providersResult.success) {
                     setAvailableProviders(providersResult.providers)
                     if (providersResult.providers.length > 0) {
-                        const firstProvider = providersResult.providers[0].provider
+                        // Prefer deepseek as the initial provider, fall back to the first available
+                        const initial = providersResult.providers.find(p => p.provider === 'deepseek') || providersResult.providers[0]
+                        const firstProvider = initial.provider
                         setSelectedProvider(firstProvider)
                         // Set default model for initial provider
-                        const defaultModelValue = providersResult.providers[0].model || ''
+                        const defaultModelValue = initial.model || ''
                         setDefaultModel(defaultModelValue)
                     }
                 }
@@ -181,7 +184,7 @@ const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
                                 disabled={isVerifying || isVerified}
                             >
                                 <span className="provider-dropdown-text">
-                                    {selectedProvider.charAt(0).toUpperCase() + selectedProvider.slice(1)}
+                                    {availableProviders.find(p => p.provider === selectedProvider)?.providerName || selectedProvider.charAt(0).toUpperCase() + selectedProvider.slice(1)}
                                 </span>
                                 <svg 
                                     className="provider-dropdown-arrow"
@@ -205,7 +208,7 @@ const ApiKeyStep: React.FC<ApiKeyStepProps> = ({
                                             onClick={() => handleProviderSelect(provider.provider)}
                                         >
                                             <div className="provider-item-name">
-                                                {provider.provider.charAt(0).toUpperCase() + provider.provider.slice(1)}
+                                                {provider.providerName || provider.provider.charAt(0).toUpperCase() + provider.provider.slice(1)}
                                             </div>
                                         </div>
                                     ))}

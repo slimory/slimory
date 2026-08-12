@@ -62,7 +62,7 @@
         "wait-on": "^7.2.0"
     },
     "dependencies": {
-        "@earendil-works/pi-ai": "0.74.2",
+        "@earendil-works/pi-ai": "0.84.1",
         "electron-build": "0.0.3",
         "i18next": "25.6.0",
         "i18next-browser-languagedetector": "8.2.0",

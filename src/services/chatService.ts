@@ -1,8 +1,9 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { Type } from '@earendil-works/pi-ai'
-import { streamSimple, getModels, clampThinkingLevel } from '@earendil-works/pi-ai'
-import type { Context, ToolCall, ThinkingLevel, ModelThinkingLevel, KnownProvider, Api, Model, Message as PiMessage, Tool as PiTool } from '@earendil-works/pi-ai'
+import { Type } from '@earendil-works/pi-ai/compat'
+import { streamSimple, clampThinkingLevel } from '@earendil-works/pi-ai/compat'
+import { getBuiltinModels, getBuiltinProviders } from '@earendil-works/pi-ai/providers/all'
+import type { Context, ToolCall, ThinkingLevel, ModelThinkingLevel, BuiltinProvider, Api, Model, Message as PiMessage, Tool as PiTool } from '@earendil-works/pi-ai/compat'
 import { ChatConfig } from '../config/chatConfig'
 import { toolRegistry, executeTool } from '../tools'
 import { PromptLoader } from '../prompts/loader'
@@ -26,9 +27,12 @@ export interface ChatResponse {
     done: boolean
 }
 
-// Map internal provider keys to pi-ai known provider names
-const PI_AI_PROVIDER_MAP: Record<string, KnownProvider> = {
+// Map legacy internal provider keys to pi-ai builtin catalog provider names.
+// Newer settings persist pi-ai ids directly, so resolvePiProvider() also accepts
+// any pi-ai builtin catalog id as-is.
+const PI_AI_PROVIDER_MAP: Record<string, BuiltinProvider> = {
     'deepseek': 'deepseek',
+    'glm': 'zai-coding-cn',
     'moonshot': 'moonshotai',
     'openai': 'openai',
     'anthropic': 'anthropic',
@@ -38,6 +42,9 @@ const PI_AI_PROVIDER_MAP: Record<string, KnownProvider> = {
     'minimax': 'minimax',
     'openrouter': 'openrouter',
 }
+
+// pi-ai builtin catalog ids that can be used directly as the app provider key
+const BUILTIN_PROVIDER_IDS: Set<string> = new Set<string>(getBuiltinProviders())
 
 export class ChatService {
     private config: ChatConfig
@@ -83,13 +90,26 @@ export class ChatService {
     }
 
     /**
+     * Resolve the current provider to a pi-ai builtin catalog id.
+     * Handles legacy app-level keys (moonshot→moonshotai, glm→zai-coding-cn,
+     * gemini→google) and pi-ai builtin ids used directly as the app key.
+     */
+    private resolvePiProvider(): BuiltinProvider | undefined {
+        const provider = this.config.provider
+        const mapped = PI_AI_PROVIDER_MAP[provider]
+        if (mapped) return mapped
+        if (BUILTIN_PROVIDER_IDS.has(provider)) return provider as BuiltinProvider
+        return undefined
+    }
+
+    /**
      * Check if pi-ai can handle this provider/model combination
      */
     private isPiAiSupported(): boolean {
-        const piProvider = PI_AI_PROVIDER_MAP[this.config.provider]
+        const piProvider = this.resolvePiProvider()
         if (!piProvider) return false
         if (!this.config.model) return false
-        return getModels(piProvider).some(m => m.id === this.config.model)
+        return getBuiltinModels(piProvider).some(m => m.id === this.config.model)
     }
 
     /**
@@ -212,8 +232,8 @@ export class ChatService {
         messages: ChatMessage[],
         systemPrompt?: string
     ): AsyncGenerator<ChatResponse, void, unknown> {
-        const piProvider = PI_AI_PROVIDER_MAP[this.config.provider]
-        const model = getModels(piProvider).find(m => m.id === (this.config.model || ''))
+        const piProvider = this.resolvePiProvider()
+        const model = piProvider ? getBuiltinModels(piProvider).find(m => m.id === (this.config.model || '')) : undefined
         if (!model) {
             throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
         }
@@ -252,8 +272,8 @@ export class ChatService {
         tools?: PiTool[],
         onToolCallDetected?: (toolCallName: string, index: number) => void
     ): AsyncGenerator<ChatResponse & { finishReason?: string; toolCalls?: any[] }, void, unknown> {
-        const piProvider = PI_AI_PROVIDER_MAP[this.config.provider]
-        const model = getModels(piProvider).find(m => m.id === (this.config.model || ''))
+        const piProvider = this.resolvePiProvider()
+        const model = piProvider ? getBuiltinModels(piProvider).find(m => m.id === (this.config.model || '')) : undefined
         if (!model) {
             throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
         }

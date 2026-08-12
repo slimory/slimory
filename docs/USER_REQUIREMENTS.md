@@ -23,6 +23,7 @@
 - [x] Additional LLM providers (Groq, Fireworks AI, MiniMax, OpenRouter) for more flexibility (iter-1)
 - [x] Custom model configuration per provider (iter-1)
 - [x] Model verification using tool calling capability (iter-1)
+- [x] Provider list sourced from the pi-ai catalog (39+ providers) with GLM mapped to Z.AI Coding CN (zai-coding-cn)
 
 ## Privacy & Security
 - [x] All data stored locally (no cloud sync) (v0.1.0)

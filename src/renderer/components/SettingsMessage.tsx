@@ -11,6 +11,7 @@ interface SettingsMessageProps {
 
 interface Provider {
     provider: string
+    providerName: string
     baseUrl: string
     model: string
 }
@@ -44,7 +45,9 @@ const SettingsMessage: React.FC<SettingsMessageProps> = ({
                 if (providersResult.success) {
                     setAvailableProviders(providersResult.providers)
                     if (providersResult.providers.length > 0) {
-                        setSelectedProvider(providersResult.providers[0].provider)
+                        // Prefer deepseek as the initial provider, fall back to the first available
+                        const initial = providersResult.providers.find(p => p.provider === 'deepseek') || providersResult.providers[0]
+                        setSelectedProvider(initial.provider)
                     }
                 }
             } catch (error) {
@@ -167,7 +170,7 @@ const SettingsMessage: React.FC<SettingsMessageProps> = ({
                             disabled={isVerifying}
                         >
                             <span className="provider-dropdown-text">
-                                {selectedProvider.charAt(0).toUpperCase() + selectedProvider.slice(1)}
+                                {availableProviders.find(p => p.provider === selectedProvider)?.providerName || selectedProvider.charAt(0).toUpperCase() + selectedProvider.slice(1)}
                             </span>
                             <svg 
                                 className="provider-dropdown-arrow"
@@ -191,7 +194,7 @@ const SettingsMessage: React.FC<SettingsMessageProps> = ({
                                         onClick={() => handleProviderSelect(provider.provider)}
                                     >
                                         <div className="provider-item-name">
-                                            {provider.provider.charAt(0).toUpperCase() + provider.provider.slice(1)}
+                                            {provider.providerName || provider.provider.charAt(0).toUpperCase() + provider.provider.slice(1)}
                                         </div>
                                     </div>
                                 ))}

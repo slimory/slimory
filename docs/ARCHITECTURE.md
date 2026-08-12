@@ -82,22 +82,21 @@ All data persisted locally in `%APPDATA%/Roaming/slimory/`:
 
 ## Supported Providers
 
-The application supports multiple AI providers:
+The provider list, display name, base URL, and models are loaded from the pi-ai builtin catalog (`@earendil-works/pi-ai/providers/all`), which ships ~39 static providers (DeepSeek, Anthropic, OpenAI, Google/Gemini, Moonshot, Groq, Fireworks, MiniMax, OpenRouter, Z.AI Coding CN / GLM, Mistral, X.AI, NVIDIA, etc.). The app's provider key IS the pi-ai catalog id.
 
-| Provider | Key | Default Model |
-|----------|-----|---------------|
-| DeepSeek | deepseek | deepseek-chat |
-| GLM | glm | glm-4.6 |
-| Moonshot | moonshot | kimi-k2.5 |
-| OpenAI | openai | gpt-3.5-turbo |
-| Anthropic | anthropic | claude-sonnet-4-5-20250929 |
-| Gemini | gemini | gemini-2.5-flash |
-| Groq | groq | llama-3.3-70b-versatile |
-| Fireworks AI | fireworks | llama-v3p1-70b-instruct |
-| MiniMax | minimax | MiniMax-M2.5 |
-| OpenRouter | openrouter | deepseek/deepseek-chat |
+`PROVIDER_CONFIGS` in `src/services/settingsStorage.ts` is used **only** to pick a preferred default model per provider (and a legacy baseUrl fallback for the raw-fetch path). Providers without an entry default to the first model in the pi-ai catalog.
 
-Users can also customize the model for each provider in settings. Custom models must support tool calling.
+Provider keys persisted before this change were migrated automatically on load:
+
+| Legacy key | pi-ai id |
+|------------|----------|
+| glm | zai-coding-cn |
+| moonshot | moonshotai |
+| gemini | google |
+
+The mapping also lives in `PI_AI_PROVIDER_MAP` (`src/services/chatService.ts`) and `PI_AI_PROVIDER_MAP_MAIN` (`src/main/main.ts`), which accept either a legacy key or a pi-ai id directly.
+
+Users can customize the model for each provider in settings. Custom models must support tool calling.
 
 ## IPC Channels
 

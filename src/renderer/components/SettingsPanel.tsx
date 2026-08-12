@@ -719,7 +719,7 @@ const SettingsPanel = () => {
                             justifyContent: 'center',
                             padding: '4px',
                             borderRadius: '16px',
-                            transition: 'background 0.2s ease',
+                            // transition: 'background 0.2s ease',
                             WebkitAppRegion: 'no-drag'
                         } as React.CSSProperties}
                         onMouseEnter={(e) => {
@@ -1116,7 +1116,7 @@ const SettingsPanel = () => {
                                                 cursor: 'pointer',
                                                 padding: '8px',
                                                 borderRadius: '6px',
-                                                transition: 'background-color 0.2s ease'
+                                                // transition: 'background-color 0.2s ease'
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor = '#e5e7eb'
@@ -1137,7 +1137,7 @@ const SettingsPanel = () => {
                                                     borderRadius: '50%',
                                                     border: `2px solid ${!requireCtrlForMenu ? '#5bd18e' : '#d1d5db'}`,
                                                     backgroundColor: '#ffffff',
-                                                    transition: 'all 0.2s ease',
+                                                    // transition: 'all 0.2s ease',
                                                     flexShrink: 0,
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -1149,7 +1149,7 @@ const SettingsPanel = () => {
                                                             height: '8px',
                                                             borderRadius: '50%',
                                                             backgroundColor: '#5bd18e',
-                                                            transition: 'all 0.2s ease'
+                                                            // transition: 'all 0.2s ease'
                                                         }} />
                                                     )}
                                                 </div>
@@ -1169,7 +1169,7 @@ const SettingsPanel = () => {
                                                 cursor: 'pointer',
                                                 padding: '8px',
                                                 borderRadius: '6px',
-                                                transition: 'background-color 0.2s ease'
+                                                // transition: 'background-color 0.2s ease'
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor = '#e5e7eb'
@@ -1190,7 +1190,7 @@ const SettingsPanel = () => {
                                                     borderRadius: '50%',
                                                     border: `2px solid ${requireCtrlForMenu ? '#5bd18e' : '#d1d5db'}`,
                                                     backgroundColor: '#ffffff',
-                                                    transition: 'all 0.2s ease',
+                                                    // transition: 'all 0.2s ease',
                                                     flexShrink: 0,
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -1202,7 +1202,7 @@ const SettingsPanel = () => {
                                                             height: '8px',
                                                             borderRadius: '50%',
                                                             backgroundColor: '#5bd18e',
-                                                            transition: 'all 0.2s ease'
+                                                            // transition: 'all 0.2s ease'
                                                         }} />
                                                     )}
                                                 </div>
@@ -1230,7 +1230,7 @@ const SettingsPanel = () => {
                                             color: '#374151',
                                             padding: '0px',
                                             borderRadius: '6px',
-                                            transition: 'background-color 0.2s ease'
+                                            // transition: 'background-color 0.2s ease'
                                         }}
                                         onClick={() => handleAutoCopyGeneratedChange(!autoCopyGenerated)}>
                                             {/* Custom checkbox */}
@@ -1241,7 +1241,7 @@ const SettingsPanel = () => {
                                                 borderRadius: '4px',
                                                 border: `2px solid ${autoCopyGenerated ? '#5bd18e' : '#d1d5db'}`,
                                                 backgroundColor: autoCopyGenerated ? '#5bd18e' : '#ffffff',
-                                                transition: 'all 0.2s ease',
+                                                // transition: 'all 0.2s ease',
                                                 flexShrink: 0,
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -1364,7 +1364,7 @@ const SettingsPanel = () => {
                                                                 borderRadius: '4px',
                                                                 border: `2px solid ${customActionCanEdit ? '#5bd18e' : '#d1d5db'}`,
                                                                 backgroundColor: customActionCanEdit ? '#5bd18e' : '#ffffff',
-                                                                transition: 'all 0.2s ease',
+                                                                // transition: 'all 0.2s ease',
                                                                 flexShrink: 0,
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1486,7 +1486,7 @@ const SettingsPanel = () => {
                                                         borderRadius: '4px',
                                                         border: `2px solid ${customActionCanEdit ? '#5bd18e' : '#d1d5db'}`,
                                                         backgroundColor: customActionCanEdit ? '#5bd18e' : '#ffffff',
-                                                        transition: 'all 0.2s ease',
+                                                        // transition: 'all 0.2s ease',
                                                         flexShrink: 0,
                                                         display: 'flex',
                                                         alignItems: 'center',
