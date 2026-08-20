@@ -24,6 +24,7 @@
 - [x] Custom model configuration per provider (iter-1)
 - [x] Model verification using tool calling capability (iter-1)
 - [x] Provider list sourced from the pi-ai catalog (39+ providers) with GLM mapped to Z.AI Coding CN (zai-coding-cn)
+- [x] Custom OpenAI/Anthropic compatible provider support (user-defined baseURL + model) (iter-4)
 
 ## Privacy & Security
 - [x] All data stored locally (no cloud sync) (v0.1.0)

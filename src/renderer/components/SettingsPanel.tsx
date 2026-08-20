@@ -42,6 +42,7 @@ const SettingsPanel = () => {
     const [selectedProvider, setSelectedProvider] = useState<string>('deepseek')
     const [apiKey, setApiKey] = useState<string>('')
     const [model, setModel] = useState<string>('')
+    const [baseUrl, setBaseUrl] = useState<string>('')
     const [reasoningEffort, setReasoningEffort] = useState<string>('off')
     const [wordSelectionEnabled, setWordSelectionEnabled] = useState<boolean>(true)
     const [requireCtrlForMenu, setRequireCtrlForMenu] = useState<boolean>(false)
@@ -61,6 +62,9 @@ const SettingsPanel = () => {
     const [modelDropdownOpen, setModelDropdownOpen] = useState(false)
     const modelDropdownRef = useRef<HTMLDivElement>(null)
     const modelDropdownButtonRef = useRef<HTMLButtonElement>(null)
+
+    // Helper to check if current provider is custom
+    const isCustomProvider = selectedProvider === 'custom-openai' || selectedProvider === 'custom-anthropic'
 
     // Custom actions state
     const [customActions, setCustomActions] = useState<Array<{ id: string; name: string; prompt: string; icon?: string; canEdit?: boolean }>>([])
@@ -107,6 +111,15 @@ const SettingsPanel = () => {
                 if (allSettingsResult.success) {
                     const currentProvider = allSettingsResult.settings?.provider || 'deepseek'
                     setSelectedProvider(currentProvider)
+
+                    // Load baseUrl only for custom providers
+                    const isCustom = currentProvider === 'custom-openai' || currentProvider === 'custom-anthropic'
+                    if (isCustom && allSettingsResult.settings?.baseUrl) {
+                        setBaseUrl(allSettingsResult.settings.baseUrl)
+                    } else {
+                        setBaseUrl('')
+                    }
+
                     // Load API key for current provider
                     const apiKeyResult = await window.electronAPI.getProviderApiKey(currentProvider)
                     if (apiKeyResult.success && apiKeyResult.apiKey) {
@@ -127,7 +140,11 @@ const SettingsPanel = () => {
                     const modelResult = await window.electronAPI.getProviderModel(currentProvider)
                     const models = modelsResult.success ? (modelsResult.models || []) : []
                     const configDefault = defaultModelValue
-                    if (modelResult.success && modelResult.model) {
+
+                    // For custom providers or when models list is empty, use saved model directly
+                    if (isCustom || models.length === 0) {
+                        setModel(modelResult.success && modelResult.model ? modelResult.model : '')
+                    } else if (modelResult.success && modelResult.model) {
                         const savedModel = modelResult.model
                         if (models.some((m: any) => m.id === savedModel)) {
                             setModel(savedModel)
@@ -281,11 +298,35 @@ const SettingsPanel = () => {
             return
         }
 
+        // For custom providers, validate baseUrl
+        if (isCustomProvider && !baseUrl.trim()) {
+            setError(t('settings.errorNoBaseUrl') || 'Please enter a Base URL')
+            return
+        }
+
+        // For custom providers, validate model
+        if (isCustomProvider && !model.trim()) {
+            setError(t('settings.errorNoModel') || 'Please enter a model name')
+            return
+        }
+
         setIsVerifying(true)
         setError(null)
         setSuccess(null)
 
         try {
+            // For custom providers, save baseUrl to settings first before verification
+            if (isCustomProvider) {
+                // We need to save baseUrl along with other settings
+                const saveModel = model.trim() ? model : undefined
+                const saveResult = await window.electronAPI.saveSettings(selectedProvider, apiKey, saveModel, baseUrl.trim())
+                if (!saveResult.success) {
+                    setError(t('settings.errorSaveFailed'))
+                    setIsVerifying(false)
+                    return
+                }
+            }
+
             // Pass model to verify (use custom model if provided, otherwise undefined to use default)
             const verifyModel = model.trim() ? model : undefined
             const verifyResult = await window.electronAPI.verifyApiKey(selectedProvider, apiKey, verifyModel)
@@ -299,7 +340,7 @@ const SettingsPanel = () => {
 
             // Save the API key and model for this provider (saveSettings already updates chatService)
             const saveModel = model.trim() ? model : undefined
-            const saveResult = await window.electronAPI.saveSettings(selectedProvider, apiKey, saveModel)
+            const saveResult = await window.electronAPI.saveSettings(selectedProvider, apiKey, saveModel, isCustomProvider ? baseUrl.trim() : undefined)
             if (!saveResult.success) {
                 setError(t('settings.errorSaveFailed'))
                 setIsVerifying(false)
@@ -377,6 +418,9 @@ const SettingsPanel = () => {
         setError(null)
         setSuccess(null)
 
+        // Check if this is a custom provider
+        const isCustom = provider === 'custom-openai' || provider === 'custom-anthropic'
+
         // Load API key for the selected provider
         if (window.electronAPI) {
             try {
@@ -392,6 +436,24 @@ const SettingsPanel = () => {
                     setApiKey('')
                 }
 
+                // Load baseUrl for custom providers
+                if (isCustom) {
+                    const allSettingsResult = await window.electronAPI.getAllSettings()
+                    if (allSettingsResult.success && allSettingsResult.settings?.baseUrl) {
+                        // Only load baseUrl if the saved provider is also a custom one
+                        const savedProvider = allSettingsResult.settings.provider
+                        if (savedProvider === 'custom-openai' || savedProvider === 'custom-anthropic') {
+                            setBaseUrl(allSettingsResult.settings.baseUrl)
+                        } else {
+                            setBaseUrl('')
+                        }
+                    } else {
+                        setBaseUrl('')
+                    }
+                } else {
+                    setBaseUrl('')
+                }
+
                 // Load model for the selected provider
                 const providerInfo = availableProviders.find(p => p.provider === provider)
                 const defaultModelValue = providerInfo?.model || ''
@@ -405,7 +467,11 @@ const SettingsPanel = () => {
                 const modelResult = await window.electronAPI.getProviderModel(provider)
                 const models = modelsResult.success ? (modelsResult.models || []) : []
                 const configDefault = defaultModelValue
-                if (modelResult.success && modelResult.model) {
+
+                // For custom providers or when models list is empty, use saved model directly
+                if (isCustom || models.length === 0) {
+                    setModel(modelResult.success && modelResult.model ? modelResult.model : '')
+                } else if (modelResult.success && modelResult.model) {
                     const savedModel = modelResult.model
                     if (models.some((m: any) => m.id === savedModel)) {
                         setModel(savedModel)
@@ -849,6 +915,23 @@ const SettingsPanel = () => {
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Base URL input for custom providers */}
+                                    {isCustomProvider && (
+                                        <div className="form-group">
+                                            <label htmlFor="base-url-input">{t('settings.baseUrl') || 'Base URL'}</label>
+                                            <input
+                                                id="base-url-input"
+                                                type="text"
+                                                value={baseUrl}
+                                                onChange={(e) => setBaseUrl(e.target.value)}
+                                                placeholder={t('settings.baseUrlPlaceholder') || 'e.g., http://localhost:11434/v1'}
+                                                className="onboarding-input"
+                                                disabled={isVerifying}
+                                            />
+                                        </div>
+                                    )}
+
                                     <div className="form-group">
                                         <label htmlFor="api-key-input">{t('settings.apiKey')}</label>
                                         <div style={{ display: 'flex', gap: '8px' }}>
@@ -916,46 +999,72 @@ const SettingsPanel = () => {
                                     {/* Model Configuration */}
                                     <div className="form-group">
                                         <label>{t('settings.model') || 'Model'}</label>
-                                        <div style={{ position: 'relative', marginTop: '8px' }}>
-                                            <button
-                                                ref={modelDropdownButtonRef}
-                                                id="model-select"
-                                                className="provider-dropdown-toggle"
-                                                onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                                        {isCustomProvider ? (
+                                            // For custom providers: text input
+                                            <input
+                                                id="model-input"
+                                                type="text"
+                                                value={model}
+                                                onChange={(e) => setModel(e.target.value)}
+                                                placeholder={selectedProvider === 'custom-openai' ? 'llama-3.1-8b' : 'claude-sonnet-4'}
+                                                className="onboarding-input"
                                                 disabled={isVerifying}
-                                            >
-                                                <span className="provider-dropdown-text">
-                                                    {model ? (availableModels.find(m => m.id === model)?.name || model) : (t('settings.modelPlaceholder') || 'Select model')}
-                                                </span>
-                                                <svg
-                                                    className="provider-dropdown-arrow"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 12 12"
-                                                    fill="none"
+                                                style={{ marginTop: '8px' }}
+                                            />
+                                        ) : (
+                                            // For builtin providers: dropdown
+                                            <div style={{ position: 'relative', marginTop: '8px' }}>
+                                                <button
+                                                    ref={modelDropdownButtonRef}
+                                                    id="model-select"
+                                                    className="provider-dropdown-toggle"
+                                                    onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                                                    disabled={isVerifying}
                                                 >
-                                                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            </button>
-                                            {modelDropdownOpen && (
-                                                <div
-                                                    ref={modelDropdownRef}
-                                                    className="provider-dropdown-menu"
-                                                >
-                                                    {availableModels.map(m => (
-                                                        <div
-                                                            key={m.id}
-                                                            className={`provider-item ${model === m.id ? 'selected' : ''}`}
-                                                            onClick={() => { setModel(m.id); setModelDropdownOpen(false) }}
-                                                        >
-                                                            <div className="provider-item-name">
-                                                                {m.name || m.id}
+                                                    <span className="provider-dropdown-text">
+                                                        {model ? (availableModels.find(m => m.id === model)?.name || model) : (t('settings.modelPlaceholder') || 'Select model')}
+                                                    </span>
+                                                    <svg
+                                                        className="provider-dropdown-arrow"
+                                                        width="12"
+                                                        height="12"
+                                                        viewBox="0 0 12 12"
+                                                        fill="none"
+                                                    >
+                                                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                </button>
+                                                {modelDropdownOpen && (
+                                                    <div
+                                                        ref={modelDropdownRef}
+                                                        className="provider-dropdown-menu"
+                                                    >
+                                                        {availableModels.map(m => (
+                                                            <div
+                                                                key={m.id}
+                                                                className={`provider-item ${model === m.id ? 'selected' : ''}`}
+                                                                onClick={async () => {
+                                                                    setModel(m.id)
+                                                                    setModelDropdownOpen(false)
+                                                                    // Auto-save model for current provider
+                                                                    if (window.electronAPI && selectedProvider) {
+                                                                        try {
+                                                                            await window.electronAPI.saveProviderModel(selectedProvider, m.id)
+                                                                        } catch (error) {
+                                                                            console.error('Error saving model:', error)
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <div className="provider-item-name">
+                                                                    {m.name || m.id}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Reasoning Effort Configuration */}

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url'
 import { Type } from '@earendil-works/pi-ai/compat'
 import { streamSimple, clampThinkingLevel } from '@earendil-works/pi-ai/compat'
 import { getBuiltinModels, getBuiltinProviders } from '@earendil-works/pi-ai/providers/all'
+import { createProvider, createModels } from '@earendil-works/pi-ai'
 import type { Context, ToolCall, ThinkingLevel, ModelThinkingLevel, BuiltinProvider, Api, Model, Message as PiMessage, Tool as PiTool } from '@earendil-works/pi-ai/compat'
 import { ChatConfig } from '../config/chatConfig'
 import { toolRegistry, executeTool } from '../tools'
@@ -93,9 +94,14 @@ export class ChatService {
      * Resolve the current provider to a pi-ai builtin catalog id.
      * Handles legacy app-level keys (moonshot→moonshotai, glm→zai-coding-cn,
      * gemini→google) and pi-ai builtin ids used directly as the app key.
+     * Returns undefined for custom providers (custom-openai, custom-anthropic).
      */
     private resolvePiProvider(): BuiltinProvider | undefined {
         const provider = this.config.provider
+        // Custom providers are not in pi-ai catalog
+        if (provider === 'custom-openai' || provider === 'custom-anthropic') {
+            return undefined
+        }
         const mapped = PI_AI_PROVIDER_MAP[provider]
         if (mapped) return mapped
         if (BUILTIN_PROVIDER_IDS.has(provider)) return provider as BuiltinProvider
@@ -103,9 +109,94 @@ export class ChatService {
     }
 
     /**
-     * Check if pi-ai can handle this provider/model combination
+     * Check if current provider is a custom provider
+     */
+    private isCustomProvider(): boolean {
+        return this.config.provider === 'custom-openai' || this.config.provider === 'custom-anthropic'
+    }
+
+    /**
+     * Get the API type for custom provider
+     */
+    private getCustomProviderApi(): 'openai-completions' | 'anthropic-messages' | undefined {
+        if (this.config.provider === 'custom-openai') {
+            return 'openai-completions'
+        } else if (this.config.provider === 'custom-anthropic') {
+            return 'anthropic-messages'
+        }
+        return undefined
+    }
+
+    /**
+     * Create a custom provider instance for pi-ai
+     */
+    private async createCustomProvider() {
+        const apiType = this.getCustomProviderApi()
+        if (!apiType) {
+            throw new Error('Invalid custom provider type')
+        }
+
+        const modelId = this.config.model
+        if (!modelId) {
+            throw new Error('Custom provider requires a model to be configured')
+        }
+
+        // Dynamically import the appropriate API implementation
+        let apiImpl: any
+        if (apiType === 'openai-completions') {
+            const { openAICompletionsApi } = await import('@earendil-works/pi-ai/api/openai-completions.lazy')
+            apiImpl = openAICompletionsApi()
+        } else if (apiType === 'anthropic-messages') {
+            const { anthropicMessagesApi } = await import('@earendil-works/pi-ai/api/anthropic-messages.lazy')
+            apiImpl = anthropicMessagesApi()
+        }
+
+        // Create the model definition
+        const customModel: Model<typeof apiType> = {
+            id: modelId,
+            name: modelId,
+            api: apiType,
+            provider: this.config.provider,
+            baseUrl: this.config.baseUrl,
+            reasoning: false,
+            input: ['text'],
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            contextWindow: 128000,
+            maxTokens: 32000,
+            compat: {
+                supportsDeveloperRole: false,  // Most OpenAI-compatible servers don't support this
+                supportsReasoningEffort: false
+            }
+        }
+
+        // Create the provider
+        const customProvider = createProvider({
+            id: this.config.provider,
+            name: this.config.provider === 'custom-openai' ? 'Custom OpenAI Compatible' : 'Custom Anthropic Compatible',
+            baseUrl: this.config.baseUrl,
+            auth: {
+                apiKey: {
+                    name: 'Custom Provider API Key',
+                    resolve: async () => ({ auth: { apiKey: this.config.apiKey } })
+                }
+            },
+            models: [customModel],
+            api: apiImpl
+        })
+
+        return { provider: customProvider, model: customModel }
+    }
+
+    /**
+     * Check if pi-ai can handle this provider/model combination.
+     * Custom providers are always supported (handled by createCustomProvider).
      */
     private isPiAiSupported(): boolean {
+        // Custom providers are supported via createCustomProvider
+        if (this.isCustomProvider()) {
+            return true
+        }
+
         const piProvider = this.resolvePiProvider()
         if (!piProvider) return false
         if (!this.config.model) return false
@@ -222,6 +313,7 @@ export class ChatService {
      * Determine the reasoning level from config, clamped to model capabilities
      */
     private getReasoningLevel(model: Model<Api>): ThinkingLevel | undefined {
+        console.log(this.config.reasoningEffort)
         const effort = (this.config.reasoningEffort || 'off') as ModelThinkingLevel
         if (effort === 'off') return undefined
         const clamped = clampThinkingLevel(model, effort)
@@ -232,14 +324,28 @@ export class ChatService {
         messages: ChatMessage[],
         systemPrompt?: string
     ): AsyncGenerator<ChatResponse, void, unknown> {
-        const piProvider = this.resolvePiProvider()
-        const model = piProvider ? getBuiltinModels(piProvider).find(m => m.id === (this.config.model || '')) : undefined
-        if (!model) {
-            throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
+        let model: Model<Api> | undefined
+
+        // Handle custom providers
+        if (this.isCustomProvider()) {
+            const { provider: customProvider, model: customModel } = await this.createCustomProvider()
+            const models = createModels()
+            models.setProvider(customProvider)
+            model = customModel as Model<Api>
+        } else {
+            const piProvider = this.resolvePiProvider()
+            model = piProvider ? getBuiltinModels(piProvider).find(m => m.id === (this.config.model || '')) : undefined
+            if (!model) {
+                throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
+            }
         }
+
+        // console.log('model', model)
 
         // Determine reasoning level from config (ignoring the deprecated thinking flag)
         const reasoning = this.getReasoningLevel(model)
+
+        console.log('reasoning', reasoning)
 
         const context = this.chatMessagesToContext(messages, systemPrompt)
 
@@ -272,10 +378,20 @@ export class ChatService {
         tools?: PiTool[],
         onToolCallDetected?: (toolCallName: string, index: number) => void
     ): AsyncGenerator<ChatResponse & { finishReason?: string; toolCalls?: any[] }, void, unknown> {
-        const piProvider = this.resolvePiProvider()
-        const model = piProvider ? getBuiltinModels(piProvider).find(m => m.id === (this.config.model || '')) : undefined
-        if (!model) {
-            throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
+        let model: Model<Api> | undefined
+
+        // Handle custom providers
+        if (this.isCustomProvider()) {
+            const { provider: customProvider, model: customModel } = await this.createCustomProvider()
+            const models = createModels()
+            models.setProvider(customProvider)
+            model = customModel as Model<Api>
+        } else {
+            const piProvider = this.resolvePiProvider()
+            model = piProvider ? getBuiltinModels(piProvider).find(m => m.id === (this.config.model || '')) : undefined
+            if (!model) {
+                throw new Error(`Model "${this.config.model}" not found for provider "${piProvider}" in pi-ai catalog`)
+            }
         }
 
         const piTools = tools || this.getPiAiTools()

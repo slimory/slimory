@@ -124,7 +124,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     
     // Settings APIs
     getAllSettings: () => ipcRenderer.invoke('get-all-settings'),
-    saveSettings: (provider: string, apiKey: string, model?: string) => ipcRenderer.invoke('save-settings', provider, apiKey, model),
+    saveSettings: (provider: string, apiKey: string, model?: string, baseUrl?: string) => ipcRenderer.invoke('save-settings', provider, apiKey, model, baseUrl),
     verifyApiKey: (provider: string, apiKey: string, model?: string) => ipcRenderer.invoke('verify-api-key', provider, apiKey, model),
     getAvailableProviders: () => ipcRenderer.invoke('get-available-providers'),
     getProviderModel: (provider: string) => ipcRenderer.invoke('get-provider-model', provider),
@@ -132,6 +132,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     setCurrentProvider: (provider: string) => ipcRenderer.invoke('set-current-provider', provider),
     getProviderReasoningEffort: (provider: string) => ipcRenderer.invoke('get-provider-reasoning-effort', provider),
     saveProviderReasoningEffort: (provider: string, effort: string) => ipcRenderer.invoke('save-provider-reasoning-effort', provider, effort),
+    saveProviderModel: (provider: string, model: string) => ipcRenderer.invoke('save-provider-model', provider, model),
     getProviderModels: (provider: string) => ipcRenderer.invoke('get-provider-models', provider),
     saveWordSelectionEnabled: (enabled: boolean) => ipcRenderer.invoke('save-word-selection-enabled', enabled),
     saveRequireCtrlForMenu: (requireCtrl: boolean) => ipcRenderer.invoke('save-require-ctrl-for-menu', requireCtrl),

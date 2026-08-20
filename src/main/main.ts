@@ -1500,7 +1500,7 @@ ipcMain.handle('open-external-url', async (_event, url: string) => {
     }
 })
 
-ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string, model?: string) => {
+ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string, model?: string, baseUrl?: string) => {
     try {
         // Save API key for this provider
         const saved = settingsStorage.saveProviderApiKey(provider, apiKey)
@@ -1515,28 +1515,30 @@ ipcMain.handle('save-settings', async (_event, provider: string, apiKey: string,
         const customModel = (model && model.trim()) ? model : ''
         const modelToUse = customModel || getProviderDefaultModel(provider)
         const reasoningEffort = settingsStorage.getProviderReasoningEffort(provider) || 'off'
-        console.log('model to use', modelToUse)
 
-        // Update language and wordSelectionEnabled if needed
-        if (existingSettings) {
-            const settings = {
-                provider: provider,
-                apiKey: apiKey,
-                baseUrl: getProviderBaseUrl(provider),
-                model: modelToUse,
-                reasoningEffort: reasoningEffort,
-                language: existingSettings.language || currentLanguage || 'zh',
-                wordSelectionEnabled: existingSettings.wordSelectionEnabled !== false
-            }
-            settingsStorage.saveSettings(settings)
+        // For custom providers, use the provided baseUrl; otherwise use default
+        const finalBaseUrl = (baseUrl && baseUrl.trim()) ? baseUrl.trim() : getProviderBaseUrl(provider)
+
+        console.log('model to use', modelToUse)
+        console.log('final baseUrl', finalBaseUrl)
+
+        const settings = {
+            provider: provider,
+            apiKey: apiKey,
+            baseUrl: finalBaseUrl,
+            model: modelToUse,
+            reasoningEffort: reasoningEffort,
+            language: existingSettings?.language || currentLanguage || 'zh',
+            wordSelectionEnabled: existingSettings?.wordSelectionEnabled !== false
         }
+        settingsStorage.saveSettings(settings)
 
         // Set as current provider and update chat service configuration
         settingsStorage.setCurrentProvider(provider)
         hasSettings = true
         chatService.updateConfig({
             provider: provider,
-            baseUrl: getProviderBaseUrl(provider),
+            baseUrl: finalBaseUrl,
             apiKey: apiKey,
             model: modelToUse,
             reasoningEffort: reasoningEffort
@@ -1556,11 +1558,14 @@ ipcMain.handle('verify-api-key', async (_event, provider: string, apiKey: string
     try {
         // Use custom model if provided, otherwise use default model
         const verifyModel = (model && model.trim()) ? model : getProviderDefaultModel(provider)
+        const verifyBaseUrl = getProviderBaseUrl(provider)
+
+        console.log('verify-api-key called with:', { provider, model: verifyModel, baseUrl: verifyBaseUrl })
 
         // Create a temporary chat service instance for verification
         const tempChatService = new ChatService({
             provider: provider,
-            baseUrl: getProviderBaseUrl(provider),
+            baseUrl: verifyBaseUrl,
             apiKey: apiKey,
             model: verifyModel
         })
@@ -1989,15 +1994,27 @@ const PI_AI_PROVIDER_MAP_MAIN: Record<string, string> = {
     'openrouter': 'openrouter',
 }
 
+// Custom provider IDs for user-defined OpenAI/Anthropic compatible endpoints
+const CUSTOM_PROVIDER_IDS = {
+    OPENAI: 'custom-openai',
+    ANTHROPIC: 'custom-anthropic'
+} as const
+
+// Helper function to check if a provider is custom
+function isCustomProvider(provider: string): boolean {
+    return provider === CUSTOM_PROVIDER_IDS.OPENAI || provider === CUSTOM_PROVIDER_IDS.ANTHROPIC
+}
+
 // Display order + labels for the provider dropdown. Providers not listed here
 // are appended at the end of the list with their pi-ai catalog name.
+// Custom providers are appended at the very end.
 const PROVIDER_OPTIONS: Array<{ value: string; label: string }> = [
     { value: 'openai', label: 'OpenAI' },
     { value: 'anthropic', label: 'Anthropic' },
     { value: 'google', label: 'Google' },
     { value: 'deepseek', label: 'DeepSeek' },
     { value: 'zai', label: 'Z.AI' },
-    { value: 'zai-coding-cn', label: 'Z.AI (China) / 智谱国内' },
+    { value: 'zai-coding-cn', label: 'Z.AI (China) / 智谱' },
     { value: 'minimax', label: 'MiniMax' },
     { value: 'minimax-cn', label: 'MiniMax (China)' },
     { value: 'moonshotai', label: 'Moonshot AI' },
@@ -2060,7 +2077,13 @@ function getPiProviderMetaList(): Array<{ provider: string; providerName: string
             }
         }
 
-        piProviderMetaCache = [...listed, ...unlisted]
+        // Custom providers appended at the very end
+        const customProviders: Array<{ provider: string; providerName: string; baseUrl: string }> = [
+            { provider: CUSTOM_PROVIDER_IDS.OPENAI, providerName: 'Custom OpenAI Compatible', baseUrl: '' },
+            { provider: CUSTOM_PROVIDER_IDS.ANTHROPIC, providerName: 'Custom Anthropic Compatible', baseUrl: '' }
+        ]
+
+        piProviderMetaCache = [...listed, ...unlisted, ...customProviders]
     }
     return piProviderMetaCache
 }
@@ -2078,8 +2101,15 @@ function getBuiltinModelsCatalogIds(): Set<string> {
 /**
  * Resolve the OpenAI-compatible baseUrl for a provider from the pi-ai catalog,
  * falling back to PROVIDER_CONFIGS (only used by the raw-fetch fallback path).
+ * For custom providers, return the user-configured baseUrl from settings.
  */
 function getProviderBaseUrl(provider: string): string {
+    // For custom providers, get baseUrl from settings
+    if (isCustomProvider(provider)) {
+        const settings = settingsStorage.loadSettings()
+        return settings?.baseUrl || ''
+    }
+
     const meta = getPiProviderMetaList().find(m => m.provider === provider)
     if (meta?.baseUrl) return meta.baseUrl
     return settingsStorage.getProviderConfig(provider)?.baseUrl || ''
@@ -2088,8 +2118,15 @@ function getProviderBaseUrl(provider: string): string {
 /**
  * Resolve the default model for a provider: PROVIDER_CONFIGS override if present,
  * otherwise the first model in the pi-ai catalog.
+ * For custom providers, return the user-configured model from settings.
  */
 function getProviderDefaultModel(provider: string): string {
+    // For custom providers, get model from settings
+    if (isCustomProvider(provider)) {
+        const settings = settingsStorage.loadSettings()
+        return settings?.model || ''
+    }
+
     const config = settingsStorage.getProviderConfig(provider)
     if (config?.model) return config.model
     const piProvider = (PI_AI_PROVIDER_MAP_MAIN[provider] || provider) as BuiltinProvider
@@ -2098,6 +2135,11 @@ function getProviderDefaultModel(provider: string): string {
 
 ipcMain.handle('get-provider-models', async (_event, provider: string) => {
     try {
+        // For custom providers, return empty array (user must input model manually)
+        if (isCustomProvider(provider)) {
+            return { success: true, models: [] }
+        }
+
         const piProvider = (PI_AI_PROVIDER_MAP_MAIN[provider] || provider) as BuiltinProvider
         const models = getBuiltinModels(piProvider)
         if (models.length > 0) {
@@ -2153,6 +2195,34 @@ ipcMain.handle('save-provider-reasoning-effort', async (_event, provider: string
         return { success: true }
     } catch (error) {
         console.error('Error saving provider reasoning effort:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+})
+
+ipcMain.handle('save-provider-model', async (_event, provider: string, model: string) => {
+    try {
+        const saved = settingsStorage.saveProviderModel(provider, model)
+        if (!saved) {
+            return { success: false, error: 'Failed to save model' }
+        }
+        // Update chatService if this is the current provider
+        const currentProvider = settingsStorage.getCurrentProvider()
+        if (currentProvider === provider) {
+            const apiKey = settingsStorage.getProviderApiKey(provider)
+            const reasoningEffort = settingsStorage.getProviderReasoningEffort(provider)
+            if (apiKey) {
+                chatService.updateConfig({
+                    provider: provider,
+                    baseUrl: getProviderBaseUrl(provider),
+                    apiKey: apiKey,
+                    model: model,
+                    reasoningEffort: reasoningEffort
+                })
+            }
+        }
+        return { success: true }
+    } catch (error) {
+        console.error('Error saving provider model:', error)
         return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
 })

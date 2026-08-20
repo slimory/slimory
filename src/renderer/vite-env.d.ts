@@ -53,7 +53,7 @@ interface Window {
         openExternalUrl: (url: string) => Promise<{ success: boolean; error?: string }>
         // Settings APIs
         getAllSettings: () => Promise<{ success: boolean; hasSettings: boolean; settings?: { provider: string; baseUrl: string; model: string; language?: string; wordSelectionEnabled?: boolean; menuActions?: string[] }; error?: string }>
-        saveSettings: (provider: string, apiKey: string, model?: string) => Promise<{ success: boolean; error?: string }>
+        saveSettings: (provider: string, apiKey: string, model?: string, baseUrl?: string) => Promise<{ success: boolean; error?: string }>
         verifyApiKey: (provider: string, apiKey: string, model?: string) => Promise<{ success: boolean; error?: string }>
         getAvailableProviders: () => Promise<{ success: boolean; providers: Array<{ provider: string; providerName: string; baseUrl: string; model: string }>; error?: string }>
         getProviderModel: (provider: string) => Promise<{ success: boolean; model: string | null; error?: string }>
@@ -61,6 +61,7 @@ interface Window {
         setCurrentProvider: (provider: string) => Promise<{ success: boolean; error?: string }>
         getProviderReasoningEffort: (provider: string) => Promise<{ success: boolean; effort: string; error?: string }>
         saveProviderReasoningEffort: (provider: string, effort: string) => Promise<{ success: boolean; error?: string }>
+        saveProviderModel: (provider: string, model: string) => Promise<{ success: boolean; error?: string }>
         getProviderModels: (provider: string) => Promise<{ success: boolean; models: Array<{ id: string; name: string }>; error?: string }>
         saveWordSelectionEnabled: (enabled: boolean) => Promise<{ success: boolean; error?: string }>
         saveRequireCtrlForMenu: (requireCtrl: boolean) => Promise<{ success: boolean; error?: string }>

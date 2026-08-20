@@ -1,6 +1,6 @@
 {
     "name": "slimory",
-    "version": "0.5.0",
+    "version": "0.5.2",
     "author": "Slimory",
     "description": "An open-source, free AI desktop assistant for Windows that works in any application.",
     "main": "dist-electron/main/main.js",

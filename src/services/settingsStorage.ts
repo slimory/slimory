@@ -243,13 +243,14 @@ export class SettingsStorage {
                 if (!allSettings.providers) {
                     allSettings.providers = {}
                 }
-                
+
                 // Encrypt API key if encryption is available
                 if (this.isEncryptionAvailable) {
                     const encryptedKey = safeStorage.encryptString(settings.apiKey)
                     allSettings.providers[settings.provider] = {
                         apiKey: encryptedKey.toString('base64'),
                         model: settings.model,
+                        baseUrl: settings.baseUrl,
                         reasoningEffort: settings.reasoningEffort || 'off',
                         encrypted: true
                     }
@@ -259,6 +260,7 @@ export class SettingsStorage {
                     allSettings.providers[settings.provider] = {
                         apiKey: settings.apiKey,
                         model: settings.model,
+                        baseUrl: settings.baseUrl,
                         reasoningEffort: settings.reasoningEffort || 'off',
                         encrypted: false
                     }
@@ -364,18 +366,41 @@ export class SettingsStorage {
     }
 
     /**
+     * Save model for a specific provider
+     */
+    saveProviderModel(provider: string, model: string): boolean {
+        try {
+            const allSettings = this.loadAllSettings()
+
+            if (!allSettings.providers) {
+                allSettings.providers = {}
+            }
+
+            if (!allSettings.providers[provider]) {
+                allSettings.providers[provider] = {}
+            }
+
+            allSettings.providers[provider].model = model
+            return this.saveAllSettings(allSettings)
+        } catch (error) {
+            console.error('Error saving provider model:', error)
+            return false
+        }
+    }
+
+    /**
      * Get API key for a specific provider
      */
     getProviderApiKey(provider: string): string | null {
         try {
             const allSettings = this.loadAllSettings()
-            
+
             if (!allSettings.providers || !allSettings.providers[provider]) {
                 return null
             }
 
             const providerData = allSettings.providers[provider]
-            
+
             if (providerData.encrypted && this.isEncryptionAvailable) {
                 try {
                     const encryptedBuffer = Buffer.from(providerData.apiKey, 'base64')
@@ -474,9 +499,22 @@ export class SettingsStorage {
      * Get provider configuration
      */
     getProviderConfig(provider: string): ProviderConfig {
-        // PROVIDER_CONFIGS is only the default-model source now; the provider list
-        // and its name/baseUrl come from the pi-ai catalog (see main.ts). Unknown
-        // pi-ai providers get an empty config so the app can still save/verify them.
+        // First, try to get saved provider config from allSettings
+        const allSettings = this.loadAllSettings()
+        const savedProviderConfig = allSettings.providers?.[provider]
+
+        if (savedProviderConfig) {
+            // Return saved config with baseUrl if available
+            return {
+                provider,
+                baseUrl: savedProviderConfig.baseUrl || PROVIDER_CONFIGS[provider]?.baseUrl || '',
+                model: savedProviderConfig.model || PROVIDER_CONFIGS[provider]?.model || ''
+            }
+        }
+
+        // Fallback to PROVIDER_CONFIGS (default-model source)
+        // The provider list and its name/baseUrl come from the pi-ai catalog (see main.ts).
+        // Unknown pi-ai providers get an empty config so the app can still save/verify them.
         return PROVIDER_CONFIGS[provider] || { provider, baseUrl: '', model: '' }
     }
 

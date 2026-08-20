@@ -17,7 +17,6 @@
         "ask": "问答",
         "explain": "解释",
         "modify": "修改",
-        "save": "保存",
         "send": "发送"
     },
     "settings": {
@@ -29,6 +28,8 @@
         "provider": "提供商:",
         "apiKey": "API 密钥:",
         "apiKeyPlaceholder": "请输入您的 API 密钥",
+        "baseUrl": "API 地址:",
+        "baseUrlPlaceholder": "例如：http://localhost:11434/v1",
         "model": "模型:",
         "modelPlaceholder": "请输入模型名称（可选）",
         "defaultModelHint": "默认模型为 {{defaultModel}}",
@@ -55,6 +56,8 @@
         "verifying": "验证中...",
         "verifiedSuccess": "验证成功！",
         "errorNoApiKey": "请输入 API 密钥",
+        "errorNoBaseUrl": "请输入 API 地址",
+        "errorNoModel": "请输入模型名称",
         "successVerified": "API 密钥验证并保存成功",
         "errorSaveFailed": "保存设置失败",
         "errorVerificationFailed": "验证失败",
